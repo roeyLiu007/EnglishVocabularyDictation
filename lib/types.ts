@@ -23,6 +23,11 @@ export type WordEntry = {
   createdAt: string;
 };
 
+export type AnswerLine = {
+  partOfSpeech: string;
+  meaning: string;
+};
+
 export type Question = {
   id: string;
   wordId: string;
@@ -34,6 +39,7 @@ export type Question = {
     word: string;
     partOfSpeech: string;
     meaning: string;
+    lines?: AnswerLine[];
   };
 };
 
@@ -53,6 +59,7 @@ export type AnswerInput = {
   word?: string;
   partOfSpeech?: string;
   meaning?: string;
+  lines?: AnswerLine[];
 };
 
 export type FieldVerdict = {

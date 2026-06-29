@@ -9,6 +9,15 @@ type RoomPayload = {
   answers: SubmittedAnswer[];
 };
 
+function renderAnswerLines(lines?: Array<{ partOfSpeech?: string; meaning?: string }>) {
+  if (!lines?.length) return null;
+  return lines.map((line, index) => (
+    <div key={`${index}-${line.partOfSpeech}-${line.meaning}`}>
+      {index + 1}. {line.partOfSpeech || "-"} {line.meaning ? ` / ${line.meaning}` : ""}
+    </div>
+  ));
+}
+
 export function ParentRoom({ roomId, token }: { roomId: string; token: string }) {
   const [payload, setPayload] = useState<RoomPayload | null>(null);
   const [message, setMessage] = useState("");
@@ -148,16 +157,23 @@ export function ParentRoom({ roomId, token }: { roomId: string; token: string })
                     <td>
                       {answer ? (
                         <>
-                          {answer.answer.partOfSpeech ? <div>词性：{answer.answer.partOfSpeech}</div> : null}
                           {answer.answer.word ? <div>英文：{answer.answer.word}</div> : null}
-                          {answer.answer.meaning ? <div>中文：{answer.answer.meaning}</div> : null}
+                          {answer.answer.lines?.length ? (
+                            renderAnswerLines(answer.answer.lines)
+                          ) : (
+                            <>
+                              {answer.answer.partOfSpeech ? <div>词性：{answer.answer.partOfSpeech}</div> : null}
+                              {answer.answer.meaning ? <div>中文：{answer.answer.meaning}</div> : null}
+                            </>
+                          )}
                         </>
                       ) : (
                         <span className="muted">未提交</span>
                       )}
                     </td>
                     <td>
-                      {question.answer.partOfSpeech} / {question.answer.word} / {question.answer.meaning}
+                      <div>英文：{question.answer.word}</div>
+                      {renderAnswerLines(question.answer.lines ?? [{ partOfSpeech: question.answer.partOfSpeech, meaning: question.answer.meaning }])}
                     </td>
                     <td className={answer?.verdict.overall === "correct" ? "ok" : answer?.verdict.overall === "pending" ? "pending" : "wrong"}>
                       {answer ? (answer.verdict.overall === "correct" ? "正确" : answer.verdict.overall === "pending" ? "待确认" : "错误") : "-"}

@@ -91,6 +91,38 @@ export function formatPartOfSpeech(value = "") {
     .join(" / ");
 }
 
+export function splitPartOfSpeechEntries(value = "") {
+  const formatted = formatPartOfSpeech(value);
+  return formatted
+    .split(/\s+\/\s+/)
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+}
+
+function splitMeaningEntries(value = "", lineCount: number) {
+  const normalized = value
+    .split(/[；;]/)
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+
+  if (lineCount <= 1) return [value.trim()];
+  if (!normalized.length) return Array.from({ length: lineCount }, () => "");
+
+  const groupSize = Math.ceil(normalized.length / lineCount);
+  return Array.from({ length: lineCount }, (_, index) => normalized.slice(index * groupSize, (index + 1) * groupSize).join("；"));
+}
+
+export function answerLinesFor(word: Pick<WordEntry, "partOfSpeech" | "meaning">) {
+  const partOfSpeechEntries = splitPartOfSpeechEntries(word.partOfSpeech);
+  const entries = partOfSpeechEntries.length ? partOfSpeechEntries : [word.partOfSpeech.trim()].filter(Boolean);
+  const meaningEntries = splitMeaningEntries(word.meaning, Math.max(entries.length, 1));
+
+  return (entries.length ? entries : [""]).map((partOfSpeech, index) => ({
+    partOfSpeech,
+    meaning: meaningEntries[index] ?? ""
+  }));
+}
+
 export function isPartOfSpeechCorrect(expectedValue = "", receivedValue = "") {
   const expected = partOfSpeechKeys(expectedValue);
   const received = partOfSpeechKeys(receivedValue);
@@ -130,6 +162,31 @@ function fieldVerdict(status: FieldStatus, expected: string, received: string, n
   return { status, expected, received, note };
 }
 
+function linesFromAnswer(input: AnswerInput) {
+  if (input.lines?.length) return input.lines;
+  return [
+    {
+      partOfSpeech: input.partOfSpeech ?? "",
+      meaning: input.meaning ?? ""
+    }
+  ];
+}
+
+function formatLinesForVerdict(lines: { partOfSpeech?: string; meaning?: string }[], field: "partOfSpeech" | "meaning") {
+  return lines
+    .map((line, index) => `${index + 1}. ${line[field] ?? ""}`.trim())
+    .join("\n");
+}
+
+function isPartOfSpeechLinesCorrect(question: Question, input: AnswerInput) {
+  const expectedLines = question.answer.lines?.length
+    ? question.answer.lines
+    : answerLinesFor({ partOfSpeech: question.answer.partOfSpeech, meaning: question.answer.meaning });
+  const receivedLines = linesFromAnswer(input);
+
+  return expectedLines.every((line, index) => isPartOfSpeechCorrect(line.partOfSpeech, receivedLines[index]?.partOfSpeech));
+}
+
 export function gradeAnswer(question: Question, input: AnswerInput): AnswerVerdict {
   const fields: AnswerVerdict["fields"] = {};
 
@@ -140,16 +197,21 @@ export function gradeAnswer(question: Question, input: AnswerInput): AnswerVerdi
   }
 
   if (question.targetFields.includes("partOfSpeech")) {
+    const expectedLines = question.answer.lines?.length
+      ? question.answer.lines
+      : answerLinesFor({ partOfSpeech: question.answer.partOfSpeech, meaning: question.answer.meaning });
+    const receivedLines = linesFromAnswer(input);
     fields.partOfSpeech = fieldVerdict(
-      isPartOfSpeechCorrect(question.answer.partOfSpeech, input.partOfSpeech) ? "correct" : "wrong",
-      question.answer.partOfSpeech,
-      input.partOfSpeech ?? ""
+      isPartOfSpeechLinesCorrect(question, input) ? "correct" : "wrong",
+      formatLinesForVerdict(expectedLines, "partOfSpeech"),
+      formatLinesForVerdict(receivedLines, "partOfSpeech")
     );
   }
 
   if (question.targetFields.includes("meaning")) {
     const expected = normalizeMeaning(question.answer.meaning);
-    const received = normalizeMeaning(input.meaning);
+    const receivedMeaning = input.lines?.length ? input.lines.map((line) => line.meaning).join("；") : input.meaning;
+    const received = normalizeMeaning(receivedMeaning);
     let status: FieldStatus = "wrong";
     let note: string | undefined;
 
@@ -160,7 +222,7 @@ export function gradeAnswer(question: Question, input: AnswerInput): AnswerVerdi
       note = "中文释义可能存在同义表达，需要家长确认";
     }
 
-    fields.meaning = fieldVerdict(status, question.answer.meaning, input.meaning ?? "", note);
+    fields.meaning = fieldVerdict(status, question.answer.meaning, receivedMeaning ?? "", note);
   }
 
   const statuses = Object.values(fields).map((field) => field.status);
@@ -234,6 +296,13 @@ function makeQuestion(word: WordEntry, index: number): Question {
   const promptTypes: PromptType[] = ["audio", "english", "chinese"];
   const promptType = promptTypes[index % promptTypes.length];
   const id = `${word.id}-${promptType}-${Date.now()}-${index}`;
+  const lines = answerLinesFor(word);
+  const answer = {
+    word: word.word,
+    partOfSpeech: word.partOfSpeech,
+    meaning: word.meaning,
+    lines
+  };
 
   if (promptType === "audio") {
     return {
@@ -243,11 +312,7 @@ function makeQuestion(word: WordEntry, index: number): Question {
       prompt: "听英文发音，填写词性、英文和中文意思",
       speechText: speechTextForWord(word.word),
       targetFields: ["partOfSpeech", "word", "meaning"],
-      answer: {
-        word: word.word,
-        partOfSpeech: word.partOfSpeech,
-        meaning: word.meaning
-      }
+      answer
     };
   }
 
@@ -258,11 +323,7 @@ function makeQuestion(word: WordEntry, index: number): Question {
       promptType,
       prompt: word.word,
       targetFields: ["partOfSpeech", "meaning"],
-      answer: {
-        word: word.word,
-        partOfSpeech: word.partOfSpeech,
-        meaning: word.meaning
-      }
+      answer
     };
   }
 
@@ -272,11 +333,7 @@ function makeQuestion(word: WordEntry, index: number): Question {
     promptType,
     prompt: word.meaning,
     targetFields: ["partOfSpeech", "word"],
-    answer: {
-      word: word.word,
-      partOfSpeech: word.partOfSpeech,
-      meaning: word.meaning
-    }
+    answer
   };
 }
 
