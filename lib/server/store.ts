@@ -52,6 +52,7 @@ function supabase(): SupabaseClient | null {
 function mapWord(row: Record<string, unknown>): WordEntry {
   const word: WordEntry = {
     id: String(row.id),
+    entryType: row.entry_type === "phrase" ? "phrase" : "word",
     word: String(row.word ?? ""),
     phonetic: String(row.phonetic ?? ""),
     partOfSpeech: String(row.part_of_speech ?? ""),
@@ -72,6 +73,7 @@ function mapWord(row: Record<string, unknown>): WordEntry {
 function wordRow(word: WordEntry) {
   return {
     id: word.id,
+    entry_type: word.entryType ?? "word",
     word: word.word,
     phonetic: word.phonetic ?? "",
     part_of_speech: word.partOfSpeech,
@@ -92,6 +94,7 @@ function hydrateWord(word: WordEntry): WordEntry {
   const stages = effectiveStages(word);
   return {
     ...word,
+    entryType: word.entryType === "phrase" ? "phrase" : "word",
     phonetic: word.phonetic ?? "",
     tags: word.tags ?? [],
     notes: word.notes ?? "",

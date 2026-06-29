@@ -2,9 +2,9 @@ import * as XLSX from "xlsx";
 import type { ImportPreviewWord } from "./types";
 import { normalizeStage, stageLabel, vocabularyStages } from "./vocabulary";
 
-export const wordTemplateHeaders = ["英文", "音标", "词性", "中文意思", "阶段词表", "单元", "标签", "备注"] as const;
+export const wordTemplateHeaders = ["类型", "英文/词组", "音标", "词性", "中文意思", "阶段词表", "单元", "标签", "备注"] as const;
 
-const requiredHeaders = ["英文", "词性", "中文意思"] as const;
+const requiredHeaders = ["类型", "英文/词组", "中文意思"] as const;
 
 function cellText(value: unknown) {
   return String(value ?? "").trim();
@@ -21,6 +21,12 @@ function normalizeStages(value = "") {
   return splitList(value)
     .map(normalizeStage)
     .filter(Boolean);
+}
+
+function normalizeEntryType(value = ""): "word" | "phrase" {
+  const normalized = value.trim().toLowerCase();
+  if (normalized === "phrase" || normalized === "词组" || normalized === "短语") return "phrase";
+  return "word";
 }
 
 export function parseWordTemplate(buffer: Buffer, fileName: string): ImportPreviewWord[] {
@@ -47,7 +53,8 @@ export function parseWordTemplate(buffer: Buffer, fileName: string): ImportPrevi
 
   const words = rows
     .map((row) => ({
-      word: cellText(row["英文"]),
+      entryType: normalizeEntryType(cellText(row["类型"])),
+      word: cellText(row["英文/词组"]),
       phonetic: cellText(row["音标"]),
       partOfSpeech: cellText(row["词性"]),
       meaning: cellText(row["中文意思"]),
@@ -58,9 +65,9 @@ export function parseWordTemplate(buffer: Buffer, fileName: string): ImportPrevi
     }))
     .filter((word) => word.word || word.partOfSpeech || word.meaning);
 
-  const invalidRow = words.findIndex((word) => !word.word || !word.partOfSpeech || !word.meaning);
+  const invalidRow = words.findIndex((word) => !word.word || !word.meaning || (word.entryType !== "phrase" && !word.partOfSpeech));
   if (invalidRow >= 0) {
-    throw new Error(`第 ${invalidRow + 2} 行缺少英文、词性或中文意思`);
+    throw new Error(`第 ${invalidRow + 2} 行缺少类型、英文/词组、词性或中文意思；词组可不填词性`);
   }
 
   if (!words.length) throw new Error(`${fileName} 里没有可导入的单词`);
@@ -70,7 +77,8 @@ export function parseWordTemplate(buffer: Buffer, fileName: string): ImportPrevi
 export function buildWordTemplateWorkbook() {
   const examples = [
     {
-      英文: "feel",
+      类型: "word",
+      "英文/词组": "feel",
       音标: "/fi:l/",
       词性: "vlink 系动词 / vt 及物动词",
       中文意思: "感觉，觉得；摸，触",
@@ -80,19 +88,21 @@ export function buildWordTemplateWorkbook() {
       备注: "音标选填"
     },
     {
-      英文: "academic",
+      类型: "phrase",
+      "英文/词组": "look after",
       音标: "",
-      词性: "adj 形容词",
-      中文意思: "学术的",
-      阶段词表: "高中",
-      单元: "选修",
-      标签: "",
-      备注: ""
+      词性: "phrase 短语",
+      中文意思: "照顾，照料",
+      阶段词表: "初中",
+      单元: "Unit 3",
+      标签: "高频",
+      备注: "词组不强制填写词性"
     }
   ];
   const sheet = XLSX.utils.json_to_sheet(examples, { header: [...wordTemplateHeaders] });
   sheet["!cols"] = [
-    { wch: 22 },
+    { wch: 12 },
+    { wch: 24 },
     { wch: 16 },
     { wch: 28 },
     { wch: 36 },

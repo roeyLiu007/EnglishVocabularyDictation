@@ -60,6 +60,7 @@ export async function POST(request: Request) {
       const tags = Array.from(new Set([...(existing.tags ?? []), ...(entry.tags ?? [])]));
       const next = {
         ...existing,
+        entryType: entry.entryType,
         word: entry.word,
         phonetic: entry.phonetic || existing.phonetic,
         partOfSpeech: entry.partOfSpeech,

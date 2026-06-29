@@ -20,6 +20,7 @@ export const defaultStats = (): WordStats => ({
 
 const partOfSpeechDefinitions = [
   { key: "art", abbr: "art", label: "冠词", aliases: ["art", "article", "冠词"] },
+  { key: "phrase", abbr: "phrase", label: "短语", aliases: ["phrase", "phr", "短语", "词组"] },
   { key: "vt", abbr: "vt", label: "及物动词", aliases: ["vt", "transitiveverb", "及物动词"] },
   { key: "vi", abbr: "vi", label: "不及物动词", aliases: ["vi", "intransitiveverb", "不及物动词"] },
   { key: "vlink", abbr: "vlink", label: "系动词", aliases: ["vlink", "linkv", "linkingverb", "系动词", "连系动词"] },
@@ -511,18 +512,58 @@ function makeQuestion(word: WordEntry, index: number): Question {
   const promptTypes: PromptType[] = ["audio", "english", "chinese"];
   const promptType = promptTypes[index % promptTypes.length];
   const id = `${word.id}-${promptType}-${Date.now()}-${index}`;
+  const entryType: "word" | "phrase" = word.entryType === "phrase" ? "phrase" : "word";
   const lines = answerLinesFor(word);
   const answer = {
+    entryType,
     word: word.word,
     partOfSpeech: word.partOfSpeech,
     meaning: word.meaning,
     lines
   };
 
+  if (entryType === "phrase") {
+    if (promptType === "audio") {
+      return {
+        id,
+        wordId: word.id,
+        entryType,
+        promptType,
+        prompt: "听英文词组，填写英文词组和中文意思",
+        speechText: speechTextForWord(word.word),
+        targetFields: ["word", "meaning"],
+        answer
+      };
+    }
+
+    if (promptType === "english") {
+      return {
+        id,
+        wordId: word.id,
+        entryType,
+        promptType,
+        prompt: word.word,
+        targetFields: ["meaning"],
+        answer
+      };
+    }
+
+    return {
+      id,
+      wordId: word.id,
+      entryType,
+      promptType,
+      prompt: word.meaning,
+      targetFields: ["word"],
+      answer
+    };
+  }
+
   if (promptType === "audio") {
     return {
       id,
       wordId: word.id,
+      entryType,
       promptType,
       prompt: "听英文发音，填写词性、英文和中文意思",
       speechText: speechTextForWord(word.word),
@@ -535,6 +576,7 @@ function makeQuestion(word: WordEntry, index: number): Question {
     return {
       id,
       wordId: word.id,
+      entryType,
       promptType,
       prompt: word.word,
       targetFields: ["partOfSpeech", "meaning"],
@@ -545,6 +587,7 @@ function makeQuestion(word: WordEntry, index: number): Question {
   return {
     id,
     wordId: word.id,
+    entryType,
     promptType,
     prompt: word.meaning,
     targetFields: ["partOfSpeech", "word"],
@@ -608,11 +651,13 @@ export function parseWordListText(text: string): ImportPreviewWord[] {
 }
 
 export function makeWordEntry(input: ImportPreviewWord): WordEntry {
+  const entryType = input.entryType === "phrase" ? "phrase" : "word";
   return {
     id: crypto.randomUUID(),
+    entryType,
     word: input.word.trim(),
     phonetic: input.phonetic?.trim() ?? "",
-    partOfSpeech: formatPartOfSpeech(input.partOfSpeech, input.word),
+    partOfSpeech: entryType === "phrase" ? formatPartOfSpeech(input.partOfSpeech || "phrase", input.word) : formatPartOfSpeech(input.partOfSpeech, input.word),
     meaning: input.meaning.trim(),
     unit: input.unit?.trim() ?? "",
     tags: input.tags ?? [],

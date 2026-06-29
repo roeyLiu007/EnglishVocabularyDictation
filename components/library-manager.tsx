@@ -16,6 +16,10 @@ function joinList(value?: string[]) {
   return (value ?? []).join("；");
 }
 
+function entryTypeLabel(value?: string) {
+  return value === "phrase" ? "词组" : "单词";
+}
+
 export function LibraryManager() {
   const [words, setWords] = useState<WordEntry[]>([]);
   const [preview, setPreview] = useState<ImportPreviewWord[]>([]);
@@ -45,7 +49,7 @@ export function LibraryManager() {
     return words.filter((word) =>
       [word.word, word.phonetic ?? "", word.partOfSpeech, word.meaning, word.unit ?? "", joinList(word.tags), joinList(word.stages)].some(
         (value) => value.toLowerCase().includes(keyword)
-      )
+      ) || entryTypeLabel(word.entryType).includes(keyword)
     );
   }, [query, words]);
 
@@ -103,6 +107,7 @@ export function LibraryManager() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           word: word.word,
+          entryType: word.entryType ?? "word",
           partOfSpeech: word.partOfSpeech,
           meaning: word.meaning,
           phonetic: word.phonetic ?? "",
@@ -222,6 +227,7 @@ export function LibraryManager() {
               <thead>
                 <tr>
                   <th>英文</th>
+                  <th>类型</th>
                   <th>音标</th>
                   <th>词性</th>
                   <th>中文意思</th>
@@ -236,6 +242,15 @@ export function LibraryManager() {
                   <tr key={`${word.word}-${index}`}>
                     <td>
                       <input value={word.word} onChange={(event) => updatePreview(index, { word: event.target.value })} />
+                    </td>
+                    <td>
+                      <select
+                        value={word.entryType ?? "word"}
+                        onChange={(event) => updatePreview(index, { entryType: event.target.value as "word" | "phrase" })}
+                      >
+                        <option value="word">单词</option>
+                        <option value="phrase">词组</option>
+                      </select>
                     </td>
                     <td>
                       <input value={word.phonetic ?? ""} onChange={(event) => updatePreview(index, { phonetic: event.target.value })} />
@@ -295,6 +310,7 @@ export function LibraryManager() {
             <thead>
               <tr>
                 <th>英文</th>
+                <th>类型</th>
                 <th>音标</th>
                 <th>词性</th>
                 <th>中文意思</th>
@@ -310,6 +326,15 @@ export function LibraryManager() {
                 <tr key={word.id}>
                   <td>
                     <input value={word.word} onChange={(event) => updateSavedWord(word.id, { word: event.target.value })} />
+                  </td>
+                  <td>
+                    <select
+                      value={word.entryType ?? "word"}
+                      onChange={(event) => updateSavedWord(word.id, { entryType: event.target.value as "word" | "phrase" })}
+                    >
+                      <option value="word">单词</option>
+                      <option value="phrase">词组</option>
+                    </select>
                   </td>
                   <td>
                     <input value={word.phonetic ?? ""} onChange={(event) => updateSavedWord(word.id, { phonetic: event.target.value })} />
@@ -372,7 +397,7 @@ export function LibraryManager() {
               ))}
               {!filteredWords.length ? (
                 <tr>
-                  <td colSpan={9} className="muted">
+                  <td colSpan={10} className="muted">
                     {words.length ? "没有匹配的单词。" : "还没有单词，先上传一份学校单词表。"}
                   </td>
                 </tr>

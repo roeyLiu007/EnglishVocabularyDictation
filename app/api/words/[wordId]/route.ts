@@ -27,6 +27,7 @@ export async function PATCH(request: Request, { params }: RouteContext) {
 
   const word: WordEntry = {
     ...existing,
+    entryType: body.entryType === "phrase" ? "phrase" : "word",
     word: nextWord,
     phonetic: body.phonetic?.trim() ?? "",
     partOfSpeech: formatPartOfSpeech(body.partOfSpeech ?? "", nextWord),

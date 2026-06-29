@@ -1,5 +1,6 @@
 create table if not exists words (
   id uuid primary key default gen_random_uuid(),
+  entry_type text not null default 'word',
   word text not null,
   phonetic text not null default '',
   part_of_speech text not null default '',

@@ -41,6 +41,7 @@ export function MistakeBook() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           word: word.word,
+          entryType: word.entryType ?? "word",
           phonetic: word.phonetic ?? "",
           partOfSpeech: word.partOfSpeech,
           meaning: word.meaning,
@@ -149,6 +150,7 @@ export function MistakeBook() {
             <thead>
               <tr>
                 <th>英文</th>
+                <th>类型</th>
                 <th>音标</th>
                 <th>词性</th>
                 <th>中文意思</th>
@@ -163,6 +165,15 @@ export function MistakeBook() {
                 <tr key={word.id}>
                   <td>
                     <input value={word.word} onChange={(event) => updateWord(word.id, { word: event.target.value })} />
+                  </td>
+                  <td>
+                    <select
+                      value={word.entryType ?? "word"}
+                      onChange={(event) => updateWord(word.id, { entryType: event.target.value as "word" | "phrase" })}
+                    >
+                      <option value="word">单词</option>
+                      <option value="phrase">词组</option>
+                    </select>
                   </td>
                   <td>
                     <input value={word.phonetic ?? ""} onChange={(event) => updateWord(word.id, { phonetic: event.target.value })} />
@@ -211,7 +222,7 @@ export function MistakeBook() {
               ))}
               {!mistakes.length ? (
                 <tr>
-                  <td colSpan={8} className="muted">
+                  <td colSpan={9} className="muted">
                     暂时还没有错词。完成一次听写后，这里会自动更新。
                   </td>
                 </tr>

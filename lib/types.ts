@@ -14,6 +14,7 @@ export type WordStats = {
 
 export type WordEntry = {
   id: string;
+  entryType?: "word" | "phrase";
   word: string;
   phonetic?: string;
   partOfSpeech: string;
@@ -37,11 +38,13 @@ export type AnswerLine = {
 export type Question = {
   id: string;
   wordId: string;
+  entryType?: "word" | "phrase";
   promptType: PromptType;
   prompt: string;
   speechText?: string;
   targetFields: FieldName[];
   answer: {
+    entryType?: "word" | "phrase";
     word: string;
     partOfSpeech: string;
     meaning: string;
@@ -99,5 +102,5 @@ export type CreateRoomInput = {
 
 export type ImportPreviewWord = Pick<
   WordEntry,
-  "word" | "phonetic" | "partOfSpeech" | "meaning" | "unit" | "tags" | "notes" | "stages"
+  "entryType" | "word" | "phonetic" | "partOfSpeech" | "meaning" | "unit" | "tags" | "notes" | "stages"
 >;

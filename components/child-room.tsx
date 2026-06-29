@@ -89,6 +89,7 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
   const room = payload?.room;
   const answeredIds = useMemo(() => new Set(payload?.answers.map((item) => item.questionId) ?? []), [payload]);
   const current = room?.questions[index];
+  const currentEntryType = current?.answer.entryType === "phrase" || current?.entryType === "phrase" ? "phrase" : "word";
   const isDone = Boolean(room && payload && payload.answers.length >= room.questions.length);
   const answerLines = current?.answer.lines?.length
     ? current.answer.lines
@@ -191,14 +192,18 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
                   const submitted = payload.answers.find((item) => item.questionId === question.id);
                   return (
                     <tr key={question.id}>
-                      <td>{question.promptType === "audio" ? "听英文" : question.prompt}</td>
+                      <td>{question.promptType === "audio" ? (question.answer.entryType === "phrase" ? "听英文词组" : "听英文") : question.prompt}</td>
                       <td>
                         <div>{question.answer.word}</div>
-                        {(question.answer.lines ?? [{ partOfSpeech: question.answer.partOfSpeech, meaning: question.answer.meaning }]).map((line, lineIndex) => (
-                          <div key={`${question.id}-answer-${lineIndex}`}>
-                            {line.partOfSpeech} / {line.meaning || question.answer.meaning}
-                          </div>
-                        ))}
+                        {question.answer.entryType === "phrase" ? (
+                          <div>{question.answer.meaning}</div>
+                        ) : (
+                          (question.answer.lines ?? [{ partOfSpeech: question.answer.partOfSpeech, meaning: question.answer.meaning }]).map((line, lineIndex) => (
+                            <div key={`${question.id}-answer-${lineIndex}`}>
+                              {line.partOfSpeech} / {line.meaning || question.answer.meaning}
+                            </div>
+                          ))
+                        )}
                       </td>
                       <td className={submitted?.verdict.overall === "correct" ? "ok" : submitted?.verdict.overall === "pending" ? "pending" : "wrong"}>
                         {submitted?.verdict.overall === "correct" ? "正确" : submitted?.verdict.overall === "pending" ? "待确认" : "需复习"}
@@ -223,7 +228,15 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
           {index + 1} / {room.questions.length}
         </span>
         <span className="pill" style={{ marginLeft: 8 }}>
-          {current.promptType === "audio" ? "听英文" : current.promptType === "english" ? "看英文" : "看中文"}
+          {current.promptType === "audio"
+            ? currentEntryType === "phrase"
+              ? "听词组"
+              : "听英文"
+            : current.promptType === "english"
+              ? currentEntryType === "phrase"
+                ? "看词组"
+                : "看英文"
+              : "看中文"}
         </span>
       </div>
 
@@ -231,7 +244,7 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
         {current.promptType === "audio" ? (
           <div className="grid">
             <p className="prompt" style={{ fontSize: 40 }}>
-              听英文发音
+              {currentEntryType === "phrase" ? "听英文词组" : "听英文发音"}
             </p>
             <div className="grid cols-2">
               <label>
@@ -272,7 +285,7 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
       <div className="grid">
         {current.targetFields.includes("word") ? (
           <label>
-            英文
+            {currentEntryType === "phrase" ? "英文词组" : "英文"}
             <input
               autoCapitalize="none"
               autoComplete="off"
