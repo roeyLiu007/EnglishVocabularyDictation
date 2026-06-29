@@ -1593,7 +1593,7 @@
     {
       "id": "ab1cff4a-bb6d-4a77-bd13-6c1709fa8495",
       "word": "be",
-      "partOfSpeech": "vi 不及物动词",
+      "partOfSpeech": "vlink 系动词 / aux_v 助动词",
       "meaning": "是（原形），成为",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -1683,7 +1683,7 @@
     {
       "id": "6dca14f2-c081-48a5-93dc-5cf0e2997aef",
       "word": "become(became, became)",
-      "partOfSpeech": "vi 不及物动词",
+      "partOfSpeech": "vlink 系动词",
       "meaning": "变得；成为",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -2463,8 +2463,8 @@
     {
       "id": "503cb6ea-1c35-466b-b1ee-b248f5022333",
       "word": "bridge",
-      "partOfSpeech": "",
-      "meaning": "n..；桥",
+      "partOfSpeech": "n 名词",
+      "meaning": "桥",
       "unit": "中考英语大纲1600词",
       "tags": [],
       "stats": {
@@ -2823,8 +2823,8 @@
     {
       "id": "66220053-c340-473a-ae4b-dbd6fb732d70",
       "word": "Can (can’t)",
-      "partOfSpeech": "",
-      "meaning": "modal v.；能够；可以；会；(不能)",
+      "partOfSpeech": "aux_v 情态动词",
+      "meaning": "能够；可以；会；(不能)",
       "unit": "中考英语大纲1600词",
       "tags": [],
       "stats": {
@@ -4383,8 +4383,8 @@
     {
       "id": "9b0e354f-dabe-4ec4-a2cf-4718dc7de829",
       "word": "could",
-      "partOfSpeech": "",
-      "meaning": "modal v.",
+      "partOfSpeech": "aux_v 情态动词",
+      "meaning": "可以；能",
       "unit": "中考英语大纲1600词",
       "tags": [],
       "stats": {
@@ -4743,7 +4743,7 @@
     {
       "id": "0a035733-0545-4aaf-96b8-4a4332a85985",
       "word": "dare",
-      "partOfSpeech": "vt 及物动词 / aux 助动词",
+      "partOfSpeech": "vt 及物动词 / aux_v 情态动词",
       "meaning": "敢；敢于",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -5403,7 +5403,7 @@
     {
       "id": "c793e1c5-fef9-4e25-9f98-100c1e028d63",
       "word": "做，干(用以构成疑问句及否定句。第三人称单数现在时用does) don’t= do not",
-      "partOfSpeech": "aux 助动词",
+      "partOfSpeech": "aux_v 助动词",
       "meaning": "不做；不干",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -7023,8 +7023,8 @@
     {
       "id": "6746faf0-7dc6-48ff-a029-64270b2b6c73",
       "word": "feel(felt, felt)",
-      "partOfSpeech": "",
-      "meaning": "link.v；感觉，觉得；摸，触",
+      "partOfSpeech": "vlink 系动词 / vt 及物动词",
+      "meaning": "感觉，觉得；摸，触",
       "unit": "中考英语大纲1600词",
       "tags": [],
       "stats": {
@@ -8118,7 +8118,7 @@
     {
       "id": "1bc4e8f6-9ccc-4ac8-a299-a32340a107a0",
       "word": "get(got, got)",
-      "partOfSpeech": "vt 及物动词",
+      "partOfSpeech": "vlink 系动词 / vt 及物动词",
       "meaning": "成为；得到；具有；到达",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -8613,7 +8613,7 @@
     {
       "id": "7642c434-40dc-4b98-be68-115905b47f8c",
       "word": "grow(grew, grown)",
-      "partOfSpeech": "vi 不及物动词",
+      "partOfSpeech": "vi 不及物动词 / vt 及物动词 / vlink 系动词",
       "meaning": "生长；发育；种植；变成",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -8958,8 +8958,8 @@
     {
       "id": "b0638cf9-4a5e-4b94-9377-568eabd3b4b8",
       "word": "hate",
-      "partOfSpeech": "",
-      "meaning": "vt & n..；恨，讨厌",
+      "partOfSpeech": "vt 及物动词 / n 名词",
+      "meaning": "恨，讨厌",
       "unit": "中考英语大纲1600词",
       "tags": [],
       "stats": {
@@ -9664,7 +9664,7 @@
       "id": "166dda2d-5e65-4dfb-a12e-c68ae6b4f65e",
       "word": "however",
       "partOfSpeech": "adv 副词 / conj 连词",
-      "meaning": "可是；然而；尽管如此    ’",
+      "meaning": "可是；然而；尽管如此 ’",
       "unit": "中考英语大纲1600词",
       "tags": [],
       "stats": {
@@ -10623,7 +10623,7 @@
     {
       "id": "3f4ac074-1fd7-41d7-b402-0958cccaaf9d",
       "word": "keep(kept, kept)",
-      "partOfSpeech": "vt 及物动词",
+      "partOfSpeech": "vt 及物动词 / vlink 系动词",
       "meaning": "保持；保存；继续不断",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -11628,8 +11628,8 @@
     {
       "id": "4f9389ff-c327-4801-8634-8c9c299d39b5",
       "word": "look",
-      "partOfSpeech": "n 名词 / vi 不及物动词",
-      "meaning": "link.v；看，瞧；看，观看；看起来",
+      "partOfSpeech": "n 名词 / vlink 系动词 / vi 不及物动词",
+      "meaning": "看，瞧；看，观看；看起来",
       "unit": "中考英语大纲1600词",
       "tags": [],
       "stats": {
@@ -12034,7 +12034,7 @@
       "id": "c8eb60bf-5e67-4d89-b30b-4949fe3a6ab9",
       "word": "master",
       "partOfSpeech": "vt 及物动词",
-      "meaning": "n..；精通；掌握；主人；顾主",
+      "meaning": "精通；掌握；主人；顾主",
       "unit": "中考英语大纲1600词",
       "tags": [],
       "stats": {
@@ -12078,7 +12078,7 @@
     {
       "id": "939a1dde-8f62-4209-9fbf-679493611f12",
       "word": "may",
-      "partOfSpeech": "modal 情态动词",
+      "partOfSpeech": "aux_v 情态动词",
       "meaning": "可以；也许，可能",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -12408,8 +12408,8 @@
     {
       "id": "443b1b6d-4b62-49a5-ae00-477a828ff0fa",
       "word": "might(may的过去式，助动词)",
-      "partOfSpeech": "",
-      "meaning": "model.v；可能，也许",
+      "partOfSpeech": "aux_v 情态动词",
+      "meaning": "可能，也许",
       "unit": "中考英语大纲1600词",
       "tags": [],
       "stats": {
@@ -12963,7 +12963,7 @@
     {
       "id": "7fb217c1-196b-4eeb-885a-fde9e0f213ae",
       "word": "must",
-      "partOfSpeech": "modal 情态动词",
+      "partOfSpeech": "aux_v 情态动词",
       "meaning": "必须，应当；必定是",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -13128,7 +13128,7 @@
     {
       "id": "d4abde8d-9ebf-4ebf-91c9-7be4be5994e4",
       "word": "need",
-      "partOfSpeech": "n 名词 / modal 情态动词 / vt 及物动词",
+      "partOfSpeech": "n 名词 / aux_v 情态动词 / vt 及物动词",
       "meaning": "需要，需求；需要，必须",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -13759,7 +13759,7 @@
       "id": "2b7b6529-abf0-4460-b50b-35096726bea3",
       "word": "office",
       "partOfSpeech": "n 名词",
-      "meaning": "办公室    .",
+      "meaning": "办公室 .",
       "unit": "中考英语大纲1600词",
       "tags": [],
       "stats": {
@@ -13984,7 +13984,7 @@
       "id": "bce5444d-cf37-454d-a4d1-72e1ca4b3265",
       "word": "order",
       "partOfSpeech": "vt 及物动词",
-      "meaning": "n..；定购，订货；点菜；顺序",
+      "meaning": "定购，订货；点菜；顺序",
       "unit": "中考英语大纲1600词",
       "tags": [],
       "stats": {
@@ -16548,7 +16548,7 @@
     {
       "id": "2de87007-4630-4e0e-9e0a-8eb134e935b0",
       "word": "remain",
-      "partOfSpeech": "vt 及物动词 / vi 不及物动词",
+      "partOfSpeech": "vlink 系动词 / vi 不及物动词",
       "meaning": "余下；留下；保持；仍是",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -16669,7 +16669,7 @@
       "id": "a3d5b6c4-6dd4-4f93-9e0e-640e3fd775b3",
       "word": "rest",
       "partOfSpeech": "n 名词 / vi 不及物动词",
-      "meaning": "休息；剩余的部分，其余的人(物)  休息，歇息",
+      "meaning": "休息；剩余的部分，其余的人(物) 休息，歇息",
       "unit": "中考英语大纲1600词",
       "tags": [],
       "stats": {
@@ -17583,7 +17583,7 @@
     {
       "id": "3d98616c-2c4e-498d-b4c5-8f33b5a2eac2",
       "word": "seem",
-      "partOfSpeech": "vi 不及物动词",
+      "partOfSpeech": "vlink 系动词",
       "meaning": "似乎，好像",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -17764,7 +17764,7 @@
       "id": "1c11c4a4-ba90-4b78-8488-156eefda27cf",
       "word": "set(set, set)",
       "partOfSpeech": "vt 及物动词 / n 名词",
-      "meaning": "释放，安置，设置(布景，背景)  装备，设备",
+      "meaning": "释放，安置，设置(布景，背景) 装备，设备",
       "unit": "中考英语大纲1600词",
       "tags": [],
       "stats": {
@@ -17868,7 +17868,7 @@
     {
       "id": "3596d7f8-da00-4728-87ee-5ddedf6e3a3f",
       "word": "shall(should)",
-      "partOfSpeech": "aux 助动词",
+      "partOfSpeech": "aux_v 情态动词",
       "meaning": "（表示将来）将要；会",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -18034,7 +18034,7 @@
       "id": "b186f3ab-5694-4308-bf9a-78d1d32c3eef",
       "word": "shop",
       "partOfSpeech": "vi 不及物动词",
-      "meaning": ".n.；买东西；商店；车间",
+      "meaning": ".买东西；商店；车间",
       "unit": "中考英语大纲1600词",
       "tags": [],
       "stats": {
@@ -18078,8 +18078,8 @@
     {
       "id": "617de391-3a4a-418f-85b4-e281dfb0f5f5",
       "word": "should",
-      "partOfSpeech": "",
-      "meaning": "modal.vaux.v；应当；应该；会",
+      "partOfSpeech": "aux_v 情态动词",
+      "meaning": "应当；应该；会",
       "unit": "中考英语大纲1600词",
       "tags": [],
       "stats": {
@@ -18439,7 +18439,7 @@
       "id": "0c0e4f65-426d-4138-88da-bd18d7f43228",
       "word": "situation",
       "partOfSpeech": "n 名词",
-      "meaning": "形势，情况    .",
+      "meaning": "形势，情况 .",
       "unit": "中考英语大纲1600词",
       "tags": [],
       "stats": {
@@ -18663,7 +18663,7 @@
     {
       "id": "5af4ab06-8613-40e1-b098-a47e9ca1cc0c",
       "word": "smell (-ed,-ed 或smelt, smelt)",
-      "partOfSpeech": "vt 及物动词 / n 名词",
+      "partOfSpeech": "vt 及物动词 / vlink 系动词 / n 名词",
       "meaning": "嗅，闻到；发气味；气味",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -18678,8 +18678,8 @@
     {
       "id": "59a8d3d7-cf85-460a-bdcc-0de2e9711afd",
       "word": "smile",
-      "partOfSpeech": "",
-      "meaning": "n.& n..；微笑",
+      "partOfSpeech": "n 名词 / vi 不及物动词",
+      "meaning": "微笑",
       "unit": "中考英语大纲1600词",
       "tags": [],
       "stats": {
@@ -19068,7 +19068,7 @@
     {
       "id": "3bebaa5d-ae6f-4fde-8bf2-68340dde30eb",
       "word": "sound",
-      "partOfSpeech": "vi 不及物动词 / n 名词",
+      "partOfSpeech": "vlink 系动词 / vi 不及物动词 / n 名词",
       "meaning": "听起来；发出声音；声音",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -19473,7 +19473,7 @@
     {
       "id": "ca70c2f1-588e-49fa-b1c3-f36031629676",
       "word": "stay",
-      "partOfSpeech": "n 名词 / vi 不及物动词",
+      "partOfSpeech": "n 名词 / vi 不及物动词 / vlink 系动词",
       "meaning": "停留，逗留，呆",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -20358,7 +20358,7 @@
     {
       "id": "dbd06a4c-1d22-42d6-bfac-58c8e03518da",
       "word": "taste",
-      "partOfSpeech": "n 名词 / vt 及物动词",
+      "partOfSpeech": "n 名词 / vt 及物动词 / vlink 系动词",
       "meaning": "品尝，尝味；味道；品尝，尝味",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -20659,7 +20659,7 @@
       "id": "a487ca9c-2f50-4a6f-804a-8dc4155a49b9",
       "word": "thank",
       "partOfSpeech": "vt 及物动词",
-      "meaning": "n.(pl.)；感谢，致谢，道谢；感谢，谢意",
+      "meaning": "(pl.)；感谢，致谢，道谢；感谢，谢意",
       "unit": "中考英语大纲1600词",
       "tags": [],
       "stats": {
@@ -23178,8 +23178,8 @@
     {
       "id": "047e8047-146a-4feb-bd80-21d7a69f57df",
       "word": "Will (would)",
-      "partOfSpeech": "",
-      "meaning": "modal v.；将，会(表示将来)，愿意，要",
+      "partOfSpeech": "aux_v 情态动词",
+      "meaning": "将，会(表示将来)，愿意，要",
       "unit": "中考英语大纲1600词",
       "tags": [],
       "stats": {
@@ -23389,7 +23389,7 @@
       "id": "0fbbe83e-4f7f-4e82-a0ac-125eefeec388",
       "word": "woman(pl. wonmen)",
       "partOfSpeech": "n 名词",
-      "meaning": "妇女，女人    ’",
+      "meaning": "妇女，女人 ’",
       "unit": "中考英语大纲1600词",
       "tags": [],
       "stats": {
@@ -23538,7 +23538,7 @@
     {
       "id": "1bf68716-5935-4b99-ac01-74c1bd1874f7",
       "word": "would (will的过去时)",
-      "partOfSpeech": "modal 情态动词",
+      "partOfSpeech": "aux_v 情态动词",
       "meaning": "将,会；打算；想要",
       "unit": "中考英语大纲1600词",
       "tags": [],

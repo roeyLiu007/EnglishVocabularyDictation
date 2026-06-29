@@ -22,6 +22,7 @@ const partOfSpeechDefinitions = [
   { key: "art", abbr: "art", label: "冠词", aliases: ["art", "article", "冠词"] },
   { key: "vt", abbr: "vt", label: "及物动词", aliases: ["vt", "transitiveverb", "及物动词"] },
   { key: "vi", abbr: "vi", label: "不及物动词", aliases: ["vi", "intransitiveverb", "不及物动词"] },
+  { key: "vlink", abbr: "vlink", label: "系动词", aliases: ["vlink", "linkv", "linkingverb", "系动词", "连系动词"] },
   { key: "n", abbr: "n", label: "名词", aliases: ["n", "noun", "名词"] },
   { key: "adj", abbr: "adj", label: "形容词", aliases: ["a", "adj", "adjective", "形容词"] },
   { key: "adv", abbr: "adv", label: "副词", aliases: ["ad", "adv", "adverb", "副词"] },
@@ -30,8 +31,8 @@ const partOfSpeechDefinitions = [
   { key: "conj", abbr: "conj", label: "连词", aliases: ["conj", "conjunction", "连词"] },
   { key: "num", abbr: "num", label: "数词", aliases: ["num", "number", "numeral", "数词"] },
   { key: "interj", abbr: "interj", label: "感叹词", aliases: ["int", "interj", "interjection", "感叹词"] },
-  { key: "aux", abbr: "aux", label: "助动词", aliases: ["aux", "auxv", "auxiliaryverb", "助动词"] },
-  { key: "modal", abbr: "modal", label: "情态动词", aliases: ["modal", "modalv", "modalverb", "情态动词"] },
+  { key: "aux", abbr: "aux_v", label: "助动词", aliases: ["aux", "auxv", "auxiliaryverb", "助动词"] },
+  { key: "modal", abbr: "aux_v", label: "情态动词", aliases: ["modal", "modalv", "modelv", "modalverb", "情态动词"] },
   { key: "abbr", abbr: "abbr", label: "缩写", aliases: ["abbr", "abbreviation", "缩写"] }
 ] as const;
 
@@ -46,16 +47,16 @@ const posAliasToKey = partOfSpeechDefinitions.reduce<Record<string, PartOfSpeech
 
 const genericVerbAliases = new Set(["v", "verb", "动词"]);
 
-const genericVerbTransitivity: Record<string, "vt" | "vi"> = {
+const genericVerbTransitivity: Record<string, PartOfSpeechKey | PartOfSpeechKey[]> = {
   act: "vi",
   agree: "vi",
   answer: "vt",
   ask: "vt",
   avoid: "vt",
   awake: "vt",
-  be: "vi",
+  be: ["vlink", "aux"],
   beat: "vt",
-  become: "vi",
+  become: "vlink",
   begin: "vt",
   believe: "vt",
   blow: "vi",
@@ -66,6 +67,7 @@ const genericVerbTransitivity: Record<string, "vt" | "vi"> = {
   build: "vt",
   burn: "vt",
   call: "vt",
+  can: "modal",
   cancel: "vt",
   care: "vi",
   catch: "vt",
@@ -78,10 +80,11 @@ const genericVerbTransitivity: Record<string, "vt" | "vi"> = {
   copy: "vt",
   correct: "vt",
   cost: "vt",
+  could: "modal",
   cover: "vt",
   cry: "vi",
   cut: "vt",
-  dare: "vt",
+  dare: ["vt", "modal"],
   deal: "vi",
   decide: "vt",
   develop: "vt",
@@ -98,11 +101,13 @@ const genericVerbTransitivity: Record<string, "vt" | "vi"> = {
   "e-mail": "vt",
   end: "vi",
   fail: "vi",
+  feel: ["vlink", "vt"],
   fight: "vi",
   finish: "vt",
   fit: "vt",
   forget: "vt",
-  grow: "vi",
+  get: ["vlink", "vt"],
+  grow: ["vi", "vt", "vlink"],
   hang: "vt",
   hear: "vt",
   hide: "vt",
@@ -111,7 +116,7 @@ const genericVerbTransitivity: Record<string, "vt" | "vi"> = {
   influence: "vt",
   join: "vt",
   jump: "vi",
-  keep: "vt",
+  keep: ["vt", "vlink"],
   kick: "vt",
   kill: "vt",
   knock: "vi",
@@ -122,13 +127,16 @@ const genericVerbTransitivity: Record<string, "vt" | "vi"> = {
   lie: "vi",
   lift: "vt",
   litter: "vt",
-  look: "vi",
+  look: ["vlink", "vi"],
   lose: "vt",
   manage: "vt",
   marry: "vt",
+  may: "modal",
   mend: "vt",
+  might: "modal",
   move: "vt",
-  need: "vt",
+  must: "modal",
+  need: ["vt", "modal"],
   own: "vt",
   pay: "vt",
   phone: "vt",
@@ -150,6 +158,7 @@ const genericVerbTransitivity: Record<string, "vt" | "vi"> = {
   recite: "vt",
   regard: "vt",
   relax: "vt",
+  remain: ["vlink", "vi"],
   remember: "vt",
   repair: "vt",
   report: "vt",
@@ -160,10 +169,11 @@ const genericVerbTransitivity: Record<string, "vt" | "vi"> = {
   sail: "vi",
   score: "vt",
   search: "vt",
-  seem: "vi",
+  seem: "vlink",
   sell: "vt",
   send: "vt",
   separate: "vt",
+  shall: "modal",
   shake: "vt",
   shape: "vt",
   shine: "vi",
@@ -171,9 +181,10 @@ const genericVerbTransitivity: Record<string, "vt" | "vi"> = {
   show: "vt",
   shut: "vt",
   sing: "vi",
-  smell: "vt",
+  smell: ["vt", "vlink"],
   smoke: "vi",
   snow: "vi",
+  sound: ["vlink", "vi"],
   speak: "vi",
   speed: "vi",
   spell: "vt",
@@ -181,12 +192,15 @@ const genericVerbTransitivity: Record<string, "vt" | "vi"> = {
   spread: "vi",
   stand: "vi",
   start: "vt",
+  stay: ["vi", "vlink"],
   stop: "vi",
   study: "vt",
   sweep: "vt",
   talk: "vi",
+  taste: ["vt", "vlink"],
   teach: "vt",
   telephone: "vt",
+  should: "modal",
   think: "vi",
   throw: "vt",
   train: "vt",
@@ -197,10 +211,12 @@ const genericVerbTransitivity: Record<string, "vt" | "vi"> = {
   want: "vt",
   wash: "vt",
   wear: "vt",
+  will: "modal",
   win: "vt",
   wonder: "vi",
   work: "vi",
   worry: "vi",
+  would: "modal",
   write: "vt"
 };
 
@@ -222,14 +238,39 @@ function genericVerbKey(word = "") {
   return speechTextForWord(word).toLowerCase().replace(/\s+/g, " ").trim();
 }
 
+function addPartOfSpeechKey(keys: PartOfSpeechKey[], key: PartOfSpeechKey) {
+  if (!keys.includes(key)) keys.push(key);
+}
+
+function addPartOfSpeechKeys(keys: PartOfSpeechKey[], keyOrKeys: PartOfSpeechKey | PartOfSpeechKey[]) {
+  (Array.isArray(keyOrKeys) ? keyOrKeys : [keyOrKeys]).forEach((key) => addPartOfSpeechKey(keys, key));
+}
+
+function hasAuxVAbbreviation(value = "") {
+  return value
+    .split(/\s+/)
+    .map((token) => normalizePartOfSpeechToken(token))
+    .some((token) => token === "auxv");
+}
+
 export function partOfSpeechKeys(value = "", options: { word?: string; classifyGenericVerb?: boolean } = {}) {
   const classifyGenericVerb = options.classifyGenericVerb ?? true;
   const normalized = value
     .trim()
     .toLowerCase()
     .replace(/[。．]/g, ".")
+    .replace(/aux_v\s*情态动词/g, " modal ")
+    .replace(/aux_v\s*助动词/g, " aux ")
+    .replace(/auxv\s*情态动词/g, " modal ")
+    .replace(/auxv\s*助动词/g, " aux ")
     .replace(/aux\s*\.?\s*v\.?/g, " auxv ")
+    .replace(/aux_v/g, " auxv ")
     .replace(/modal\s*\.?\s*v\.?/g, " modalv ")
+    .replace(/model\s*\.?\s*v\.?/g, " modalv ")
+    .replace(/link\s*\.?\s*v\.?/g, " linkv ")
+    .replace(/系动词|连系动词/g, " vlink ")
+    .replace(/情态动词/g, " modal ")
+    .replace(/助动词/g, " aux ")
     .replace(/不及物动词/g, " vi ")
     .replace(/及物动词/g, " vt ")
     .replace(/[、，,；;／/|&+]/g, " ")
@@ -240,13 +281,12 @@ export function partOfSpeechKeys(value = "", options: { word?: string; classifyG
     const normalizedToken = normalizePartOfSpeechToken(token);
     if (genericVerbAliases.has(normalizedToken)) {
       if (!classifyGenericVerb) return;
-      const key = genericVerbTransitivity[genericVerbKey(options.word)] ?? "vt";
-      if (!keys.includes(key)) keys.push(key);
+      addPartOfSpeechKeys(keys, genericVerbTransitivity[genericVerbKey(options.word)] ?? "vt");
       return;
     }
 
     const key = posAliasToKey[normalizedToken];
-    if (key && !keys.includes(key)) keys.push(key);
+    if (key) addPartOfSpeechKey(keys, key);
   });
 
   return keys;
@@ -300,6 +340,9 @@ export function isPartOfSpeechCorrect(expectedValue = "", receivedValue = "") {
   const received = partOfSpeechKeys(receivedValue, { classifyGenericVerb: false });
 
   if (expected.length && received.length) {
+    if ((expected.includes("aux") || expected.includes("modal")) && hasAuxVAbbreviation(receivedValue)) {
+      return true;
+    }
     return received.some((key) => expected.includes(key));
   }
 
@@ -529,7 +572,7 @@ export function buildQuestions(words: WordEntry[], input: CreateRoomInput) {
 
 export function parseWordListText(text: string): ImportPreviewWord[] {
   const posPattern =
-    "(n\\.?|noun|v\\.?|verb|vt\\.?|vi\\.?|adj\\.?|a\\.?|ad\\.?|adv\\.?|adjective|adverb|prep\\.?|preposition|pron\\.?|pronoun|conj\\.?|conjunction|num\\.?|interj\\.?|int\\.?|art\\.?|名词|动词|及物动词|不及物动词|形容词|副词|介词|代词|连词|数词|感叹词|冠词)";
+    "(n\\.?|noun|v\\.?|verb|vt\\.?|vi\\.?|vlink|link\\.?v\\.?|linking\\s*verb|aux_v|aux\\.?\\s*v\\.?|modal\\.?\\s*v\\.?|model\\.?\\s*v\\.?|adj\\.?|a\\.?|ad\\.?|adv\\.?|adjective|adverb|prep\\.?|preposition|pron\\.?|pronoun|conj\\.?|conjunction|num\\.?|interj\\.?|int\\.?|art\\.?|名词|动词|及物动词|不及物动词|系动词|连系动词|助动词|情态动词|形容词|副词|介词|代词|连词|数词|感叹词|冠词)";
 
   const parsed = text
     .split(/\r?\n/)
