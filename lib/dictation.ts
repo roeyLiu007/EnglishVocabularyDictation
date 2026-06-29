@@ -22,7 +22,6 @@ const partOfSpeechDefinitions = [
   { key: "art", abbr: "art", label: "冠词", aliases: ["art", "article", "冠词"] },
   { key: "vt", abbr: "vt", label: "及物动词", aliases: ["vt", "transitiveverb", "及物动词"] },
   { key: "vi", abbr: "vi", label: "不及物动词", aliases: ["vi", "intransitiveverb", "不及物动词"] },
-  { key: "v", abbr: "v", label: "动词", aliases: ["v", "verb", "动词"] },
   { key: "n", abbr: "n", label: "名词", aliases: ["n", "noun", "名词"] },
   { key: "adj", abbr: "adj", label: "形容词", aliases: ["a", "adj", "adjective", "形容词"] },
   { key: "adv", abbr: "adv", label: "副词", aliases: ["ad", "adv", "adverb", "副词"] },
@@ -32,7 +31,7 @@ const partOfSpeechDefinitions = [
   { key: "num", abbr: "num", label: "数词", aliases: ["num", "number", "numeral", "数词"] },
   { key: "interj", abbr: "interj", label: "感叹词", aliases: ["int", "interj", "interjection", "感叹词"] },
   { key: "aux", abbr: "aux", label: "助动词", aliases: ["aux", "auxv", "auxiliaryverb", "助动词"] },
-  { key: "modal", abbr: "modal v", label: "情态动词", aliases: ["modal", "modalv", "modalverb", "情态动词"] },
+  { key: "modal", abbr: "modal", label: "情态动词", aliases: ["modal", "modalv", "modalverb", "情态动词"] },
   { key: "abbr", abbr: "abbr", label: "缩写", aliases: ["abbr", "abbreviation", "缩写"] }
 ] as const;
 
@@ -44,6 +43,166 @@ const posAliasToKey = partOfSpeechDefinitions.reduce<Record<string, PartOfSpeech
   });
   return aliases;
 }, {});
+
+const genericVerbAliases = new Set(["v", "verb", "动词"]);
+
+const genericVerbTransitivity: Record<string, "vt" | "vi"> = {
+  act: "vi",
+  agree: "vi",
+  answer: "vt",
+  ask: "vt",
+  avoid: "vt",
+  awake: "vt",
+  be: "vi",
+  beat: "vt",
+  become: "vi",
+  begin: "vt",
+  believe: "vt",
+  blow: "vi",
+  book: "vt",
+  borrow: "vt",
+  break: "vt",
+  brush: "vt",
+  build: "vt",
+  burn: "vt",
+  call: "vt",
+  cancel: "vt",
+  care: "vi",
+  catch: "vt",
+  celebrate: "vt",
+  change: "vt",
+  cheat: "vi",
+  climb: "vt",
+  clone: "vt",
+  communicate: "vi",
+  copy: "vt",
+  correct: "vt",
+  cost: "vt",
+  cover: "vt",
+  cry: "vi",
+  cut: "vt",
+  dare: "vt",
+  deal: "vi",
+  decide: "vt",
+  develop: "vt",
+  die: "vi",
+  dig: "vt",
+  draw: "vt",
+  dress: "vt",
+  drink: "vt",
+  drive: "vt",
+  drop: "vt",
+  dry: "vt",
+  eat: "vt",
+  email: "vt",
+  "e-mail": "vt",
+  end: "vi",
+  fail: "vi",
+  fight: "vi",
+  finish: "vt",
+  fit: "vt",
+  forget: "vt",
+  grow: "vi",
+  hang: "vt",
+  hear: "vt",
+  hide: "vt",
+  hope: "vi",
+  increase: "vi",
+  influence: "vt",
+  join: "vt",
+  jump: "vi",
+  keep: "vt",
+  kick: "vt",
+  kill: "vt",
+  knock: "vi",
+  know: "vt",
+  land: "vi",
+  laugh: "vi",
+  leave: "vt",
+  lie: "vi",
+  lift: "vt",
+  litter: "vt",
+  look: "vi",
+  lose: "vt",
+  manage: "vt",
+  marry: "vt",
+  mend: "vt",
+  move: "vt",
+  need: "vt",
+  own: "vt",
+  pay: "vt",
+  phone: "vt",
+  pick: "vt",
+  place: "vt",
+  plan: "vt",
+  play: "vt",
+  please: "vt",
+  point: "vi",
+  post: "vt",
+  practise: "vt",
+  practice: "vt",
+  pull: "vt",
+  push: "vt",
+  put: "vt",
+  reach: "vt",
+  read: "vt",
+  receive: "vt",
+  recite: "vt",
+  regard: "vt",
+  relax: "vt",
+  remember: "vt",
+  repair: "vt",
+  report: "vt",
+  return: "vt",
+  ride: "vt",
+  ring: "vi",
+  row: "vi",
+  sail: "vi",
+  score: "vt",
+  search: "vt",
+  seem: "vi",
+  sell: "vt",
+  send: "vt",
+  separate: "vt",
+  shake: "vt",
+  shape: "vt",
+  shine: "vi",
+  shout: "vi",
+  show: "vt",
+  shut: "vt",
+  sing: "vi",
+  smell: "vt",
+  smoke: "vi",
+  snow: "vi",
+  speak: "vi",
+  speed: "vi",
+  spell: "vt",
+  spend: "vt",
+  spread: "vi",
+  stand: "vi",
+  start: "vt",
+  stop: "vi",
+  study: "vt",
+  sweep: "vt",
+  talk: "vi",
+  teach: "vt",
+  telephone: "vt",
+  think: "vi",
+  throw: "vt",
+  train: "vt",
+  try: "vt",
+  understand: "vt",
+  wake: "vt",
+  walk: "vi",
+  want: "vt",
+  wash: "vt",
+  wear: "vt",
+  win: "vt",
+  wonder: "vi",
+  work: "vi",
+  worry: "vi",
+  write: "vt"
+};
 
 export function normalizeWord(value = "") {
   return value.trim().toLowerCase().replace(/\s+/g, " ");
@@ -59,7 +218,12 @@ function normalizePartOfSpeechToken(value = "") {
     .replace(/[^a-z\u4e00-\u9fa5]/g, "");
 }
 
-export function partOfSpeechKeys(value = "") {
+function genericVerbKey(word = "") {
+  return speechTextForWord(word).toLowerCase().replace(/\s+/g, " ").trim();
+}
+
+export function partOfSpeechKeys(value = "", options: { word?: string; classifyGenericVerb?: boolean } = {}) {
+  const classifyGenericVerb = options.classifyGenericVerb ?? true;
   const normalized = value
     .trim()
     .toLowerCase()
@@ -73,15 +237,23 @@ export function partOfSpeechKeys(value = "") {
 
   const keys: PartOfSpeechKey[] = [];
   normalized.split(/\s+/).forEach((token) => {
-    const key = posAliasToKey[normalizePartOfSpeechToken(token)];
+    const normalizedToken = normalizePartOfSpeechToken(token);
+    if (genericVerbAliases.has(normalizedToken)) {
+      if (!classifyGenericVerb) return;
+      const key = genericVerbTransitivity[genericVerbKey(options.word)] ?? "vt";
+      if (!keys.includes(key)) keys.push(key);
+      return;
+    }
+
+    const key = posAliasToKey[normalizedToken];
     if (key && !keys.includes(key)) keys.push(key);
   });
 
   return keys;
 }
 
-export function formatPartOfSpeech(value = "") {
-  const keys = partOfSpeechKeys(value);
+export function formatPartOfSpeech(value = "", word = "") {
+  const keys = partOfSpeechKeys(value, { word });
   if (!keys.length) return value.trim();
 
   return keys
@@ -125,7 +297,7 @@ export function answerLinesFor(word: Pick<WordEntry, "partOfSpeech" | "meaning">
 
 export function isPartOfSpeechCorrect(expectedValue = "", receivedValue = "") {
   const expected = partOfSpeechKeys(expectedValue);
-  const received = partOfSpeechKeys(receivedValue);
+  const received = partOfSpeechKeys(receivedValue, { classifyGenericVerb: false });
 
   if (expected.length && received.length) {
     return received.some((key) => expected.includes(key));
@@ -396,7 +568,7 @@ export function makeWordEntry(input: ImportPreviewWord): WordEntry {
   return {
     id: crypto.randomUUID(),
     word: input.word.trim(),
-    partOfSpeech: formatPartOfSpeech(input.partOfSpeech),
+    partOfSpeech: formatPartOfSpeech(input.partOfSpeech, input.word),
     meaning: input.meaning.trim(),
     unit: input.unit?.trim() ?? "",
     tags: [],

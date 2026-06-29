@@ -198,7 +198,7 @@
     {
       "id": "854fa2f4-f8eb-4792-8444-a06cda4e9fe7",
       "word": "act",
-      "partOfSpeech": "n 名词 / v 动词",
+      "partOfSpeech": "n 名词 / vi 不及物动词",
       "meaning": "法令；条例；表演，扮演（角色）；演出，行动",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -468,7 +468,7 @@
     {
       "id": "f8b30ccc-2683-4446-a7ea-22848b8ad164",
       "word": "agree",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vi 不及物动词",
       "meaning": "同意；应允",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -843,7 +843,7 @@
     {
       "id": "bf486c56-dd22-47da-939b-9369ac194e10",
       "word": "answer",
-      "partOfSpeech": "n 名词 / v 动词",
+      "partOfSpeech": "n 名词 / vt 及物动词",
       "meaning": "回答，答复；答案；回答，答复；回信（作出）答案",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -1158,7 +1158,7 @@
     {
       "id": "c75a32a9-0a72-45b7-836e-83bb3210ffaf",
       "word": "ask",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "问,询问；请求，要求；邀请",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -1323,7 +1323,7 @@
     {
       "id": "ad3e6b6a-5a74-4391-a7fe-0977dd61dd72",
       "word": "Avoid",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "避免；躲开；逃避",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -1338,7 +1338,7 @@
     {
       "id": "72107f1e-2163-48a9-b2a2-d3e0c34c9acc",
       "word": "awake(awoke；awoken)",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "唤醒；醒着的",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -1593,7 +1593,7 @@
     {
       "id": "ab1cff4a-bb6d-4a77-bd13-6c1709fa8495",
       "word": "be",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vi 不及物动词",
       "meaning": "是（原形），成为",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -1638,7 +1638,7 @@
     {
       "id": "f865242d-10b6-4f6b-8f77-931bf61d1884",
       "word": "beat(beat, beaten)",
-      "partOfSpeech": "v 动词 / n 名词",
+      "partOfSpeech": "vt 及物动词 / n 名词",
       "meaning": "敲打；跳动；打赢；（音乐）节拍",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -1683,7 +1683,7 @@
     {
       "id": "6dca14f2-c081-48a5-93dc-5cf0e2997aef",
       "word": "become(became, became)",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vi 不及物动词",
       "meaning": "变得；成为",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -1773,7 +1773,7 @@
     {
       "id": "9e18ef99-7821-4bd4-aee0-749fdf3ab506",
       "word": "begin(began,begun)",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "开始，着手",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -1818,7 +1818,7 @@
     {
       "id": "2697bf6c-d0aa-450c-9ba6-72435e17b544",
       "word": "believe",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "相信；认为",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -2118,7 +2118,7 @@
     {
       "id": "24cd4d0c-08d5-497f-aa96-9cce66af4f61",
       "word": "blow(blew, blown)",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vi 不及物动词",
       "meaning": "吹；刮风；吹气",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -2193,7 +2193,7 @@
     {
       "id": "2edcf214-d7a8-4407-9cf3-5005f2aa2b41",
       "word": "book",
-      "partOfSpeech": "n 名词 / v 动词",
+      "partOfSpeech": "n 名词 / vt 及物动词",
       "meaning": "书；本子；预定，定（房间、车票等）",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -2238,7 +2238,7 @@
     {
       "id": "dedd9f46-21bc-4f01-be2d-3b7d2b7a1852",
       "word": "borrow",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "（向别人）借用；借",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -2403,7 +2403,7 @@
     {
       "id": "14b9b73d-0513-4990-b296-bb36a3506c7f",
       "word": "break(broke, broken)",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "打破（断、碎）；损坏，撕开",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -2538,7 +2538,7 @@
     {
       "id": "0131bea0-6dde-4fd8-9579-ae58c7646397",
       "word": "brush",
-      "partOfSpeech": "v 动词 / n 名词",
+      "partOfSpeech": "vt 及物动词 / n 名词",
       "meaning": "刷；擦；刷子",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -2553,7 +2553,7 @@
     {
       "id": "4d02d164-c5f5-4c07-9f18-477ee85d337d",
       "word": "build(built, built)",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "建筑；造",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -2583,7 +2583,7 @@
     {
       "id": "9f51a716-333d-4ea9-b860-419d173854aa",
       "word": "burn(-ed,ed/burnt,burnt)",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "燃，烧；着火；使烧焦；使晒黑",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -2763,7 +2763,7 @@
     {
       "id": "4cc085b7-d5a3-4daa-b32b-f29e218b989d",
       "word": "call",
-      "partOfSpeech": "n 名词 / v 动词",
+      "partOfSpeech": "n 名词 / vt 及物动词",
       "meaning": "叫；电话，通话；称呼；喊；叫",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -2853,7 +2853,7 @@
     {
       "id": "a48fd15b-4e6b-4394-a709-cc5857b6a284",
       "word": "cancel",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "取消",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -2988,7 +2988,7 @@
     {
       "id": "8668aeea-8709-4067-8057-f732d8b14eb2",
       "word": "care",
-      "partOfSpeech": "n 名词 / v 动词",
+      "partOfSpeech": "n 名词 / vi 不及物动词",
       "meaning": "照料；小心；在乎；关心",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -3063,7 +3063,7 @@
     {
       "id": "e688efb7-9ce1-4e86-903e-e6c378aaa3d9",
       "word": "catch(caught, caught)",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "接住；捉住；赶上；染上（疾病）",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -3138,7 +3138,7 @@
     {
       "id": "05b8ef59-341a-448c-8bd3-a7cdb555a8ee",
       "word": "celebrate",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "庆祝",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -3258,7 +3258,7 @@
     {
       "id": "f2ba1fdb-7ac4-4dbe-845f-6e8871b5d151",
       "word": "change",
-      "partOfSpeech": "n 名词 / v 动词",
+      "partOfSpeech": "n 名词 / vt 及物动词",
       "meaning": "零钱；找头.改变，变化；；更换；兑换",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -3303,7 +3303,7 @@
     {
       "id": "25abce6d-c5e6-472e-b0b8-cd91514ba41c",
       "word": "cheat",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vi 不及物动词",
       "meaning": "骗取，哄骗；作弊",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -3708,7 +3708,7 @@
     {
       "id": "528f48b0-d1c1-4792-abbb-0261ce2e8483",
       "word": "climb",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "爬，攀登",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -3738,7 +3738,7 @@
     {
       "id": "9797a76a-cd11-4e81-a8a3-7ae808d51302",
       "word": "clone",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "克隆（无性繁殖出来的有机体群）",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -4038,7 +4038,7 @@
     {
       "id": "18d2d7c3-4ff1-4a91-98e4-0403b9fae410",
       "word": "communicate",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vi 不及物动词",
       "meaning": "交际；传达(感情，信息等)",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -4293,7 +4293,7 @@
     {
       "id": "d8c7746f-9eda-41d3-b1b0-ea862455152d",
       "word": "copy",
-      "partOfSpeech": "n 名词 / v 动词",
+      "partOfSpeech": "n 名词 / vt 及物动词",
       "meaning": "抄本，副本；一本(份，册……)；抄写；复印；(计算机用语)拷(备份盘)",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -4323,7 +4323,7 @@
     {
       "id": "20822eb2-e74d-4a34-82b6-8b3abdc55dc7",
       "word": "correct",
-      "partOfSpeech": "v 动词 / adj 形容词",
+      "partOfSpeech": "vt 及物动词 / adj 形容词",
       "meaning": "改正；纠正;；正确的，对的",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -4338,7 +4338,7 @@
     {
       "id": "00313317-d9e3-4390-91ba-28c1c1a59837",
       "word": "cost(cost, cost)",
-      "partOfSpeech": "v 动词 / n 名词",
+      "partOfSpeech": "vt 及物动词 / n 名词",
       "meaning": "值(多少钱)；花费;；价格",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -4503,7 +4503,7 @@
     {
       "id": "a7f323fa-b865-40c9-9343-6db749509605",
       "word": "cover",
-      "partOfSpeech": "n 名词 / v 动词",
+      "partOfSpeech": "n 名词 / vt 及物动词",
       "meaning": "盖子；罩.；覆盖，遮盖；掩盖",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -4608,7 +4608,7 @@
     {
       "id": "7d5aa859-4418-4b49-8289-8466f56cafa8",
       "word": "cry",
-      "partOfSpeech": "n 名词 / v 动词",
+      "partOfSpeech": "n 名词 / vi 不及物动词",
       "meaning": "叫喊；哭声;；喊叫；哭",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -4653,7 +4653,7 @@
     {
       "id": "ac28709a-0623-4540-8393-8646e3db87e2",
       "word": "cut(cut, cut)",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "切，剪，削，割",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -4743,7 +4743,7 @@
     {
       "id": "0a035733-0545-4aaf-96b8-4a4332a85985",
       "word": "dare",
-      "partOfSpeech": "v 动词 / aux 助动词",
+      "partOfSpeech": "vt 及物动词 / aux 助动词",
       "meaning": "敢；敢于",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -4848,7 +4848,7 @@
     {
       "id": "601c0a1c-8876-4955-8f7c-3405c5fcca42",
       "word": "deal",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vi 不及物动词",
       "meaning": "量，数额；交易",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -4908,7 +4908,7 @@
     {
       "id": "a68aea7a-56e9-4b25-bdc7-09675a32dd1f",
       "word": "decide",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "决定；下决心",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -5043,7 +5043,7 @@
     {
       "id": "c96ba3ac-e5d8-4f87-8203-77acf9a5dd75",
       "word": "develop",
-      "partOfSpeech": "v 动词 / vt 及物动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "(使)发展；(使)发达；；冲洗(照片)",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -5118,7 +5118,7 @@
     {
       "id": "4ee27e05-fb4d-4153-958a-7dd5580bbd98",
       "word": "die",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vi 不及物动词",
       "meaning": "死",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -5193,7 +5193,7 @@
     {
       "id": "fff1218c-ee00-4d37-9fc2-f322f7df38b8",
       "word": "dig(dug, dug)",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "挖(洞、沟等)；掘",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -5568,7 +5568,7 @@
     {
       "id": "c3062873-c2b1-4165-9562-44155ec5bd3b",
       "word": "draw(drew, drawn)",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "绘画；绘制；拉，拖；提取(金钱)",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -5613,7 +5613,7 @@
     {
       "id": "de9a5338-5827-4676-8231-20c63251b4f9",
       "word": "dress",
-      "partOfSpeech": "n 名词 / v 动词",
+      "partOfSpeech": "n 名词 / vt 及物动词",
       "meaning": "女服，连衣裙；(统指)服装；童装；穿衣；穿着",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -5628,7 +5628,7 @@
     {
       "id": "35ef94d0-52db-473d-9636-4bf24dd6f844",
       "word": "drink(drank, drunk)",
-      "partOfSpeech": "v 动词 / n 名词",
+      "partOfSpeech": "vt 及物动词 / n 名词",
       "meaning": "喝，饮;；饮料；喝酒",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -5643,7 +5643,7 @@
     {
       "id": "411e8dbe-7130-4923-bd2b-c6873e651660",
       "word": "drive(drove, driven)",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "驾驶，开(车)；驱赶",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -5673,7 +5673,7 @@
     {
       "id": "9d027170-b4ad-4498-b935-e470cf7a912b",
       "word": "drop",
-      "partOfSpeech": "n 名词 / v 动词",
+      "partOfSpeech": "n 名词 / vt 及物动词",
       "meaning": "滴;；掉下，落下；投递；放弃",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -5718,7 +5718,7 @@
     {
       "id": "84846167-9e25-4459-a072-c8ccc16db13c",
       "word": "dry",
-      "partOfSpeech": "v 动词 / adj 形容词",
+      "partOfSpeech": "vt 及物动词 / adj 形容词",
       "meaning": "使……干；弄干；；干的；干燥的",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -5898,7 +5898,7 @@
     {
       "id": "48e1c849-71e4-4609-a250-ae15646339cf",
       "word": "eat(ate, eaten)",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "吃",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -6123,7 +6123,7 @@
     {
       "id": "3f72079a-407a-4013-b5ae-b1c61d6bb06f",
       "word": "E-mail/e-mail",
-      "partOfSpeech": "n 名词 / v 动词",
+      "partOfSpeech": "n 名词 / vt 及物动词",
       "meaning": "电子邮件；发电子邮件",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -6168,7 +6168,7 @@
     {
       "id": "53f3f9b3-b5d7-413d-9889-c327adeb116f",
       "word": "end",
-      "partOfSpeech": "n 名词 / v 动词",
+      "partOfSpeech": "n 名词 / vi 不及物动词",
       "meaning": "末尾；终点；结束；结束，终止",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -6783,7 +6783,7 @@
     {
       "id": "0b568d73-4d91-45ce-beb4-fb1892f68d84",
       "word": "fail",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vi 不及物动词",
       "meaning": "失败；不及格；衰退",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -7173,7 +7173,7 @@
     {
       "id": "2055359c-456b-4eac-b082-24dee6889aa2",
       "word": "fight(fought,fought)",
-      "partOfSpeech": "v 动词 / n 名词",
+      "partOfSpeech": "vi 不及物动词 / n 名词",
       "meaning": "打仗；打架；争论",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -7278,7 +7278,7 @@
     {
       "id": "d4e4b341-00e8-4f8f-998d-949f7dc521fe",
       "word": "finish",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "结束；做完",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -7353,7 +7353,7 @@
     {
       "id": "c1217863-c903-4f91-97e2-024c668bd127",
       "word": "fit",
-      "partOfSpeech": "adj 形容词 / v 动词",
+      "partOfSpeech": "adj 形容词 / vt 及物动词",
       "meaning": "健康的，适合的；(使)适合，安装",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -7623,7 +7623,7 @@
     {
       "id": "58bb9d0e-32f0-43c7-a63c-22a766d83ea7",
       "word": "forget(forgot,forgotten)",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "忘记；忘掉",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -8613,7 +8613,7 @@
     {
       "id": "7642c434-40dc-4b98-be68-115905b47f8c",
       "word": "grow(grew, grown)",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vi 不及物动词",
       "meaning": "生长；发育；种植；变成",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -8868,7 +8868,7 @@
     {
       "id": "2d744ee5-2893-4237-a267-605a65941614",
       "word": "hang(hung, hung)",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "悬挂；吊着；把……吊起",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -9048,7 +9048,7 @@
     {
       "id": "98c0b519-7d32-4de3-85e0-aa39bd924b01",
       "word": "hear(heard, heard)",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "听见；听说，得知",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -9273,7 +9273,7 @@
     {
       "id": "115e0fbb-0baf-41de-a09c-42fbe75b5c8d",
       "word": "hide(hid, hidden)",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "把……藏起来；隐藏",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -9513,7 +9513,7 @@
     {
       "id": "bc9034a8-b891-4476-93e8-37c5903387ed",
       "word": "hope",
-      "partOfSpeech": "n 名词 / v 动词",
+      "partOfSpeech": "n 名词 / vi 不及物动词",
       "meaning": "希望",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -10008,7 +10008,7 @@
     {
       "id": "3b769c39-6f1c-48f9-9276-0b07aa1fb775",
       "word": "increase",
-      "partOfSpeech": "v 动词 / n 名词",
+      "partOfSpeech": "vi 不及物动词 / n 名词",
       "meaning": "增加；繁殖",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -10068,7 +10068,7 @@
     {
       "id": "08d150a1-7377-49ca-b80b-933ca2b7f2dc",
       "word": "influence",
-      "partOfSpeech": "n 名词 / v 动词",
+      "partOfSpeech": "n 名词 / vt 及物动词",
       "meaning": "影响",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -10503,7 +10503,7 @@
     {
       "id": "608af48f-a195-4789-9d95-900e291413ae",
       "word": "join",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "参加，加入；连接；会合",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -10578,7 +10578,7 @@
     {
       "id": "0973d413-4f00-4281-9103-f747f5569907",
       "word": "jump",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vi 不及物动词",
       "meaning": "跳跃；惊起；猛扑",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -10623,7 +10623,7 @@
     {
       "id": "3f4ac074-1fd7-41d7-b402-0958cccaaf9d",
       "word": "keep(kept, kept)",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "保持；保存；继续不断",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -10668,7 +10668,7 @@
     {
       "id": "091880c7-9bd5-42d2-a875-6390187cab0f",
       "word": "kick",
-      "partOfSpeech": "v 动词 / n 名词",
+      "partOfSpeech": "vt 及物动词 / n 名词",
       "meaning": "踢",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -10698,7 +10698,7 @@
     {
       "id": "94b19d77-9e33-466e-a063-847e8fd95418",
       "word": "kill",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "杀死，弄死",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -10848,7 +10848,7 @@
     {
       "id": "1f29fc5e-fe53-4b7c-ac69-368c2a51faa1",
       "word": "knock",
-      "partOfSpeech": "v 动词 / n 名词",
+      "partOfSpeech": "vi 不及物动词 / n 名词",
       "meaning": "敲；打；击",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -10863,7 +10863,7 @@
     {
       "id": "3f9eb468-85b3-4359-9667-368d65af3597",
       "word": "know(knew, known)",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "知道，了解；认识；懂得",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -10983,7 +10983,7 @@
     {
       "id": "47f61efc-3db7-4a1f-8027-86669e410c5c",
       "word": "land",
-      "partOfSpeech": "n 名词 / v 动词",
+      "partOfSpeech": "n 名词 / vi 不及物动词",
       "meaning": "陆地；土地；登岸(陆)；降落",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -11058,7 +11058,7 @@
     {
       "id": "c5d9ddb9-fc14-4712-b358-876f2000ae07",
       "word": "laugh",
-      "partOfSpeech": "n 名词 / v 动词",
+      "partOfSpeech": "n 名词 / vi 不及物动词",
       "meaning": "笑，大笑；嘲笑",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -11193,7 +11193,7 @@
     {
       "id": "cab1d63e-9ff2-48c5-bc6f-bb9a5baaba6e",
       "word": "leave(left, left)",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "离开；把……留下，剩下",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -11358,7 +11358,7 @@
     {
       "id": "f61bbae6-4749-40c5-80ad-9f25b4480c6e",
       "word": "lie(lay, lain)",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vi 不及物动词",
       "meaning": "躺；卧；平放；位于",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -11403,7 +11403,7 @@
     {
       "id": "0be1badd-7150-4b62-9289-be4941e86ade",
       "word": "lift",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "举起；抬起；(云、烟等)消散",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -11508,7 +11508,7 @@
     {
       "id": "641ec689-d0d9-4f1d-ba02-99a6fc25be06",
       "word": "litter",
-      "partOfSpeech": "v 动词 / n 名词",
+      "partOfSpeech": "vt 及物动词 / n 名词",
       "meaning": "乱丢杂物；垃圾",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -11628,7 +11628,7 @@
     {
       "id": "4f9389ff-c327-4801-8634-8c9c299d39b5",
       "word": "look",
-      "partOfSpeech": "n 名词 / v 动词",
+      "partOfSpeech": "n 名词 / vi 不及物动词",
       "meaning": "link.v；看，瞧；看，观看；看起来",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -11643,7 +11643,7 @@
     {
       "id": "798b16e1-4ca1-4aa9-8764-48e1105acedc",
       "word": "lose(lost, lost)",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "失去，丢失",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -11898,7 +11898,7 @@
     {
       "id": "d6626716-c6b3-4288-b17a-cb5406128bae",
       "word": "manage",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "管理；设法",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -12018,7 +12018,7 @@
     {
       "id": "fb108e47-92aa-4c29-98a3-a378c9cca39a",
       "word": "marry",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "(使)成婚；结婚",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -12078,7 +12078,7 @@
     {
       "id": "939a1dde-8f62-4209-9fbf-679493611f12",
       "word": "may",
-      "partOfSpeech": "modal v 情态动词",
+      "partOfSpeech": "modal 情态动词",
       "meaning": "可以；也许，可能",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -12288,7 +12288,7 @@
     {
       "id": "985194f7-095f-4487-a451-79b837036e3e",
       "word": "mend",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "修理，修补",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -12828,7 +12828,7 @@
     {
       "id": "32a9e8b5-5635-4aa9-bf42-51bb35fadd05",
       "word": "move",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "移动，搬动，搬家",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -12963,7 +12963,7 @@
     {
       "id": "7fb217c1-196b-4eeb-885a-fde9e0f213ae",
       "word": "must",
-      "partOfSpeech": "modal v 情态动词",
+      "partOfSpeech": "modal 情态动词",
       "meaning": "必须，应当；必定是",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -13128,7 +13128,7 @@
     {
       "id": "d4abde8d-9ebf-4ebf-91c9-7be4be5994e4",
       "word": "need",
-      "partOfSpeech": "n 名词 / modal v 情态动词 / v 动词",
+      "partOfSpeech": "n 名词 / modal 情态动词 / vt 及物动词",
       "meaning": "需要，需求；需要，必须",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -14118,7 +14118,7 @@
     {
       "id": "e7f654bb-fada-495e-b94c-232a9082bc88",
       "word": "own",
-      "partOfSpeech": "adj 形容词 / v 动词",
+      "partOfSpeech": "adj 形容词 / vt 及物动词",
       "meaning": "自己的；拥有，所有",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -14523,7 +14523,7 @@
     {
       "id": "e69ff0ec-4a2a-4c1d-a85e-f2b2daa3df3b",
       "word": "pay(paid, paid)",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "付钱，给……报酬",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -14733,7 +14733,7 @@
     {
       "id": "244d60b4-2069-4448-a324-c80c9a526c26",
       "word": "phone =telephone",
-      "partOfSpeech": "v 动词 / n 名词",
+      "partOfSpeech": "vt 及物动词 / n 名词",
       "meaning": "打电话；电话，电话机",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -14793,7 +14793,7 @@
     {
       "id": "9caf0cd5-300f-4f81-936e-870a07a59898",
       "word": "pick",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "拾起，采集；挑选",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -14958,7 +14958,7 @@
     {
       "id": "69780836-f5a3-4a98-b62e-0f117c7fe7f2",
       "word": "place",
-      "partOfSpeech": "n 名词 / v 动词",
+      "partOfSpeech": "n 名词 / vt 及物动词",
       "meaning": "地方，处所；放置，安置，安排",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -14988,7 +14988,7 @@
     {
       "id": "f535f6f5-cfb7-4e7f-89ab-f5bc4f8dd679",
       "word": "plan",
-      "partOfSpeech": "n 名词 / v 动词",
+      "partOfSpeech": "n 名词 / vt 及物动词",
       "meaning": "计划，打算",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -15078,7 +15078,7 @@
     {
       "id": "e7ec0846-2c01-483b-935a-6d95f4e39b0e",
       "word": "play",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "玩；打(球)；游戏；播放",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -15123,7 +15123,7 @@
     {
       "id": "0a06e408-24d8-46be-8d5d-ab65fdc82be8",
       "word": "please",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "请；使人高兴，使人满意",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -15198,7 +15198,7 @@
     {
       "id": "280bab52-29be-41b6-a3b5-5985b679fe2a",
       "word": "point",
-      "partOfSpeech": "v 动词 / n 名词",
+      "partOfSpeech": "vi 不及物动词 / n 名词",
       "meaning": "指，指向；点；分数",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -15423,7 +15423,7 @@
     {
       "id": "4debe183-4cde-49f4-8b76-ecfeeebd838d",
       "word": "post",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "投寄；邮寄",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -15513,7 +15513,7 @@
     {
       "id": "d88f2c44-a0b0-400e-a0d0-90b26a2450d5",
       "word": "practise(美 practice)",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "练习；实践",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -15948,7 +15948,7 @@
     {
       "id": "ce19428b-f0e2-447a-8d5c-741d461e3e73",
       "word": "pull",
-      "partOfSpeech": "v 动词 / n 名词",
+      "partOfSpeech": "vt 及物动词 / n 名词",
       "meaning": "拉，拖；拉力，引力",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -16023,7 +16023,7 @@
     {
       "id": "21dd28fb-3a00-40d0-967d-f346ee73c9c6",
       "word": "push",
-      "partOfSpeech": "n 名词 / v 动词",
+      "partOfSpeech": "n 名词 / vt 及物动词",
       "meaning": "推",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -16038,7 +16038,7 @@
     {
       "id": "2f640794-6da9-4f85-af39-1ce0ab62cca5",
       "word": "put(put, put)",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "放，摆",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -16308,7 +16308,7 @@
     {
       "id": "ccd459dc-7a06-4eb9-a9bb-1927948aa2fd",
       "word": "reach",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "到达，伸手(脚等)够到",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -16323,7 +16323,7 @@
     {
       "id": "018786ef-4bc3-42a1-8426-fd6a7431700b",
       "word": "read(read, read)",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "读；朗读",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -16383,7 +16383,7 @@
     {
       "id": "1a5b75dd-9b09-4180-b9a7-0530dce7c93d",
       "word": "receive",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "收到，得到",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -16413,7 +16413,7 @@
     {
       "id": "1974c1b9-77b0-4253-bf86-b2d787586aa7",
       "word": "recite",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "背诵",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -16488,7 +16488,7 @@
     {
       "id": "5bb0c4e2-1936-4099-acc4-1cf3293869f9",
       "word": "regard",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "把……看作",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -16533,7 +16533,7 @@
     {
       "id": "e524aef4-8b3b-48eb-8b49-551cfb93a1b2",
       "word": "relax",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "(使)放松，轻松",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -16563,7 +16563,7 @@
     {
       "id": "e66d7e5f-89b4-43fe-b2f5-305afdabeac1",
       "word": "remember",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "记得，想起",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -16578,7 +16578,7 @@
     {
       "id": "905c552f-cb33-453a-9c93-4b67e64a2d5a",
       "word": "repair",
-      "partOfSpeech": "n 名词 / v 动词",
+      "partOfSpeech": "n 名词 / vt 及物动词",
       "meaning": "修理；修补",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -16623,7 +16623,7 @@
     {
       "id": "c75f029b-842d-4280-b716-6220e2edcd47",
       "word": "report",
-      "partOfSpeech": "n 名词 / v 动词",
+      "partOfSpeech": "n 名词 / vt 及物动词",
       "meaning": "报道，报告",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -16728,7 +16728,7 @@
     {
       "id": "67702a40-a064-4b75-be40-15c18727f54d",
       "word": "return",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "归还，回，归",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -16803,7 +16803,7 @@
     {
       "id": "ac093ad7-3f89-4911-9224-2cafc1c0f2ad",
       "word": "ride(rode, ridden)",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "骑(马、自行车)；乘车",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -16833,7 +16833,7 @@
     {
       "id": "e66eeaa5-192f-4171-ac14-8e48049864fe",
       "word": "ring(rang, rung)",
-      "partOfSpeech": "v 动词 / n 名词",
+      "partOfSpeech": "vi 不及物动词 / n 名词",
       "meaning": "(钟、铃等)响；打电话；电话，铃声；环形物(如环、圈、戒指等)",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -17013,7 +17013,7 @@
     {
       "id": "c6943911-8335-4b8d-9b8a-477469e6289d",
       "word": "row",
-      "partOfSpeech": "n 名词 / v 动词",
+      "partOfSpeech": "n 名词 / vi 不及物动词",
       "meaning": "(一)排；(一)打；划船",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -17193,7 +17193,7 @@
     {
       "id": "8ac8a9d6-1b93-41b1-9844-05b44461af8e",
       "word": "sail",
-      "partOfSpeech": "n 名词 / v 动词",
+      "partOfSpeech": "n 名词 / vi 不及物动词",
       "meaning": "航行；航行；开航",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -17433,7 +17433,7 @@
     {
       "id": "abc4db9d-1281-4fc1-a819-a9beb59327fe",
       "word": "score",
-      "partOfSpeech": "n 名词 / v 动词",
+      "partOfSpeech": "n 名词 / vt 及物动词",
       "meaning": "得分；分数",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -17478,7 +17478,7 @@
     {
       "id": "010f69ab-fc7d-4c6e-9d47-982a6ce813e8",
       "word": "search",
-      "partOfSpeech": "n 名词 / v 动词",
+      "partOfSpeech": "n 名词 / vt 及物动词",
       "meaning": "搜寻，搜查",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -17583,7 +17583,7 @@
     {
       "id": "3d98616c-2c4e-498d-b4c5-8f33b5a2eac2",
       "word": "seem",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vi 不及物动词",
       "meaning": "似乎，好像",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -17613,7 +17613,7 @@
     {
       "id": "3a65bd9a-4e15-4149-83dc-1220ce4cab3c",
       "word": "sell(sold, sold)",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "卖，售",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -17628,7 +17628,7 @@
     {
       "id": "eaf9d3ba-6d4e-4be7-a62d-21bdc2f36531",
       "word": "send(sent,sent)",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "打发，派遣；送，邮寄",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -17673,7 +17673,7 @@
     {
       "id": "58da4887-9c28-4314-8596-00909af70468",
       "word": "separate",
-      "partOfSpeech": "v 动词 / adj 形容词",
+      "partOfSpeech": "vt 及物动词 / adj 形容词",
       "meaning": "使分开；使分离；单独的；分开的",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -17853,7 +17853,7 @@
     {
       "id": "415256df-3b0c-475e-9d3c-ae56b4c4c6a8",
       "word": "shake (shook, shaken)",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "（使）摇动，震动",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -17898,7 +17898,7 @@
     {
       "id": "93109eee-82b6-4130-a641-1270bd3351a0",
       "word": "shape",
-      "partOfSpeech": "n 名词 / v 动词",
+      "partOfSpeech": "n 名词 / vt 及物动词",
       "meaning": "形状，外形”；使成型，制造，塑造",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -17973,7 +17973,7 @@
     {
       "id": "de17421c-5200-4c34-8fff-e8015ecaa35f",
       "word": "shine(shone, shone或-d,-d)",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vi 不及物动词",
       "meaning": "发光；照耀；出众；擦亮",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -18108,7 +18108,7 @@
     {
       "id": "24ad04f9-c911-4543-9f21-ba7651c960cd",
       "word": "shout",
-      "partOfSpeech": "n 名词 / v 动词",
+      "partOfSpeech": "n 名词 / vi 不及物动词",
       "meaning": "喊，高声呼喊",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -18138,7 +18138,7 @@
     {
       "id": "911bb117-9519-412b-9726-4edf3b705548",
       "word": "show(showed, shown或) showed",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "给…看；出示；显示",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -18168,7 +18168,7 @@
     {
       "id": "44e7b26d-775a-4c52-b7bc-f86ff7902534",
       "word": "shut(shut, shut)",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "关上，封闭；禁闭",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -18363,7 +18363,7 @@
     {
       "id": "f100c1f8-07f9-405d-9567-498dcc04fbfa",
       "word": "从……以来，……以后，由于prep.从……以来 sing(sang, sung)",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "唱，唱歌",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -18663,7 +18663,7 @@
     {
       "id": "5af4ab06-8613-40e1-b098-a47e9ca1cc0c",
       "word": "smell (-ed,-ed 或smelt, smelt)",
-      "partOfSpeech": "v 动词 / n 名词",
+      "partOfSpeech": "vt 及物动词 / n 名词",
       "meaning": "嗅，闻到；发气味；气味",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -18693,7 +18693,7 @@
     {
       "id": "9fffb6a3-5b42-4364-a3ae-b5041d9fc6a6",
       "word": "smoke",
-      "partOfSpeech": "n 名词 / v 动词",
+      "partOfSpeech": "n 名词 / vi 不及物动词",
       "meaning": "烟；冒烟；吸烟",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -18738,7 +18738,7 @@
     {
       "id": "0cbb3db2-3133-4623-9062-3f0cd46b8759",
       "word": "snow",
-      "partOfSpeech": "n 名词 / v 动词",
+      "partOfSpeech": "n 名词 / vi 不及物动词",
       "meaning": "雪；下雪",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -19158,7 +19158,7 @@
     {
       "id": "0ef7ed1b-a25b-49e6-838f-47941dec8362",
       "word": "speak(spoke, spoken)",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vi 不及物动词",
       "meaning": "说，讲；谈话；发言",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -19218,7 +19218,7 @@
     {
       "id": "09832cf3-2541-4fd7-bfcb-d471a16a000e",
       "word": "speed",
-      "partOfSpeech": "n 名词 / v 动词",
+      "partOfSpeech": "n 名词 / vi 不及物动词",
       "meaning": "速度；(使)加速",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -19233,7 +19233,7 @@
     {
       "id": "34050129-08f4-477e-8695-6f9516e19dbc",
       "word": "spell (-ed,-ed或spelt,spelt)",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "拼写",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -19248,7 +19248,7 @@
     {
       "id": "fbd5d87e-bbc6-406c-892b-f3f10ae0f0b3",
       "word": "spend(spent, spent)",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "度过；花费(钱、时间等)",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -19308,7 +19308,7 @@
     {
       "id": "959b55a5-0052-4b5e-a786-030ba4a91506",
       "word": "spread (spread, spread)",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vi 不及物动词",
       "meaning": "延伸；展开",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -19383,7 +19383,7 @@
     {
       "id": "12d8a1fe-f97b-4402-bcc3-546060a7714a",
       "word": "stand(stood, stood)",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vi 不及物动词",
       "meaning": "站；立；起立；坐落",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -19428,7 +19428,7 @@
     {
       "id": "246591eb-a7c7-45e7-88fe-534bd68df957",
       "word": "start",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "开始，着手；出发",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -19608,7 +19608,7 @@
     {
       "id": "8e67571b-d167-4bf3-b8bb-4057f177231f",
       "word": "stop",
-      "partOfSpeech": "n 名词 / v 动词",
+      "partOfSpeech": "n 名词 / vi 不及物动词",
       "meaning": "忍.停；(停车)站”；停，停止，阻止",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -19788,7 +19788,7 @@
     {
       "id": "4907ebb4-3a55-4d2c-816d-0565c5d9ad8b",
       "word": "study",
-      "partOfSpeech": "v 动词 / n 名词",
+      "partOfSpeech": "vt 及物动词 / n 名词",
       "meaning": "学习；研究；书房",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -20133,7 +20133,7 @@
     {
       "id": "f00e13e2-9934-4664-aad8-66cc2ddee1c8",
       "word": "sweep(swept, swept)",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "扫除，扫",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -20298,7 +20298,7 @@
     {
       "id": "8c2ca0b4-db27-4fea-9de3-c986ab09f1f1",
       "word": "talk",
-      "partOfSpeech": "n 名词 / v 动词",
+      "partOfSpeech": "n 名词 / vi 不及物动词",
       "meaning": "谈话，讲话，演讲；交谈",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -20403,7 +20403,7 @@
     {
       "id": "bc9b017f-8f40-403b-b99e-5a37f289ddb0",
       "word": "teach(taught, taught)",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "教书，教",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -20463,7 +20463,7 @@
     {
       "id": "c1c54ae3-228f-4497-8444-5c6893fde41a",
       "word": "telephone",
-      "partOfSpeech": "v 动词 / n 名词",
+      "partOfSpeech": "vt 及物动词 / n 名词",
       "meaning": "打电话；电话",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -20868,7 +20868,7 @@
     {
       "id": "0b3fd688-4fdc-4387-b691-5e64d2fdda2c",
       "word": "东西；(pl.)物品，用品；事情，事件 think(thought, thought)",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "想；认为；考虑",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -21048,7 +21048,7 @@
     {
       "id": "3699a488-9c93-4455-bb6a-23c14df7f997",
       "word": "throw(threw, thrown)",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "投，掷，扔",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -21618,7 +21618,7 @@
     {
       "id": "8ed960e8-75ee-48ab-9fa4-05af6a8a78be",
       "word": "train",
-      "partOfSpeech": "n 名词 / v 动词",
+      "partOfSpeech": "n 名词 / vt 及物动词",
       "meaning": "火车；培训，训练",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -21828,7 +21828,7 @@
     {
       "id": "35ad0098-b705-4587-9386-5e9f49a7003f",
       "word": "try",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "试，试图，努力",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -22023,7 +22023,7 @@
     {
       "id": "6469e413-1e6a-4231-aa46-4620ded89296",
       "word": "understand(understood, understood)",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "懂得；明白；理解",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -22458,7 +22458,7 @@
     {
       "id": "ed9e621d-0dc2-4801-b592-936f608b3164",
       "word": "wake(woke, woken)",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "醒，醒来，叫醒",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -22473,7 +22473,7 @@
     {
       "id": "724d8094-bb6b-4ec4-9a7b-51cd971bab3b",
       "word": "walk",
-      "partOfSpeech": "v 动词 / n 名词",
+      "partOfSpeech": "vi 不及物动词 / n 名词",
       "meaning": "步行，散步",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -22503,7 +22503,7 @@
     {
       "id": "048790d6-3d50-40b2-aff0-601a8c9913c6",
       "word": "want",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "想，想要，需要，必要",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -22563,7 +22563,7 @@
     {
       "id": "e74240d9-36a5-4b78-9908-e57e4049794c",
       "word": "wash",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "洗(涤)，冲洗",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -22698,7 +22698,7 @@
     {
       "id": "a85e6a8f-f219-477b-a90a-514eaf4d1038",
       "word": "wear(wore, worn)",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "穿，戴",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -23193,7 +23193,7 @@
     {
       "id": "20706d5e-04cc-460c-a81f-6ff51d0e7d88",
       "word": "win(won, won)",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "获胜，赢得",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -23403,7 +23403,7 @@
     {
       "id": "b505ccb1-0314-4f8b-b404-3537e7d3c864",
       "word": "wonder",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vi 不及物动词",
       "meaning": "对……疑惑，感到惊奇，想知道",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -23463,7 +23463,7 @@
     {
       "id": "73963811-d4aa-4910-a844-7fbebb1783a7",
       "word": "work",
-      "partOfSpeech": "n 名词 / v 动词",
+      "partOfSpeech": "n 名词 / vi 不及物动词",
       "meaning": "工作，劳动，事情”；工作，(机器、器官等)运转，活动",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -23508,7 +23508,7 @@
     {
       "id": "3cd09baf-a8e3-4f6e-8960-c730f775ddd4",
       "word": "worry",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vi 不及物动词",
       "meaning": "烦恼，担忧，发怒，困扰",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -23538,7 +23538,7 @@
     {
       "id": "1bf68716-5935-4b99-ac01-74c1bd1874f7",
       "word": "would (will的过去时)",
-      "partOfSpeech": "modal v 情态动词",
+      "partOfSpeech": "modal 情态动词",
       "meaning": "将,会；打算；想要",
       "unit": "中考英语大纲1600词",
       "tags": [],
@@ -23568,7 +23568,7 @@
     {
       "id": "f9521562-1072-4e60-8c96-afe9d928ac9d",
       "word": "write(wrote, written)",
-      "partOfSpeech": "v 动词",
+      "partOfSpeech": "vt 及物动词",
       "meaning": "写，书写，写作，著述",
       "unit": "中考英语大纲1600词",
       "tags": [],
