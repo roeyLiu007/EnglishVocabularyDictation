@@ -108,6 +108,18 @@ function hydrateWord(word: WordEntry): WordEntry {
   };
 }
 
+function resetWordStats(word: WordEntry): WordEntry {
+  return {
+    ...word,
+    stats: {
+      wrongCount: 0,
+      correctCount: 0,
+      fieldWrongCounts: {},
+      consecutiveCorrect: 0
+    }
+  };
+}
+
 function mapRoom(row: Record<string, unknown>): DictationRoom {
   return {
     id: String(row.id),
@@ -193,6 +205,28 @@ export async function deleteWord(wordId: string) {
   store.words = store.words.filter((word) => word.id !== wordId);
   await writeLocalStore(store);
   return { id: wordId };
+}
+
+export async function clearMistake(wordId: string) {
+  const words = await listWords();
+  const existing = words.find((word) => word.id === wordId);
+  if (!existing) return null;
+
+  const updated = resetWordStats(existing);
+  await updateWord(updated);
+  return updated;
+}
+
+export async function clearAllMistakes() {
+  const words = await listWords();
+  const updated = words.map((word) => (word.stats.wrongCount > 0 ? resetWordStats(word) : word));
+  const changed = updated.filter((word, index) => word !== words[index]);
+
+  for (const word of changed) {
+    await updateWord(word);
+  }
+
+  return { clearedCount: changed.length };
 }
 
 export async function createRoom(room: DictationRoom) {
