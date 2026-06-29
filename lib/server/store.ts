@@ -143,6 +143,20 @@ export async function updateWord(word: WordEntry) {
   return word;
 }
 
+export async function deleteWord(wordId: string) {
+  const client = supabase();
+  if (client) {
+    const { error } = await client.from("words").delete().eq("id", wordId);
+    if (error) throw error;
+    return { id: wordId };
+  }
+
+  const store = await readLocalStore();
+  store.words = store.words.filter((word) => word.id !== wordId);
+  await writeLocalStore(store);
+  return { id: wordId };
+}
+
 export async function createRoom(room: DictationRoom) {
   const client = supabase();
   if (client) {

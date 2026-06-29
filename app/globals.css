@@ -180,6 +180,29 @@ textarea {
   resize: vertical;
 }
 
+.search-field {
+  align-items: center;
+  color: var(--muted);
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 18px minmax(220px, 320px);
+}
+
+.search-field input {
+  min-height: 40px;
+}
+
+.row-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.row-actions button {
+  min-height: 40px;
+  min-width: 40px;
+  padding: 8px;
+}
+
 table {
   border-collapse: collapse;
   width: 100%;

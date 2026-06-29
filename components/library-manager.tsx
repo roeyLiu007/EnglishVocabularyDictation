@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Save, Upload } from "lucide-react";
+import { Save, Search, Trash2, Upload } from "lucide-react";
 import type { ImportPreviewWord, WordEntry } from "@/lib/types";
 
 export function LibraryManager() {
@@ -9,6 +9,9 @@ export function LibraryManager() {
   const [preview, setPreview] = useState<ImportPreviewWord[]>([]);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [savingWordId, setSavingWordId] = useState<string | null>(null);
+  const [deletingWordId, setDeletingWordId] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
 
   async function loadWords() {
     const response = await fetch("/api/words", { cache: "no-store" });
@@ -21,6 +24,14 @@ export function LibraryManager() {
   }, []);
 
   const mistakeCount = useMemo(() => words.filter((word) => word.stats.wrongCount > 0).length, [words]);
+  const filteredWords = useMemo(() => {
+    const keyword = query.trim().toLowerCase();
+    if (!keyword) return words;
+
+    return words.filter((word) =>
+      [word.word, word.partOfSpeech, word.meaning, word.unit ?? ""].some((value) => value.toLowerCase().includes(keyword))
+    );
+  }, [query, words]);
 
   async function uploadFile(formData: FormData) {
     setLoading(true);
@@ -61,6 +72,54 @@ export function LibraryManager() {
 
   function updatePreview(index: number, patch: Partial<ImportPreviewWord>) {
     setPreview((items) => items.map((item, itemIndex) => (itemIndex === index ? { ...item, ...patch } : item)));
+  }
+
+  function updateSavedWord(wordId: string, patch: Partial<ImportPreviewWord>) {
+    setWords((items) => items.map((item) => (item.id === wordId ? { ...item, ...patch } : item)));
+  }
+
+  async function saveSavedWord(word: WordEntry) {
+    setSavingWordId(word.id);
+    setMessage("");
+    try {
+      const response = await fetch(`/api/words/${word.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          word: word.word,
+          partOfSpeech: word.partOfSpeech,
+          meaning: word.meaning,
+          unit: word.unit ?? ""
+        })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? "保存失败");
+      setWords((items) => items.map((item) => (item.id === word.id ? data.word : item)));
+      setMessage(`已更新：${data.word.word}`);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "保存失败");
+    } finally {
+      setSavingWordId(null);
+    }
+  }
+
+  async function deleteSavedWord(word: WordEntry) {
+    const confirmed = window.confirm(`确定删除“${word.word}”吗？`);
+    if (!confirmed) return;
+
+    setDeletingWordId(word.id);
+    setMessage("");
+    try {
+      const response = await fetch(`/api/words/${word.id}`, { method: "DELETE" });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? "删除失败");
+      setWords((items) => items.filter((item) => item.id !== word.id));
+      setMessage(`已删除：${word.word}`);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "删除失败");
+    } finally {
+      setDeletingWordId(null);
+    }
   }
 
   return (
@@ -149,7 +208,23 @@ export function LibraryManager() {
       ) : null}
 
       <section className="panel">
-        <h2 style={{ marginTop: 0 }}>当前词库</h2>
+        <div className="topbar" style={{ marginBottom: 12 }}>
+          <div>
+            <h2 style={{ margin: 0 }}>当前词库</h2>
+            <p className="muted" style={{ margin: "6px 0 0" }}>
+              共 {words.length} 个单词，当前显示 {filteredWords.length} 个。
+            </p>
+          </div>
+          <label className="search-field">
+            <Search size={18} />
+            <input
+              aria-label="搜索词库"
+              placeholder="搜索英文、词性、中文意思"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+            />
+          </label>
+        </div>
         <div style={{ overflowX: "auto" }}>
           <table>
             <thead>
@@ -157,15 +232,29 @@ export function LibraryManager() {
                 <th>英文</th>
                 <th>词性</th>
                 <th>中文意思</th>
+                <th>单元</th>
                 <th>错词状态</th>
+                <th>操作</th>
               </tr>
             </thead>
             <tbody>
-              {words.map((word) => (
+              {filteredWords.map((word) => (
                 <tr key={word.id}>
-                  <td>{word.word}</td>
-                  <td>{word.partOfSpeech || "-"}</td>
-                  <td>{word.meaning}</td>
+                  <td>
+                    <input value={word.word} onChange={(event) => updateSavedWord(word.id, { word: event.target.value })} />
+                  </td>
+                  <td>
+                    <input
+                      value={word.partOfSpeech}
+                      onChange={(event) => updateSavedWord(word.id, { partOfSpeech: event.target.value })}
+                    />
+                  </td>
+                  <td>
+                    <textarea value={word.meaning} onChange={(event) => updateSavedWord(word.id, { meaning: event.target.value })} />
+                  </td>
+                  <td>
+                    <input value={word.unit ?? ""} onChange={(event) => updateSavedWord(word.id, { unit: event.target.value })} />
+                  </td>
                   <td>
                     {word.stats.wrongCount ? (
                       <span className="pill wrong">错 {word.stats.wrongCount} 次</span>
@@ -173,12 +262,35 @@ export function LibraryManager() {
                       <span className="pill ok">未错</span>
                     )}
                   </td>
+                  <td>
+                    <div className="row-actions">
+                      <button
+                        aria-label={`保存 ${word.word}`}
+                        disabled={savingWordId === word.id || deletingWordId === word.id}
+                        onClick={() => saveSavedWord(word)}
+                        title="保存"
+                        type="button"
+                      >
+                        <Save size={18} />
+                      </button>
+                      <button
+                        aria-label={`删除 ${word.word}`}
+                        className="danger"
+                        disabled={savingWordId === word.id || deletingWordId === word.id}
+                        onClick={() => deleteSavedWord(word)}
+                        title="删除"
+                        type="button"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                  </td>
                 </tr>
               ))}
-              {!words.length ? (
+              {!filteredWords.length ? (
                 <tr>
-                  <td colSpan={4} className="muted">
-                    还没有单词，先上传一份学校单词表。
+                  <td colSpan={6} className="muted">
+                    {words.length ? "没有匹配的单词。" : "还没有单词，先上传一份学校单词表。"}
                   </td>
                 </tr>
               ) : null}
