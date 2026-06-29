@@ -15,10 +15,16 @@ export type WordStats = {
 export type WordEntry = {
   id: string;
   word: string;
+  phonetic?: string;
   partOfSpeech: string;
   meaning: string;
   unit?: string;
   tags?: string[];
+  notes?: string;
+  stages?: string[];
+  source?: "base" | "upload" | "custom";
+  uploadBatchId?: string;
+  uploadBatchName?: string;
   stats: WordStats;
   createdAt: string;
 };
@@ -50,6 +56,8 @@ export type DictationRoom = {
   status: RoomStatus;
   totalCount: number;
   mistakeRatio: number;
+  wordSource?: "all" | "stage" | "latestUpload";
+  stage?: string;
   questionMode: "mixed";
   questions: Question[];
   createdAt: string;
@@ -85,6 +93,11 @@ export type SubmittedAnswer = {
 export type CreateRoomInput = {
   totalCount: number;
   mistakeRatio: number;
+  wordSource?: "all" | "stage" | "latestUpload";
+  stage?: string;
 };
 
-export type ImportPreviewWord = Pick<WordEntry, "word" | "partOfSpeech" | "meaning" | "unit">;
+export type ImportPreviewWord = Pick<
+  WordEntry,
+  "word" | "phonetic" | "partOfSpeech" | "meaning" | "unit" | "tags" | "notes" | "stages"
+>;

@@ -3,6 +3,18 @@
 import { useEffect, useMemo, useState } from "react";
 import { Save, Search, Trash2, Upload } from "lucide-react";
 import type { ImportPreviewWord, WordEntry } from "@/lib/types";
+import { stageLabel, vocabularyStages } from "@/lib/vocabulary";
+
+function splitList(value = "") {
+  return value
+    .split(/[、，,；;\/|]/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function joinList(value?: string[]) {
+  return (value ?? []).join("；");
+}
 
 export function LibraryManager() {
   const [words, setWords] = useState<WordEntry[]>([]);
@@ -12,6 +24,8 @@ export function LibraryManager() {
   const [savingWordId, setSavingWordId] = useState<string | null>(null);
   const [deletingWordId, setDeletingWordId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
+  const [saveMode, setSaveMode] = useState<"recent" | "stage">("recent");
+  const [targetStage, setTargetStage] = useState("junior");
 
   async function loadWords() {
     const response = await fetch("/api/words", { cache: "no-store" });
@@ -29,7 +43,9 @@ export function LibraryManager() {
     if (!keyword) return words;
 
     return words.filter((word) =>
-      [word.word, word.partOfSpeech, word.meaning, word.unit ?? ""].some((value) => value.toLowerCase().includes(keyword))
+      [word.word, word.phonetic ?? "", word.partOfSpeech, word.meaning, word.unit ?? "", joinList(word.tags), joinList(word.stages)].some(
+        (value) => value.toLowerCase().includes(keyword)
+      )
     );
   }, [query, words]);
 
@@ -56,13 +72,13 @@ export function LibraryManager() {
       const response = await fetch("/api/words", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ words: preview })
+        body: JSON.stringify({ words: preview, saveMode, stage: targetStage })
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error ?? "保存失败");
       setPreview([]);
       await loadWords();
-      setMessage(`已保存 ${data.words?.length ?? 0} 个单词`);
+      setMessage(`已保存 ${data.words?.length ?? 0} 个单词，新增 ${data.createdCount ?? 0} 个，更新 ${data.updatedCount ?? 0} 个`);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "保存失败");
     } finally {
@@ -89,7 +105,11 @@ export function LibraryManager() {
           word: word.word,
           partOfSpeech: word.partOfSpeech,
           meaning: word.meaning,
-          unit: word.unit ?? ""
+          phonetic: word.phonetic ?? "",
+          unit: word.unit ?? "",
+          tags: word.tags ?? [],
+          notes: word.notes ?? "",
+          stages: word.stages ?? []
         })
       });
       const data = await response.json();
@@ -148,9 +168,14 @@ export function LibraryManager() {
           }}
         >
           <label>
-            上传学校 Word / PDF 单词表
-            <input name="file" type="file" accept=".docx,.pdf,.txt,.csv" required />
+            上传固定模板
+            <input name="file" type="file" accept=".xlsx,.csv" required />
           </label>
+          <div className="row-actions">
+            <a className="button secondary" href="/api/word-template">
+              下载 Excel 模板
+            </a>
+          </div>
           <button disabled={loading} type="submit">
             <Upload size={18} /> {loading ? "处理中..." : "解析文件"}
           </button>
@@ -167,18 +192,43 @@ export function LibraryManager() {
                 学校文档格式不稳定，保存前可以直接修正。
               </p>
             </div>
-            <button disabled={loading} onClick={savePreview} type="button">
-              <Save size={18} /> 保存到词库
-            </button>
+            <div className="form compact-form">
+              <label>
+                上传用途
+                <select value={saveMode} onChange={(event) => setSaveMode(event.target.value as "recent" | "stage")}>
+                  <option value="recent">仅作为本次上传词库</option>
+                  <option value="stage">更新到基础词汇表</option>
+                </select>
+              </label>
+              {saveMode === "stage" ? (
+                <label>
+                  基础词汇表
+                  <select value={targetStage} onChange={(event) => setTargetStage(event.target.value)}>
+                    {vocabularyStages.map((stage) => (
+                      <option key={stage.key} value={stage.key}>
+                        {stage.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              ) : null}
+              <button disabled={loading} onClick={savePreview} type="button">
+                <Save size={18} /> 保存上传结果
+              </button>
+            </div>
           </div>
           <div style={{ overflowX: "auto" }}>
             <table>
               <thead>
                 <tr>
                   <th>英文</th>
+                  <th>音标</th>
                   <th>词性</th>
                   <th>中文意思</th>
+                  <th>阶段</th>
                   <th>单元</th>
+                  <th>标签</th>
+                  <th>备注</th>
                 </tr>
               </thead>
               <tbody>
@@ -186,6 +236,9 @@ export function LibraryManager() {
                   <tr key={`${word.word}-${index}`}>
                     <td>
                       <input value={word.word} onChange={(event) => updatePreview(index, { word: event.target.value })} />
+                    </td>
+                    <td>
+                      <input value={word.phonetic ?? ""} onChange={(event) => updatePreview(index, { phonetic: event.target.value })} />
                     </td>
                     <td>
                       <input
@@ -197,7 +250,19 @@ export function LibraryManager() {
                       <input value={word.meaning} onChange={(event) => updatePreview(index, { meaning: event.target.value })} />
                     </td>
                     <td>
+                      <input
+                        value={joinList(word.stages)}
+                        onChange={(event) => updatePreview(index, { stages: splitList(event.target.value) })}
+                      />
+                    </td>
+                    <td>
                       <input value={word.unit ?? ""} onChange={(event) => updatePreview(index, { unit: event.target.value })} />
+                    </td>
+                    <td>
+                      <input value={joinList(word.tags)} onChange={(event) => updatePreview(index, { tags: splitList(event.target.value) })} />
+                    </td>
+                    <td>
+                      <input value={word.notes ?? ""} onChange={(event) => updatePreview(index, { notes: event.target.value })} />
                     </td>
                   </tr>
                 ))}
@@ -230,9 +295,12 @@ export function LibraryManager() {
             <thead>
               <tr>
                 <th>英文</th>
+                <th>音标</th>
                 <th>词性</th>
                 <th>中文意思</th>
+                <th>阶段/来源</th>
                 <th>单元</th>
+                <th>标签</th>
                 <th>错词状态</th>
                 <th>操作</th>
               </tr>
@@ -244,6 +312,9 @@ export function LibraryManager() {
                     <input value={word.word} onChange={(event) => updateSavedWord(word.id, { word: event.target.value })} />
                   </td>
                   <td>
+                    <input value={word.phonetic ?? ""} onChange={(event) => updateSavedWord(word.id, { phonetic: event.target.value })} />
+                  </td>
+                  <td>
                     <input
                       value={word.partOfSpeech}
                       onChange={(event) => updateSavedWord(word.id, { partOfSpeech: event.target.value })}
@@ -253,7 +324,19 @@ export function LibraryManager() {
                     <textarea value={word.meaning} onChange={(event) => updateSavedWord(word.id, { meaning: event.target.value })} />
                   </td>
                   <td>
+                    <input
+                      value={joinList(word.stages?.map(stageLabel))}
+                      onChange={(event) => updateSavedWord(word.id, { stages: splitList(event.target.value) })}
+                    />
+                    <div className="muted" style={{ fontSize: 12, marginTop: 4 }}>
+                      {word.source === "upload" ? word.uploadBatchName || "本次上传" : word.source === "base" ? "基础词库" : "自定义"}
+                    </div>
+                  </td>
+                  <td>
                     <input value={word.unit ?? ""} onChange={(event) => updateSavedWord(word.id, { unit: event.target.value })} />
+                  </td>
+                  <td>
+                    <input value={joinList(word.tags)} onChange={(event) => updateSavedWord(word.id, { tags: splitList(event.target.value) })} />
                   </td>
                   <td>
                     {word.stats.wrongCount ? (
@@ -289,7 +372,7 @@ export function LibraryManager() {
               ))}
               {!filteredWords.length ? (
                 <tr>
-                  <td colSpan={6} className="muted">
+                  <td colSpan={9} className="muted">
                     {words.length ? "没有匹配的单词。" : "还没有单词，先上传一份学校单词表。"}
                   </td>
                 </tr>

@@ -156,6 +156,11 @@ button.secondary {
   gap: 14px;
 }
 
+.compact-form {
+  align-items: end;
+  grid-template-columns: repeat(3, minmax(150px, 1fr));
+}
+
 label {
   color: var(--muted);
   display: grid;
@@ -270,7 +275,8 @@ th {
 
   .grid.cols-2,
   .grid.cols-3,
-  .answer-grid {
+  .answer-grid,
+  .compact-form {
     grid-template-columns: 1fr;
   }
 

@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Copy, Play } from "lucide-react";
-import type { DictationRoom } from "@/lib/types";
+import type { DictationRoom, WordEntry } from "@/lib/types";
+import { stageLabel, vocabularyStages } from "@/lib/vocabulary";
 
 type CreatedRoom = {
   room: DictationRoom;
@@ -13,9 +14,32 @@ type CreatedRoom = {
 export function CreateRoom() {
   const [totalCount, setTotalCount] = useState(20);
   const [mistakeRatio, setMistakeRatio] = useState(30);
+  const [wordSource, setWordSource] = useState<"all" | "stage" | "latestUpload">("stage");
+  const [stage, setStage] = useState("junior");
+  const [words, setWords] = useState<WordEntry[]>([]);
   const [created, setCreated] = useState<CreatedRoom | null>(null);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/words", { cache: "no-store" })
+      .then((response) => response.json())
+      .then((data) => setWords(data.words ?? []))
+      .catch(() => setWords([]));
+  }, []);
+
+  const latestBatchId =
+    words
+      .map((word) => word.uploadBatchId)
+      .filter(Boolean)
+      .sort()
+      .at(-1) ?? "";
+  const latestBatchName = words.find((word) => word.uploadBatchId === latestBatchId)?.uploadBatchName ?? "最近一次上传";
+  const sourceCount = useMemo(() => {
+    if (wordSource === "stage") return words.filter((word) => word.stages?.includes(stage)).length;
+    if (wordSource === "latestUpload") return words.filter((word) => word.uploadBatchId && word.uploadBatchId === latestBatchId).length;
+    return words.length;
+  }, [latestBatchId, stage, wordSource, words]);
 
   async function create() {
     setLoading(true);
@@ -24,7 +48,7 @@ export function CreateRoom() {
       const response = await fetch("/api/rooms", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ totalCount, mistakeRatio })
+        body: JSON.stringify({ totalCount, mistakeRatio, wordSource, stage })
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error ?? "创建失败");
@@ -45,6 +69,30 @@ export function CreateRoom() {
     <div className="grid cols-2">
       <section className="panel">
         <div className="form">
+          <label>
+            听写词库
+            <select value={wordSource} onChange={(event) => setWordSource(event.target.value as "all" | "stage" | "latestUpload")}>
+              <option value="stage">基础词汇表</option>
+              <option value="latestUpload">最近一次上传</option>
+              <option value="all">全部词库</option>
+            </select>
+          </label>
+          {wordSource === "stage" ? (
+            <label>
+              基础词汇表
+              <select value={stage} onChange={(event) => setStage(event.target.value)}>
+                {vocabularyStages.map((item) => (
+                  <option key={item.key} value={item.key}>
+                    {item.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
+          {wordSource === "latestUpload" ? <p className="muted">当前选择：{latestBatchId ? latestBatchName : "还没有上传批次"}</p> : null}
+          <p className="muted">
+            当前范围约 {sourceCount} 个词{wordSource === "stage" ? `（${stageLabel(stage)}）` : ""}。
+          </p>
           <label>
             本次听写数量
             <input min={1} max={100} type="number" value={totalCount} onChange={(event) => setTotalCount(Number(event.target.value))} />

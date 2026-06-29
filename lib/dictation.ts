@@ -611,10 +611,16 @@ export function makeWordEntry(input: ImportPreviewWord): WordEntry {
   return {
     id: crypto.randomUUID(),
     word: input.word.trim(),
+    phonetic: input.phonetic?.trim() ?? "",
     partOfSpeech: formatPartOfSpeech(input.partOfSpeech, input.word),
     meaning: input.meaning.trim(),
     unit: input.unit?.trim() ?? "",
-    tags: [],
+    tags: input.tags ?? [],
+    notes: input.notes?.trim() ?? "",
+    stages: input.stages ?? [],
+    source: "custom",
+    uploadBatchId: "",
+    uploadBatchName: "",
     stats: defaultStats(),
     createdAt: new Date().toISOString()
   };

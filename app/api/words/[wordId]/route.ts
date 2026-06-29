@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { formatPartOfSpeech } from "@/lib/dictation";
 import { deleteWord, listWords, updateWord } from "@/lib/server/store";
 import type { ImportPreviewWord, WordEntry } from "@/lib/types";
+import { normalizeStage } from "@/lib/vocabulary";
 
 type RouteContext = {
   params: {
@@ -27,9 +28,13 @@ export async function PATCH(request: Request, { params }: RouteContext) {
   const word: WordEntry = {
     ...existing,
     word: nextWord,
+    phonetic: body.phonetic?.trim() ?? "",
     partOfSpeech: formatPartOfSpeech(body.partOfSpeech ?? "", nextWord),
     meaning: nextMeaning,
-    unit: body.unit?.trim() ?? ""
+    unit: body.unit?.trim() ?? "",
+    tags: body.tags ?? [],
+    notes: body.notes?.trim() ?? "",
+    stages: (body.stages ?? existing.stages ?? []).map(normalizeStage).filter(Boolean)
   };
 
   await updateWord(word);

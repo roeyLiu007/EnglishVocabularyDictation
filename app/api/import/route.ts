@@ -1,29 +1,17 @@
 import { NextResponse } from "next/server";
-import { parseWordListText } from "@/lib/dictation";
+import { parseWordTemplate } from "@/lib/word-template";
 
 export const runtime = "nodejs";
 
-async function extractText(file: File) {
+async function extractWords(file: File) {
   const buffer = Buffer.from(await file.arrayBuffer());
   const name = file.name.toLowerCase();
 
-  if (name.endsWith(".docx")) {
-    const mammoth = await import("mammoth");
-    const result = await mammoth.extractRawText({ buffer });
-    return result.value;
+  if (name.endsWith(".xlsx") || name.endsWith(".csv")) {
+    return parseWordTemplate(buffer, file.name);
   }
 
-  if (name.endsWith(".pdf")) {
-    const pdfParse = (await import("pdf-parse")).default;
-    const result = await pdfParse(buffer);
-    return result.text;
-  }
-
-  if (name.endsWith(".txt") || name.endsWith(".csv")) {
-    return buffer.toString("utf8");
-  }
-
-  throw new Error("暂时只支持 docx、文字型 pdf、txt、csv");
+  throw new Error("请使用固定模板上传，仅支持 .xlsx 或 .csv");
 }
 
 export async function POST(request: Request) {
@@ -34,9 +22,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "请上传文件" }, { status: 400 });
     }
 
-    const text = await extractText(file);
-    const words = parseWordListText(text);
-    return NextResponse.json({ words, rawTextLength: text.length });
+    const words = await extractWords(file);
+    return NextResponse.json({ words });
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : "解析失败" }, { status: 400 });
   }

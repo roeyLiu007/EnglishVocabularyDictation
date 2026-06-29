@@ -3,6 +3,7 @@ import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 import { applyVerdictToStats } from "@/lib/dictation";
 import type { DictationRoom, SubmittedAnswer, WordEntry } from "@/lib/types";
+import { effectiveSource, effectiveStages } from "@/lib/vocabulary";
 
 type MemoryStore = {
   words: WordEntry[];
@@ -49,28 +50,61 @@ function supabase(): SupabaseClient | null {
 }
 
 function mapWord(row: Record<string, unknown>): WordEntry {
-  return {
+  const word: WordEntry = {
     id: String(row.id),
     word: String(row.word ?? ""),
+    phonetic: String(row.phonetic ?? ""),
     partOfSpeech: String(row.part_of_speech ?? ""),
     meaning: String(row.meaning ?? ""),
     unit: String(row.unit ?? ""),
     tags: Array.isArray(row.tags) ? (row.tags as string[]) : [],
+    notes: String(row.notes ?? ""),
+    stages: Array.isArray(row.stages) ? (row.stages as string[]) : [],
+    source: row.source as WordEntry["source"],
+    uploadBatchId: String(row.upload_batch_id ?? ""),
+    uploadBatchName: String(row.upload_batch_name ?? ""),
     stats: row.stats as WordEntry["stats"],
     createdAt: String(row.created_at ?? new Date().toISOString())
   };
+  return hydrateWord(word);
 }
 
 function wordRow(word: WordEntry) {
   return {
     id: word.id,
     word: word.word,
+    phonetic: word.phonetic ?? "",
     part_of_speech: word.partOfSpeech,
     meaning: word.meaning,
     unit: word.unit ?? "",
     tags: word.tags ?? [],
+    notes: word.notes ?? "",
+    stages: word.stages ?? [],
+    source: word.source ?? "custom",
+    upload_batch_id: word.uploadBatchId ?? "",
+    upload_batch_name: word.uploadBatchName ?? "",
     stats: word.stats,
     created_at: word.createdAt
+  };
+}
+
+function hydrateWord(word: WordEntry): WordEntry {
+  const stages = effectiveStages(word);
+  return {
+    ...word,
+    phonetic: word.phonetic ?? "",
+    tags: word.tags ?? [],
+    notes: word.notes ?? "",
+    stages,
+    source: effectiveSource({ ...word, stages }),
+    uploadBatchId: word.uploadBatchId ?? "",
+    uploadBatchName: word.uploadBatchName ?? "",
+    stats: word.stats ?? {
+      wrongCount: 0,
+      correctCount: 0,
+      fieldWrongCounts: {},
+      consecutiveCorrect: 0
+    }
   };
 }
 
@@ -82,6 +116,8 @@ function mapRoom(row: Record<string, unknown>): DictationRoom {
     status: row.status as DictationRoom["status"],
     totalCount: Number(row.total_count),
     mistakeRatio: Number(row.mistake_ratio),
+    wordSource: row.word_source as DictationRoom["wordSource"],
+    stage: String(row.stage ?? ""),
     questionMode: "mixed",
     questions: row.questions as DictationRoom["questions"],
     createdAt: String(row.created_at)
@@ -96,6 +132,8 @@ function roomRow(room: DictationRoom) {
     status: room.status,
     total_count: room.totalCount,
     mistake_ratio: room.mistakeRatio,
+    word_source: room.wordSource ?? "all",
+    stage: room.stage ?? "",
     question_mode: room.questionMode,
     questions: room.questions,
     created_at: room.createdAt
@@ -111,7 +149,7 @@ export async function listWords() {
   }
 
   const store = await readLocalStore();
-  return [...store.words].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  return store.words.map(hydrateWord).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
 
 export async function saveWords(words: WordEntry[]) {

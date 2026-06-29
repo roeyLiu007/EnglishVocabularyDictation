@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
-import { makeWordEntry } from "@/lib/dictation";
-import { listWords, saveWords } from "@/lib/server/store";
-import type { ImportPreviewWord } from "@/lib/types";
+import { makeWordEntry, normalizeWord } from "@/lib/dictation";
+import { listWords, saveWords, updateWord } from "@/lib/server/store";
+import type { ImportPreviewWord, WordEntry } from "@/lib/types";
+import { normalizeStage, stageLabel } from "@/lib/vocabulary";
 
 export async function GET() {
   const words = await listWords();
@@ -9,15 +10,83 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const body = (await request.json()) as { words?: ImportPreviewWord[] };
-  const words = (body.words ?? [])
-    .filter((word) => word.word?.trim() && word.meaning?.trim())
-    .map((word) => makeWordEntry(word));
+  const body = (await request.json()) as {
+    words?: ImportPreviewWord[];
+    saveMode?: "recent" | "stage";
+    stage?: string;
+    batchName?: string;
+  };
+  const saveMode = body.saveMode ?? "recent";
+  const selectedStage = normalizeStage(body.stage ?? "");
+  if (saveMode === "stage" && !selectedStage) {
+    return NextResponse.json({ error: "请选择要更新的基础词汇表" }, { status: 400 });
+  }
 
-  if (!words.length) {
+  const batchId = `upload-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`;
+  const batchName = body.batchName?.trim() || `${saveMode === "stage" ? stageLabel(selectedStage) : "本次上传"} ${new Date().toLocaleString("zh-CN")}`;
+  const existingWords = await listWords();
+  const existingByWord = new Map(existingWords.map((word) => [normalizeWord(word.word), word]));
+
+  const prepared: WordEntry[] = (body.words ?? [])
+    .filter((word) => word.word?.trim() && word.meaning?.trim())
+    .map((word) => {
+      const entry = makeWordEntry(word);
+      const stages = [...(entry.stages ?? [])];
+      if (selectedStage && !stages.includes(selectedStage)) stages.push(selectedStage);
+      return {
+        ...entry,
+        stages,
+        source: saveMode === "stage" ? ("base" as const) : ("upload" as const),
+        uploadBatchId: batchId,
+        uploadBatchName: batchName
+      };
+    });
+
+  if (!prepared.length) {
     return NextResponse.json({ error: "没有可保存的单词" }, { status: 400 });
   }
 
-  await saveWords(words);
-  return NextResponse.json({ words });
+  if (saveMode === "recent") {
+    await saveWords(prepared);
+    return NextResponse.json({ words: prepared, batchId, batchName, updatedCount: 0, createdCount: prepared.length });
+  }
+
+  const created = [];
+  const updated = [];
+  for (const entry of prepared) {
+    const existing = existingByWord.get(normalizeWord(entry.word));
+    if (existing) {
+      const stages = Array.from(new Set([...(existing.stages ?? []), ...(entry.stages ?? [])]));
+      const tags = Array.from(new Set([...(existing.tags ?? []), ...(entry.tags ?? [])]));
+      const next = {
+        ...existing,
+        word: entry.word,
+        phonetic: entry.phonetic || existing.phonetic,
+        partOfSpeech: entry.partOfSpeech,
+        meaning: entry.meaning,
+        unit: entry.unit || existing.unit,
+        tags,
+        notes: entry.notes || existing.notes,
+        stages,
+        source: "base" as const,
+        uploadBatchId: batchId,
+        uploadBatchName: batchName
+      };
+      await updateWord(next);
+      updated.push(next);
+      existingByWord.set(normalizeWord(next.word), next);
+    } else {
+      await saveWords([entry]);
+      created.push(entry);
+      existingByWord.set(normalizeWord(entry.word), entry);
+    }
+  }
+
+  return NextResponse.json({
+    words: [...updated, ...created],
+    batchId,
+    batchName,
+    updatedCount: updated.length,
+    createdCount: created.length
+  });
 }
