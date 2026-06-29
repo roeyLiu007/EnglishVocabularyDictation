@@ -18,47 +18,92 @@ export const defaultStats = (): WordStats => ({
   consecutiveCorrect: 0
 });
 
-const posAliases: Record<string, string> = {
-  n: "noun",
-  "n.": "noun",
-  noun: "noun",
-  名词: "noun",
-  v: "verb",
-  "v.": "verb",
-  verb: "verb",
-  动词: "verb",
-  adj: "adjective",
-  "adj.": "adjective",
-  adjective: "adjective",
-  形容词: "adjective",
-  adv: "adverb",
-  "adv.": "adverb",
-  adverb: "adverb",
-  副词: "adverb",
-  prep: "preposition",
-  "prep.": "preposition",
-  preposition: "preposition",
-  介词: "preposition",
-  pron: "pronoun",
-  "pron.": "pronoun",
-  pronoun: "pronoun",
-  代词: "pronoun",
-  conj: "conjunction",
-  "conj.": "conjunction",
-  conjunction: "conjunction",
-  连词: "conjunction",
-  interj: "interjection",
-  "interj.": "interjection",
-  感叹词: "interjection"
-};
+const partOfSpeechDefinitions = [
+  { key: "art", abbr: "art", label: "冠词", aliases: ["art", "article", "冠词"] },
+  { key: "vt", abbr: "vt", label: "及物动词", aliases: ["vt", "transitiveverb", "及物动词"] },
+  { key: "vi", abbr: "vi", label: "不及物动词", aliases: ["vi", "intransitiveverb", "不及物动词"] },
+  { key: "v", abbr: "v", label: "动词", aliases: ["v", "verb", "动词"] },
+  { key: "n", abbr: "n", label: "名词", aliases: ["n", "noun", "名词"] },
+  { key: "adj", abbr: "adj", label: "形容词", aliases: ["a", "adj", "adjective", "形容词"] },
+  { key: "adv", abbr: "adv", label: "副词", aliases: ["ad", "adv", "adverb", "副词"] },
+  { key: "prep", abbr: "prep", label: "介词", aliases: ["prep", "preposition", "介词"] },
+  { key: "pron", abbr: "pron", label: "代词", aliases: ["pron", "pronoun", "代词"] },
+  { key: "conj", abbr: "conj", label: "连词", aliases: ["conj", "conjunction", "连词"] },
+  { key: "num", abbr: "num", label: "数词", aliases: ["num", "number", "numeral", "数词"] },
+  { key: "interj", abbr: "interj", label: "感叹词", aliases: ["int", "interj", "interjection", "感叹词"] },
+  { key: "aux", abbr: "aux", label: "助动词", aliases: ["aux", "auxv", "auxiliaryverb", "助动词"] },
+  { key: "modal", abbr: "modal v", label: "情态动词", aliases: ["modal", "modalv", "modalverb", "情态动词"] },
+  { key: "abbr", abbr: "abbr", label: "缩写", aliases: ["abbr", "abbreviation", "缩写"] }
+] as const;
+
+type PartOfSpeechKey = (typeof partOfSpeechDefinitions)[number]["key"];
+
+const posAliasToKey = partOfSpeechDefinitions.reduce<Record<string, PartOfSpeechKey>>((aliases, definition) => {
+  definition.aliases.forEach((alias) => {
+    aliases[alias] = definition.key;
+  });
+  return aliases;
+}, {});
 
 export function normalizeWord(value = "") {
   return value.trim().toLowerCase().replace(/\s+/g, " ");
 }
 
+function normalizePartOfSpeechToken(value = "") {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/[。．]/g, ".")
+    .replace(/[()（）]/g, "")
+    .replace(/\.+$/g, "")
+    .replace(/[^a-z\u4e00-\u9fa5]/g, "");
+}
+
+export function partOfSpeechKeys(value = "") {
+  const normalized = value
+    .trim()
+    .toLowerCase()
+    .replace(/[。．]/g, ".")
+    .replace(/aux\s*\.?\s*v\.?/g, " auxv ")
+    .replace(/modal\s*\.?\s*v\.?/g, " modalv ")
+    .replace(/不及物动词/g, " vi ")
+    .replace(/及物动词/g, " vt ")
+    .replace(/[、，,；;／/|&+]/g, " ")
+    .replace(/\band\b/g, " ");
+
+  const keys: PartOfSpeechKey[] = [];
+  normalized.split(/\s+/).forEach((token) => {
+    const key = posAliasToKey[normalizePartOfSpeechToken(token)];
+    if (key && !keys.includes(key)) keys.push(key);
+  });
+
+  return keys;
+}
+
+export function formatPartOfSpeech(value = "") {
+  const keys = partOfSpeechKeys(value);
+  if (!keys.length) return value.trim();
+
+  return keys
+    .map((key) => partOfSpeechDefinitions.find((definition) => definition.key === key))
+    .filter((definition): definition is (typeof partOfSpeechDefinitions)[number] => Boolean(definition))
+    .map((definition) => `${definition.abbr} ${definition.label}`)
+    .join(" / ");
+}
+
+export function isPartOfSpeechCorrect(expectedValue = "", receivedValue = "") {
+  const expected = partOfSpeechKeys(expectedValue);
+  const received = partOfSpeechKeys(receivedValue);
+
+  if (expected.length && received.length) {
+    return received.some((key) => expected.includes(key));
+  }
+
+  return Boolean(receivedValue.trim()) && normalizePartOfSpeechToken(expectedValue) === normalizePartOfSpeechToken(receivedValue);
+}
+
 export function normalizePartOfSpeech(value = "") {
-  const normalized = value.trim().toLowerCase().replace(/[。；;,，]/g, "").replace(/\s+/g, " ");
-  return posAliases[normalized] ?? normalized;
+  return formatPartOfSpeech(value);
 }
 
 export function speechTextForWord(value = "") {
@@ -95,10 +140,8 @@ export function gradeAnswer(question: Question, input: AnswerInput): AnswerVerdi
   }
 
   if (question.targetFields.includes("partOfSpeech")) {
-    const expected = normalizePartOfSpeech(question.answer.partOfSpeech);
-    const received = normalizePartOfSpeech(input.partOfSpeech);
     fields.partOfSpeech = fieldVerdict(
-      received === expected ? "correct" : "wrong",
+      isPartOfSpeechCorrect(question.answer.partOfSpeech, input.partOfSpeech) ? "correct" : "wrong",
       question.answer.partOfSpeech,
       input.partOfSpeech ?? ""
     );
@@ -257,7 +300,7 @@ export function buildQuestions(words: WordEntry[], input: CreateRoomInput) {
 
 export function parseWordListText(text: string): ImportPreviewWord[] {
   const posPattern =
-    "(n\\.|noun|v\\.|verb|adj\\.|adjective|adv\\.|adverb|prep\\.|preposition|pron\\.|pronoun|conj\\.|conjunction|interj\\.|名词|动词|形容词|副词|介词|代词|连词|感叹词)";
+    "(n\\.?|noun|v\\.?|verb|vt\\.?|vi\\.?|adj\\.?|a\\.?|ad\\.?|adv\\.?|adjective|adverb|prep\\.?|preposition|pron\\.?|pronoun|conj\\.?|conjunction|num\\.?|interj\\.?|int\\.?|art\\.?|名词|动词|及物动词|不及物动词|形容词|副词|介词|代词|连词|数词|感叹词|冠词)";
 
   const parsed = text
     .split(/\r?\n/)
@@ -296,7 +339,7 @@ export function makeWordEntry(input: ImportPreviewWord): WordEntry {
   return {
     id: crypto.randomUUID(),
     word: input.word.trim(),
-    partOfSpeech: input.partOfSpeech.trim(),
+    partOfSpeech: formatPartOfSpeech(input.partOfSpeech),
     meaning: input.meaning.trim(),
     unit: input.unit?.trim() ?? "",
     tags: [],
