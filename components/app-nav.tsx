@@ -5,7 +5,7 @@ export function AppNav() {
   return (
     <header className="topbar">
       <Link className="brand" href="/">
-        Remote Dictation
+        星光听写屋
       </Link>
       <nav className="nav" aria-label="主导航">
         <Link href="/">

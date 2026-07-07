@@ -6,8 +6,9 @@ export default function HomePage() {
   return (
     <main className="shell">
       <AppNav />
-      <section className="hero">
-        <div>
+      <section className="hero anime-hero">
+        <div className="hero-copy">
+          <span className="eyebrow">English Quest Room</span>
           <h1>远程英语听写房间</h1>
           <p>
             上传学校单词表，随机生成混合题型，孩子用平板答题。听写完成后再展示答案，错词会自动进入后续练习。

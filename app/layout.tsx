@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Remote Dictation",
-  description: "Room-based English dictation practice"
+  title: "星光听写屋",
+  description: "Anime-inspired English dictation practice"
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

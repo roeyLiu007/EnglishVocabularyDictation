@@ -1,16 +1,20 @@
 :root {
   color-scheme: light;
-  --bg: #f7f4ee;
-  --panel: #fffdf8;
-  --ink: #202124;
-  --muted: #6f6a62;
-  --line: #ded7ca;
-  --brand: #1f7a68;
-  --brand-strong: #14584b;
-  --accent: #b35f2b;
-  --danger: #b42318;
-  --ok: #16794c;
-  --pending: #9a6700;
+  --bg: #fff7fb;
+  --panel: rgba(255, 255, 255, 0.88);
+  --ink: #2b2440;
+  --muted: #716985;
+  --line: #dacdf8;
+  --brand: #6f5cff;
+  --brand-strong: #4734c8;
+  --accent: #ff7bbd;
+  --accent-2: #34b8d9;
+  --sun: #ffd166;
+  --danger: #df3f6b;
+  --ok: #14966f;
+  --pending: #b97900;
+  --shadow: 0 18px 42px rgba(103, 89, 190, 0.16);
+  --comic-shadow: 4px 4px 0 rgba(71, 52, 200, 0.16);
 }
 
 * {
@@ -19,9 +23,12 @@
 
 body {
   margin: 0;
-  background: var(--bg);
+  background:
+    linear-gradient(135deg, rgba(255, 246, 189, 0.5), transparent 30%),
+    linear-gradient(180deg, #eaf8ff 0%, var(--bg) 42%, #f8f1ff 100%);
   color: var(--ink);
   font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  min-height: 100vh;
 }
 
 a {
@@ -39,20 +46,29 @@ select {
 .shell {
   width: min(1120px, calc(100% - 32px));
   margin: 0 auto;
-  padding: 28px 0 56px;
+  padding: 22px 0 56px;
 }
 
 .topbar {
   align-items: center;
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(218, 205, 248, 0.8);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(14px);
   display: flex;
   gap: 16px;
   justify-content: space-between;
   margin-bottom: 24px;
+  padding: 12px;
 }
 
 .brand {
-  font-size: 22px;
+  color: var(--brand-strong);
+  font-size: 23px;
   font-weight: 800;
+  letter-spacing: 0;
+  text-shadow: 2px 2px 0 rgba(255, 209, 102, 0.55);
 }
 
 .nav {
@@ -65,8 +81,8 @@ select {
 .button,
 button {
   align-items: center;
-  background: var(--brand);
-  border: 1px solid var(--brand);
+  background: linear-gradient(135deg, var(--brand), #8e6fff);
+  border: 1px solid #5d4cef;
   border-radius: 8px;
   color: white;
   cursor: pointer;
@@ -75,22 +91,34 @@ button {
   justify-content: center;
   min-height: 40px;
   padding: 9px 13px;
+  box-shadow: var(--comic-shadow);
+  font-weight: 750;
+  transition: transform 120ms ease, box-shadow 120ms ease, filter 120ms ease;
+}
+
+.nav a:hover,
+.button:hover,
+button:hover {
+  filter: saturate(1.06);
+  transform: translate(-1px, -1px);
 }
 
 .nav a {
-  background: transparent;
+  background: rgba(255, 255, 255, 0.72);
+  border-color: rgba(111, 92, 255, 0.26);
   color: var(--brand-strong);
+  box-shadow: none;
 }
 
 .secondary,
 button.secondary {
-  background: transparent;
+  background: rgba(255, 255, 255, 0.86);
   border-color: var(--line);
-  color: var(--ink);
+  color: var(--brand-strong);
 }
 
 .danger {
-  background: var(--danger);
+  background: linear-gradient(135deg, var(--danger), #ff7aa9);
   border-color: var(--danger);
 }
 
@@ -110,16 +138,64 @@ button.secondary {
 .panel,
 .card {
   background: var(--panel);
-  border: 1px solid var(--line);
+  border: 1px solid rgba(218, 205, 248, 0.9);
   border-radius: 8px;
+  box-shadow: var(--shadow);
   padding: 18px;
 }
 
 .hero {
   display: grid;
   gap: 18px;
-  min-height: 360px;
-  padding: 40px 0 18px;
+  min-height: 520px;
+  overflow: hidden;
+  padding: 52px 0 24px;
+  position: relative;
+}
+
+.anime-hero {
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.96) 0%, rgba(255, 255, 255, 0.72) 36%, rgba(255, 255, 255, 0.14) 66%),
+    url("/assets/anime-study-hero.png") center / cover no-repeat;
+  border: 1px solid rgba(218, 205, 248, 0.9);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  margin-bottom: 18px;
+  padding-inline: clamp(20px, 4vw, 48px);
+}
+
+.anime-hero::after {
+  background-image:
+    linear-gradient(45deg, transparent 48%, rgba(255, 123, 189, 0.45) 49%, rgba(255, 123, 189, 0.45) 51%, transparent 52%),
+    linear-gradient(-45deg, transparent 48%, rgba(52, 184, 217, 0.35) 49%, rgba(52, 184, 217, 0.35) 51%, transparent 52%);
+  background-size: 34px 34px;
+  content: "";
+  inset: 0;
+  opacity: 0.15;
+  pointer-events: none;
+  position: absolute;
+}
+
+.anime-hero > * {
+  position: relative;
+  z-index: 1;
+}
+
+.hero-copy {
+  align-self: center;
+  max-width: 560px;
+}
+
+.eyebrow {
+  background: #fff2a8;
+  border: 1px solid #e3c64a;
+  border-radius: 999px;
+  color: #735900;
+  display: inline-flex;
+  font-size: 13px;
+  font-weight: 850;
+  margin-bottom: 14px;
+  padding: 6px 10px;
 }
 
 .hero h1 {
@@ -128,6 +204,7 @@ button.secondary {
   line-height: 0.98;
   margin: 0;
   max-width: 920px;
+  text-shadow: 3px 3px 0 rgba(255, 123, 189, 0.25);
 }
 
 .hero p,
@@ -142,13 +219,15 @@ button.secondary {
 }
 
 .stat {
-  border-left: 4px solid var(--brand);
+  border-left: 5px solid var(--accent);
   padding-left: 12px;
 }
 
 .stat strong {
+  color: var(--brand-strong);
   display: block;
   font-size: 30px;
+  text-shadow: 2px 2px 0 rgba(255, 209, 102, 0.38);
 }
 
 .form {
@@ -171,13 +250,21 @@ label {
 input,
 textarea,
 select {
-  background: white;
+  background: rgba(255, 255, 255, 0.96);
   border: 1px solid var(--line);
   border-radius: 8px;
   color: var(--ink);
   min-height: 44px;
   padding: 10px 12px;
   width: 100%;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(111, 92, 255, 0.14);
+  outline: none;
 }
 
 textarea {
@@ -209,7 +296,8 @@ textarea {
 }
 
 table {
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   width: 100%;
 }
 
@@ -222,16 +310,23 @@ td {
 }
 
 th {
+  background: rgba(242, 238, 255, 0.82);
   color: var(--muted);
   font-size: 13px;
   font-weight: 700;
 }
 
+tbody tr:nth-child(even) td {
+  background: rgba(255, 250, 255, 0.52);
+}
+
 .pill {
-  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.74);
+  border: 1px solid rgba(218, 205, 248, 0.9);
   border-radius: 999px;
   display: inline-flex;
   font-size: 13px;
+  font-weight: 750;
   padding: 4px 8px;
 }
 
@@ -259,6 +354,7 @@ th {
   font-weight: 800;
   letter-spacing: 0;
   line-height: 1.08;
+  text-shadow: 3px 3px 0 rgba(52, 184, 217, 0.17);
 }
 
 .answer-grid {
@@ -282,5 +378,22 @@ th {
 
   .shell {
     width: min(100% - 20px, 1120px);
+  }
+
+  .anime-hero {
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 255, 255, 0.84) 48%, rgba(255, 255, 255, 0.2) 100%),
+      url("/assets/anime-study-hero.png") 58% bottom / auto 68% no-repeat;
+    min-height: 620px;
+    padding-top: 28px;
+  }
+
+  .hero-copy {
+    align-self: start;
+  }
+
+  .search-field {
+    grid-template-columns: 18px minmax(0, 1fr);
+    width: 100%;
   }
 }
