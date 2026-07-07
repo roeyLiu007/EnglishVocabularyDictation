@@ -518,7 +518,7 @@ tbody tr:nth-child(even) td {
 }
 
 .answer-card-header {
-  align-items: start;
+  align-items: flex-start;
   display: flex;
   gap: 12px;
   justify-content: space-between;

@@ -118,7 +118,7 @@ node scripts/import-legacy-word-text.mjs /tmp/zhongkao_1600_words.txt http://loc
 
 ## 远程使用方案
 
-第一版已经预留 Supabase 远程数据库结构。要真正异地长期使用，建议部署到 Vercel，并接入 Supabase。
+第一版已经预留 Supabase 远程数据库结构。要真正异地长期使用，建议部署到 Netlify，并接入 Supabase。
 
 1. 在 Supabase 创建项目
 2. 执行建表脚本：
@@ -135,7 +135,15 @@ NEXT_PUBLIC_SUPABASE_URL=你的 Supabase URL
 SUPABASE_SERVICE_ROLE_KEY=你的 Supabase service role key
 ```
 
-4. 部署到 Vercel
+4. 在 Netlify 导入 GitHub 仓库
+5. Netlify 构建设置：
+
+```bash
+Build command: npm run build
+Node version: 20
+```
+
+仓库已经包含 `netlify.toml`，Netlify 会按这个配置构建 Next.js 应用。
 
 配置 Supabase 后，词库、房间、答题记录、错词统计都会写入远程数据库。
 
