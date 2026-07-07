@@ -90,6 +90,7 @@ export type SubmittedAnswer = {
   questionId: string;
   answer: AnswerInput;
   verdict: AnswerVerdict;
+  durationSeconds?: number;
   submittedAt: string;
 };
 

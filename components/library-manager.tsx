@@ -222,8 +222,19 @@ export function LibraryManager() {
               </button>
             </div>
           </div>
-          <div style={{ overflowX: "auto" }}>
-            <table>
+          <div className="table-scroll">
+            <table className="library-table preview-table">
+              <colgroup>
+                <col className="col-word" />
+                <col className="col-type" />
+                <col className="col-phonetic" />
+                <col className="col-pos" />
+                <col className="col-meaning" />
+                <col className="col-stage" />
+                <col className="col-unit" />
+                <col className="col-tags" />
+                <col className="col-notes" />
+              </colgroup>
               <thead>
                 <tr>
                   <th>英文</th>
@@ -305,8 +316,20 @@ export function LibraryManager() {
             />
           </label>
         </div>
-        <div style={{ overflowX: "auto" }}>
-          <table>
+        <div className="table-scroll">
+          <table className="library-table saved-words-table">
+            <colgroup>
+              <col className="col-word" />
+              <col className="col-type" />
+              <col className="col-phonetic" />
+              <col className="col-pos" />
+              <col className="col-meaning" />
+              <col className="col-source" />
+              <col className="col-unit" />
+              <col className="col-tags" />
+              <col className="col-status" />
+              <col className="col-actions" />
+            </colgroup>
             <thead>
               <tr>
                 <th>英文</th>
@@ -353,7 +376,7 @@ export function LibraryManager() {
                       value={joinList(word.stages?.map(stageLabel))}
                       onChange={(event) => updateSavedWord(word.id, { stages: splitList(event.target.value) })}
                     />
-                    <div className="muted" style={{ fontSize: 12, marginTop: 4 }}>
+                    <div className="muted table-subtext" title={word.uploadBatchName || undefined}>
                       {word.source === "upload" ? word.uploadBatchName || "本次上传" : word.source === "base" ? "基础词库" : "自定义"}
                     </div>
                   </td>

@@ -18,6 +18,14 @@ function renderAnswerLines(lines?: Array<{ partOfSpeech?: string; meaning?: stri
   ));
 }
 
+function formatDuration(seconds?: number) {
+  if (typeof seconds !== "number" || !Number.isFinite(seconds)) return "未记录";
+  const safeSeconds = Math.max(0, Math.round(seconds));
+  const minutes = Math.floor(safeSeconds / 60);
+  const restSeconds = safeSeconds % 60;
+  return `${String(minutes).padStart(2, "0")}:${String(restSeconds).padStart(2, "0")}`;
+}
+
 export function ParentRoom({ roomId, token }: { roomId: string; token: string }) {
   const [payload, setPayload] = useState<RoomPayload | null>(null);
   const [message, setMessage] = useState("");
@@ -71,7 +79,7 @@ export function ParentRoom({ roomId, token }: { roomId: string; token: string })
     await fetch(`/api/rooms/${roomId}/answers`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token, questionId: answer.questionId, answer: answer.answer, verdictOverride })
+      body: JSON.stringify({ token, questionId: answer.questionId, answer: answer.answer, verdictOverride, durationSeconds: answer.durationSeconds })
     });
     await load();
   }
@@ -143,6 +151,7 @@ export function ParentRoom({ roomId, token }: { roomId: string; token: string })
                 <th>题目</th>
                 <th>孩子答案</th>
                 <th>正确答案</th>
+                <th>用时</th>
                 <th>判分</th>
                 <th>操作</th>
               </tr>
@@ -175,6 +184,7 @@ export function ParentRoom({ roomId, token }: { roomId: string; token: string })
                       <div>英文：{question.answer.word}</div>
                       {renderAnswerLines(question.answer.lines ?? [{ partOfSpeech: question.answer.partOfSpeech, meaning: question.answer.meaning }])}
                     </td>
+                    <td>{answer ? formatDuration(answer.durationSeconds) : "-"}</td>
                     <td className={answer?.verdict.overall === "correct" ? "ok" : answer?.verdict.overall === "pending" ? "pending" : "wrong"}>
                       {answer ? (answer.verdict.overall === "correct" ? "正确" : answer.verdict.overall === "pending" ? "待确认" : "错误") : "-"}
                     </td>

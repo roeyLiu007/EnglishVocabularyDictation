@@ -272,6 +272,7 @@ export async function listAnswers(roomId: string) {
       questionId: String(row.question_id),
       answer: row.answer,
       verdict: row.verdict,
+      durationSeconds: typeof row.duration_seconds === "number" ? row.duration_seconds : undefined,
       submittedAt: String(row.submitted_at)
     })) as SubmittedAnswer[];
   }
@@ -288,6 +289,7 @@ export async function saveAnswer(answer: SubmittedAnswer) {
       question_id: answer.questionId,
       answer: answer.answer,
       verdict: answer.verdict,
+      duration_seconds: answer.durationSeconds ?? null,
       submitted_at: answer.submittedAt
     });
     if (error) throw error;

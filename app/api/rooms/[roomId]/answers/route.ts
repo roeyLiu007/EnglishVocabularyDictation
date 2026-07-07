@@ -14,6 +14,7 @@ export async function POST(request: Request, { params }: { params: { roomId: str
     questionId?: string;
     answer?: AnswerInput;
     verdictOverride?: AnswerVerdict;
+    durationSeconds?: number;
   };
 
   const isParent = body.token === room.parentToken;
@@ -29,11 +30,16 @@ export async function POST(request: Request, { params }: { params: { roomId: str
 
   const answer = body.answer ?? {};
   const verdict = isParent && body.verdictOverride ? body.verdictOverride : gradeAnswer(question, answer);
+  const durationSeconds =
+    typeof body.durationSeconds === "number" && Number.isFinite(body.durationSeconds)
+      ? Math.max(0, Math.min(3600, Math.round(body.durationSeconds)))
+      : undefined;
   const saved = await saveAnswer({
     roomId: room.id,
     questionId: question.id,
     answer,
     verdict,
+    durationSeconds,
     submittedAt: new Date().toISOString()
   });
 

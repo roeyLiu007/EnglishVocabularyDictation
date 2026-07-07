@@ -35,9 +35,12 @@ create table if not exists dictation_answers (
   question_id text not null,
   answer jsonb not null,
   verdict jsonb not null,
+  duration_seconds integer,
   submitted_at timestamptz not null default now(),
   primary key (room_id, question_id)
 );
+
+alter table dictation_answers add column if not exists duration_seconds integer;
 
 create index if not exists words_created_at_idx on words (created_at desc);
 create index if not exists words_source_idx on words (source);

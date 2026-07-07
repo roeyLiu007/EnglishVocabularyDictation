@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Check, Volume2 } from "lucide-react";
+import { Check, Clock, Languages, PenLine, Volume2 } from "lucide-react";
 import { speechTextForWord } from "@/lib/dictation";
 import type { AnswerInput, AnswerLine, DictationRoom, SubmittedAnswer } from "@/lib/types";
 
@@ -9,6 +9,14 @@ type RoomPayload = {
   room: DictationRoom;
   answers: SubmittedAnswer[];
 };
+
+function formatDuration(seconds?: number) {
+  if (typeof seconds !== "number" || !Number.isFinite(seconds)) return "未记录";
+  const safeSeconds = Math.max(0, Math.round(seconds));
+  const minutes = Math.floor(safeSeconds / 60);
+  const restSeconds = safeSeconds % 60;
+  return `${String(minutes).padStart(2, "0")}:${String(restSeconds).padStart(2, "0")}`;
+}
 
 function scoreVoice(voice: SpeechSynthesisVoice) {
   const name = voice.name.toLowerCase();
@@ -36,6 +44,8 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [voiceName, setVoiceName] = useState("");
   const [speechRate, setSpeechRate] = useState(0.78);
+  const [questionStartedAt, setQuestionStartedAt] = useState(() => Date.now());
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
   async function load() {
     const response = await fetch(`/api/rooms/${roomId}?token=${token}`, { cache: "no-store" });
@@ -102,6 +112,17 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
     if (nextIndex >= 0) setIndex(nextIndex);
   }, [room, answeredIds]);
 
+  useEffect(() => {
+    if (!current?.id || isDone) return;
+    const startedAt = Date.now();
+    setQuestionStartedAt(startedAt);
+    setElapsedSeconds(0);
+    const timer = window.setInterval(() => {
+      setElapsedSeconds(Math.floor((Date.now() - startedAt) / 1000));
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, [current?.id, isDone]);
+
   function speak() {
     if (typeof window === "undefined" || !current) return;
     const text = speechTextForWord(current.speechText || current.answer.word);
@@ -121,13 +142,14 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
 
   async function submit() {
     if (!current) return;
+    const durationSeconds = Math.max(elapsedSeconds, Math.ceil((Date.now() - questionStartedAt) / 1000));
     setLoading(true);
     setMessage("");
     try {
       const response = await fetch(`/api/rooms/${roomId}/answers`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, questionId: current.id, answer })
+        body: JSON.stringify({ token, questionId: current.id, answer, durationSeconds })
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error ?? "提交失败");
@@ -184,6 +206,7 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
                 <tr>
                   <th>题目</th>
                   <th>正确答案</th>
+                  <th>用时</th>
                   <th>结果</th>
                 </tr>
               </thead>
@@ -205,6 +228,7 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
                           ))
                         )}
                       </td>
+                      <td>{formatDuration(submitted?.durationSeconds)}</td>
                       <td className={submitted?.verdict.overall === "correct" ? "ok" : submitted?.verdict.overall === "pending" ? "pending" : "wrong"}>
                         {submitted?.verdict.overall === "correct" ? "正确" : submitted?.verdict.overall === "pending" ? "待确认" : "需复习"}
                       </td>
@@ -222,8 +246,8 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
   if (!current) return <section className="panel">题目加载中...</section>;
 
   return (
-    <section className="question">
-      <div>
+    <section className="question dictation-layout">
+      <div className="dictation-meta">
         <span className="pill">
           {index + 1} / {room.questions.length}
         </span>
@@ -238,15 +262,21 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
                 : "看英文"
               : "看中文"}
         </span>
+        <span className="pill timer-pill">
+          <Clock size={15} /> 本题 {formatDuration(elapsedSeconds)}
+        </span>
       </div>
 
-      <div className="panel">
+      <div className="panel dictation-prompt-card">
         {current.promptType === "audio" ? (
-          <div className="grid">
-            <p className="prompt" style={{ fontSize: 40 }}>
-              {currentEntryType === "phrase" ? "听英文词组" : "听英文发音"}
-            </p>
-            <div className="grid cols-2">
+          <div className="audio-prompt">
+            <div className="audio-prompt-main">
+              <p className="prompt dictation-prompt-title">{currentEntryType === "phrase" ? "听英文词组" : "听英文发音"}</p>
+              <button className="play-button" onClick={speak} type="button">
+                <Volume2 size={24} /> 播放
+              </button>
+            </div>
+            <div className="audio-controls">
               <label>
                 声音
                 <select value={voiceName} onChange={(event) => setVoiceName(event.target.value)}>
@@ -273,22 +303,39 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
                 />
               </label>
             </div>
-            <button onClick={speak} type="button">
-              <Volume2 size={22} /> 播放
-            </button>
           </div>
         ) : (
-          <div className="prompt">{current.prompt}</div>
+          <div className="prompt text-prompt">{current.prompt}</div>
         )}
       </div>
 
-      <div className="grid">
+      <div className="panel answer-card">
+        <div className="answer-card-header">
+          <div>
+            <span className="answer-eyebrow">作答区</span>
+            <h2>填写答案</h2>
+          </div>
+          <span className="answer-count">
+            {current.targetFields.includes("word") ? "英文" : ""}
+            {current.targetFields.includes("word") && (current.targetFields.includes("partOfSpeech") || current.targetFields.includes("meaning")) ? " + " : ""}
+            {current.targetFields.includes("partOfSpeech") ? "词性" : ""}
+            {current.targetFields.includes("partOfSpeech") && current.targetFields.includes("meaning") ? " / " : ""}
+            {current.targetFields.includes("meaning") ? "中文意思" : ""}
+          </span>
+        </div>
+
+        <div className="answer-fields">
         {current.targetFields.includes("word") ? (
-          <label>
-            {currentEntryType === "phrase" ? "英文词组" : "英文"}
+          <label className="answer-field answer-field-primary">
+            <span className="field-label">
+              <PenLine size={18} /> {currentEntryType === "phrase" ? "英文词组" : "英文"}
+            </span>
             <input
               autoCapitalize="none"
               autoComplete="off"
+              autoFocus
+              className="answer-input-primary"
+              placeholder={currentEntryType === "phrase" ? "填写英文词组" : "填写英文单词"}
               value={answer.word ?? ""}
               onChange={(event) => setAnswer((value) => ({ ...value, word: event.target.value }))}
             />
@@ -296,50 +343,49 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
         ) : null}
 
         {current.targetFields.includes("partOfSpeech") || current.targetFields.includes("meaning") ? (
-          <div className="panel" style={{ padding: 12 }}>
-            <table>
-              <thead>
-                <tr>
-                  <th style={{ width: 54 }}>行</th>
-                  {current.targetFields.includes("partOfSpeech") ? <th>词性</th> : null}
-                  {current.targetFields.includes("meaning") ? <th>中文意思</th> : null}
-                </tr>
-              </thead>
-              <tbody>
-                {answerLines.map((line, lineIndex) => (
-                  <tr key={`${current.id}-line-${lineIndex}`}>
-                    <td>{lineIndex + 1}</td>
-                    {current.targetFields.includes("partOfSpeech") ? (
-                      <td>
-                        <input
-                          autoComplete="off"
-                          placeholder="如 n 或 名词"
-                          value={inputLines[lineIndex]?.partOfSpeech ?? ""}
-                          onChange={(event) => updateLine(lineIndex, { partOfSpeech: event.target.value })}
-                        />
-                      </td>
-                    ) : null}
-                    {current.targetFields.includes("meaning") ? (
-                      <td>
-                        <input
-                          autoComplete="off"
-                          value={inputLines[lineIndex]?.meaning ?? ""}
-                          onChange={(event) => updateLine(lineIndex, { meaning: event.target.value })}
-                        />
-                      </td>
-                    ) : null}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="answer-lines">
+            {answerLines.map((_, lineIndex) => (
+              <div className="answer-line-card" key={`${current.id}-line-${lineIndex}`}>
+                <div className="line-number">第 {lineIndex + 1} 行</div>
+                <div className="line-fields">
+                  {current.targetFields.includes("partOfSpeech") ? (
+                    <label className="answer-field">
+                      <span className="field-label">
+                        <Languages size={17} /> 词性
+                      </span>
+                      <input
+                        autoComplete="off"
+                        placeholder="如 n 或 名词"
+                        value={inputLines[lineIndex]?.partOfSpeech ?? ""}
+                        onChange={(event) => updateLine(lineIndex, { partOfSpeech: event.target.value })}
+                      />
+                    </label>
+                  ) : null}
+                  {current.targetFields.includes("meaning") ? (
+                    <label className="answer-field">
+                      <span className="field-label">
+                        <Languages size={17} /> 中文意思
+                      </span>
+                      <input
+                        autoComplete="off"
+                        placeholder="填写中文意思"
+                        value={inputLines[lineIndex]?.meaning ?? ""}
+                        onChange={(event) => updateLine(lineIndex, { meaning: event.target.value })}
+                      />
+                    </label>
+                  ) : null}
+                </div>
+              </div>
+            ))}
           </div>
         ) : null}
-      </div>
 
-      <button disabled={loading} onClick={submit} type="button">
-        <Check size={18} /> {loading ? "提交中..." : "提交并进入下一题"}
-      </button>
-      {message ? <p className="muted">{message}</p> : null}
+          <button className="submit-answer-button" disabled={loading} onClick={submit} type="button">
+            <Check size={20} /> {loading ? "提交中..." : "提交并进入下一题"}
+          </button>
+          {message ? <p className="muted answer-message">{message}</p> : null}
+        </div>
+      </div>
     </section>
   );
 }
