@@ -18,6 +18,7 @@ declare global {
 
 const localStorePath = path.join(process.cwd(), "data", "local-store.json");
 const supabaseBatchSize = 500;
+const supabasePageSize = 1000;
 
 function chunk<T>(items: T[], size: number) {
   const chunks: T[][] = [];
@@ -170,9 +171,15 @@ function roomRow(room: DictationRoom) {
 export async function listWords() {
   const client = supabase();
   if (client) {
-    const { data, error } = await client.from("words").select("*").order("created_at", { ascending: false });
-    if (error) throw error;
-    return (data ?? []).map(mapWord);
+    const rows: Record<string, unknown>[] = [];
+    for (let from = 0; ; from += supabasePageSize) {
+      const to = from + supabasePageSize - 1;
+      const { data, error } = await client.from("words").select("*").order("created_at", { ascending: false }).range(from, to);
+      if (error) throw error;
+      rows.push(...((data ?? []) as Record<string, unknown>[]));
+      if (!data || data.length < supabasePageSize) break;
+    }
+    return rows.map(mapWord);
   }
 
   const store = await readLocalStore();
