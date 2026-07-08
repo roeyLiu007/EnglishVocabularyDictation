@@ -20,6 +20,27 @@ function entryTypeLabel(value?: string) {
   return value === "phrase" ? "词组" : "单词";
 }
 
+type ApiPayload = {
+  error?: string;
+  words?: unknown;
+  word?: WordEntry;
+  createdCount?: number;
+  updatedCount?: number;
+};
+
+async function readApiResponse(response: Response, fallbackMessage: string): Promise<ApiPayload> {
+  const text = await response.text();
+  if (!text.trim()) {
+    throw new Error(`${fallbackMessage}：服务器没有返回内容，请稍后重试`);
+  }
+
+  try {
+    return JSON.parse(text) as ApiPayload;
+  } catch {
+    throw new Error(`${fallbackMessage}：服务器返回了无法识别的内容（HTTP ${response.status}）`);
+  }
+}
+
 export function LibraryManager() {
   const [words, setWords] = useState<WordEntry[]>([]);
   const [preview, setPreview] = useState<ImportPreviewWord[]>([]);
@@ -33,8 +54,8 @@ export function LibraryManager() {
 
   async function loadWords() {
     const response = await fetch("/api/words", { cache: "no-store" });
-    const data = await response.json();
-    setWords(data.words ?? []);
+    const data = await readApiResponse(response, "加载词库失败");
+    setWords(Array.isArray(data.words) ? (data.words as WordEntry[]) : []);
   }
 
   useEffect(() => {
@@ -58,10 +79,11 @@ export function LibraryManager() {
     setMessage("");
     try {
       const response = await fetch("/api/import", { method: "POST", body: formData });
-      const data = await response.json();
+      const data = await readApiResponse(response, "解析失败");
       if (!response.ok) throw new Error(data.error ?? "解析失败");
-      setPreview(data.words ?? []);
-      setMessage(`解析出 ${data.words?.length ?? 0} 个候选单词，请确认后保存`);
+      const importedWords = Array.isArray(data.words) ? (data.words as ImportPreviewWord[]) : [];
+      setPreview(importedWords);
+      setMessage(`解析出 ${importedWords.length} 个候选单词，请确认后保存`);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "解析失败");
     } finally {
@@ -78,11 +100,12 @@ export function LibraryManager() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ words: preview, saveMode, stage: targetStage })
       });
-      const data = await response.json();
+      const data = await readApiResponse(response, "保存失败");
       if (!response.ok) throw new Error(data.error ?? "保存失败");
       setPreview([]);
       await loadWords();
-      setMessage(`已保存 ${data.words?.length ?? 0} 个单词，新增 ${data.createdCount ?? 0} 个，更新 ${data.updatedCount ?? 0} 个`);
+      const savedCount = Array.isArray(data.words) ? data.words.length : 0;
+      setMessage(`已保存 ${savedCount} 个单词，新增 ${data.createdCount ?? 0} 个，更新 ${data.updatedCount ?? 0} 个`);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "保存失败");
     } finally {
@@ -117,10 +140,12 @@ export function LibraryManager() {
           stages: word.stages ?? []
         })
       });
-      const data = await response.json();
+      const data = await readApiResponse(response, "保存失败");
       if (!response.ok) throw new Error(data.error ?? "保存失败");
-      setWords((items) => items.map((item) => (item.id === word.id ? data.word : item)));
-      setMessage(`已更新：${data.word.word}`);
+      if (!data.word) throw new Error("保存失败：服务器没有返回单词信息");
+      const savedWord = data.word;
+      setWords((items) => items.map((item) => (item.id === word.id ? savedWord : item)));
+      setMessage(`已更新：${savedWord.word}`);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "保存失败");
     } finally {
@@ -136,7 +161,7 @@ export function LibraryManager() {
     setMessage("");
     try {
       const response = await fetch(`/api/words/${word.id}`, { method: "DELETE" });
-      const data = await response.json();
+      const data = await readApiResponse(response, "删除失败");
       if (!response.ok) throw new Error(data.error ?? "删除失败");
       setWords((items) => items.filter((item) => item.id !== word.id));
       setMessage(`已删除：${word.word}`);
