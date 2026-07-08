@@ -11,6 +11,19 @@ type CreatedRoom = {
   childUrl: string;
 };
 
+async function readJsonResponse(response: Response) {
+  const text = await response.text();
+  if (!text) {
+    return {};
+  }
+
+  try {
+    return JSON.parse(text) as Record<string, unknown>;
+  } catch {
+    throw new Error(text || `请求失败：${response.status}`);
+  }
+}
+
 export function CreateRoom() {
   const [totalCount, setTotalCount] = useState(20);
   const [mistakeRatio, setMistakeRatio] = useState(30);
@@ -50,9 +63,9 @@ export function CreateRoom() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ totalCount, mistakeRatio, wordSource, stage })
       });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error ?? "创建失败");
-      setCreated(data);
+      const data = await readJsonResponse(response);
+      if (!response.ok) throw new Error(typeof data.error === "string" ? data.error : "创建失败");
+      setCreated(data as CreatedRoom);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "创建失败");
     } finally {

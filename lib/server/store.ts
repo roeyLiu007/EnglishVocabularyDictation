@@ -35,6 +35,9 @@ async function readLocalStore(): Promise<MemoryStore> {
 }
 
 async function writeLocalStore(store: MemoryStore) {
+  if (process.env.NETLIFY && (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY)) {
+    throw new Error("线上环境需要先配置 Supabase 环境变量，不能使用本地 JSON 文件保存数据。");
+  }
   globalThis.__dictationMemoryStore = store;
   await mkdir(path.dirname(localStorePath), { recursive: true });
   await writeFile(localStorePath, JSON.stringify(store, null, 2), "utf8");
