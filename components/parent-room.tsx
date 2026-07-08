@@ -2,11 +2,17 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { CheckCircle2, Copy, RefreshCcw, SquareCheckBig } from "lucide-react";
+import { readApiJson } from "@/lib/client-api";
 import type { AnswerVerdict, DictationRoom, SubmittedAnswer } from "@/lib/types";
 
 type RoomPayload = {
   room: DictationRoom;
   answers: SubmittedAnswer[];
+  error?: string;
+};
+
+type ActionPayload = {
+  error?: string;
 };
 
 function renderAnswerLines(lines?: Array<{ partOfSpeech?: string; meaning?: string }>) {
@@ -31,13 +37,17 @@ export function ParentRoom({ roomId, token }: { roomId: string; token: string })
   const [message, setMessage] = useState("");
 
   const load = useCallback(async () => {
-    const response = await fetch(`/api/rooms/${roomId}?token=${token}`, { cache: "no-store" });
-    const data = await response.json();
-    if (!response.ok) {
-      setMessage(data.error ?? "加载失败");
-      return;
+    try {
+      const response = await fetch(`/api/rooms/${roomId}?token=${token}`, { cache: "no-store" });
+      const data = await readApiJson<RoomPayload>(response, "加载房间失败");
+      if (!response.ok) {
+        setMessage(data.error ?? "加载失败");
+        return;
+      }
+      setPayload(data);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "加载失败");
     }
-    setPayload(data);
   }, [roomId, token]);
 
   useEffect(() => {
@@ -76,20 +86,30 @@ export function ParentRoom({ roomId, token }: { roomId: string; token: string })
       )
     };
 
-    await fetch(`/api/rooms/${roomId}/answers`, {
+    const response = await fetch(`/api/rooms/${roomId}/answers`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ token, questionId: answer.questionId, answer: answer.answer, verdictOverride, durationSeconds: answer.durationSeconds })
     });
+    const data = await readApiJson<ActionPayload>(response, "改判失败");
+    if (!response.ok) {
+      setMessage(data.error ?? "改判失败");
+      return;
+    }
     await load();
   }
 
   async function finish() {
-    await fetch(`/api/rooms/${roomId}/finish`, {
+    const response = await fetch(`/api/rooms/${roomId}/finish`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ token })
     });
+    const data = await readApiJson<ActionPayload>(response, "结束房间失败");
+    if (!response.ok) {
+      setMessage(data.error ?? "结束房间失败");
+      return;
+    }
     await load();
   }
 

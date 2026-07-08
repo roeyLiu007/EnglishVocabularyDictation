@@ -2,12 +2,18 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Check, Clock, Languages, PenLine, Volume2 } from "lucide-react";
+import { readApiJson } from "@/lib/client-api";
 import { speechTextForWord } from "@/lib/dictation";
 import type { AnswerInput, AnswerLine, DictationRoom, SubmittedAnswer } from "@/lib/types";
 
 type RoomPayload = {
   room: DictationRoom;
   answers: SubmittedAnswer[];
+  error?: string;
+};
+
+type AnswerPayload = {
+  error?: string;
 };
 
 function formatDuration(seconds?: number) {
@@ -48,13 +54,18 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
   async function load() {
-    const response = await fetch(`/api/rooms/${roomId}?token=${token}`, { cache: "no-store" });
-    const data = await response.json();
-    if (!response.ok) {
-      setMessage(data.error ?? "加载失败");
-      return;
+    try {
+      const response = await fetch(`/api/rooms/${roomId}?token=${token}`, { cache: "no-store" });
+      const data = await readApiJson<RoomPayload>(response, "加载房间失败");
+      if (!response.ok) {
+        setMessage(data.error ?? "加载失败");
+        return;
+      }
+      setPayload(data);
+      setMessage("");
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "加载失败");
     }
-    setPayload(data);
   }
 
   useEffect(() => {
@@ -151,7 +162,7 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token, questionId: current.id, answer, durationSeconds })
       });
-      const data = await response.json();
+      const data = await readApiJson<AnswerPayload>(response, "提交失败");
       if (!response.ok) throw new Error(data.error ?? "提交失败");
       setAnswer({});
       await load();
@@ -173,11 +184,16 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
   }
 
   async function finish() {
-    await fetch(`/api/rooms/${roomId}/finish`, {
+    const response = await fetch(`/api/rooms/${roomId}/finish`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ token })
     });
+    const data = await readApiJson<AnswerPayload>(response, "结束房间失败");
+    if (!response.ok) {
+      setMessage(data.error ?? "结束房间失败");
+      return;
+    }
     await load();
   }
 
