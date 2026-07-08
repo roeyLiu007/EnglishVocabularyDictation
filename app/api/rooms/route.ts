@@ -12,6 +12,22 @@ function token() {
   return crypto.randomUUID().replace(/-/g, "");
 }
 
+function appBaseUrl(request: Request) {
+  const fallback = new URL(request.url).origin;
+  const configured = process.env.NEXT_PUBLIC_APP_URL?.trim();
+  if (!configured) return fallback;
+
+  try {
+    const url = new URL(configured);
+    const host = url.hostname.toLowerCase();
+    if (!["http:", "https:"].includes(url.protocol)) return fallback;
+    if (host === "localhost" || host === "127.0.0.1" || host.includes("你的域名")) return fallback;
+    return url.origin;
+  } catch {
+    return fallback;
+  }
+}
+
 export async function POST(request: Request) {
   try {
     const input = (await request.json()) as CreateRoomInput;
@@ -57,7 +73,7 @@ export async function POST(request: Request) {
 
     await createRoom(room);
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || new URL(request.url).origin;
+    const baseUrl = appBaseUrl(request);
     return NextResponse.json({
       room,
       parentUrl: `${baseUrl}/parent/${room.id}?token=${room.parentToken}`,
