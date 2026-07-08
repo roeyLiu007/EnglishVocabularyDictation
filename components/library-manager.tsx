@@ -20,12 +20,28 @@ function entryTypeLabel(value?: string) {
   return value === "phrase" ? "词组" : "单词";
 }
 
+function sourceLabel(value?: string) {
+  if (value === "base") return "基础词库";
+  if (value === "upload") return "上传词库";
+  return "自定义";
+}
+
 type ApiPayload = {
   error?: string;
   words?: unknown;
   word?: WordEntry;
   createdCount?: number;
   updatedCount?: number;
+  deletedCount?: number;
+  matchedCount?: number;
+};
+
+type ClearTarget = {
+  key: string;
+  label: string;
+  mode: "stage" | "source" | "uploadBatch";
+  value: string;
+  count: number;
 };
 
 async function readApiResponse(response: Response, fallbackMessage: string): Promise<ApiPayload> {
@@ -48,6 +64,8 @@ export function LibraryManager() {
   const [loading, setLoading] = useState(false);
   const [savingWordId, setSavingWordId] = useState<string | null>(null);
   const [deletingWordId, setDeletingWordId] = useState<string | null>(null);
+  const [clearing, setClearing] = useState(false);
+  const [clearTargetKey, setClearTargetKey] = useState("");
   const [query, setQuery] = useState("");
   const [saveMode, setSaveMode] = useState<"recent" | "stage">("recent");
   const [targetStage, setTargetStage] = useState("junior");
@@ -63,6 +81,61 @@ export function LibraryManager() {
   }, []);
 
   const mistakeCount = useMemo(() => words.filter((word) => word.stats.wrongCount > 0).length, [words]);
+  const clearTargets = useMemo<ClearTarget[]>(() => {
+    const stageTargets = vocabularyStages
+      .map((stage) => ({
+        key: `stage:${stage.key}`,
+        label: `${stage.label}阶段`,
+        mode: "stage" as const,
+        value: stage.key,
+        count: words.filter((word) => (word.stages ?? []).includes(stage.key)).length
+      }))
+      .filter((item) => item.count > 0);
+
+    const sourceTargets = (["base", "upload", "custom"] as const)
+      .map((source) => ({
+        key: `source:${source}`,
+        label: sourceLabel(source),
+        mode: "source" as const,
+        value: source,
+        count: words.filter((word) => (word.source ?? "custom") === source).length
+      }))
+      .filter((item) => item.count > 0);
+
+    const uploadBatchMap = new Map<string, { name: string; count: number }>();
+    for (const word of words) {
+      if (word.source !== "upload" || !word.uploadBatchId) continue;
+      const current = uploadBatchMap.get(word.uploadBatchId) ?? { name: word.uploadBatchName || "上传批次", count: 0 };
+      current.count += 1;
+      if (word.uploadBatchName) current.name = word.uploadBatchName;
+      uploadBatchMap.set(word.uploadBatchId, current);
+    }
+    const uploadBatchTargets = Array.from(uploadBatchMap.entries()).map(([id, item]) => ({
+      key: `uploadBatch:${id}`,
+      label: item.name,
+      mode: "uploadBatch" as const,
+      value: id,
+      count: item.count
+    }));
+
+    return [...stageTargets, ...sourceTargets, ...uploadBatchTargets];
+  }, [words]);
+
+  useEffect(() => {
+    if (!clearTargets.length) {
+      setClearTargetKey("");
+      return;
+    }
+    if (!clearTargets.some((target) => target.key === clearTargetKey)) {
+      setClearTargetKey(clearTargets[0].key);
+    }
+  }, [clearTargetKey, clearTargets]);
+
+  const selectedClearTarget = useMemo(
+    () => clearTargets.find((target) => target.key === clearTargetKey),
+    [clearTargetKey, clearTargets]
+  );
+
   const filteredWords = useMemo(() => {
     const keyword = query.trim().toLowerCase();
     if (!keyword) return words;
@@ -172,6 +245,41 @@ export function LibraryManager() {
     }
   }
 
+  async function clearSelectedWords() {
+    if (!selectedClearTarget) {
+      setMessage("没有可清空的词库类型");
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `确定清空“${selectedClearTarget.label}”下的 ${selectedClearTarget.count} 个词条吗？此操作不可撤销。`
+    );
+    if (!confirmed) return;
+
+    setClearing(true);
+    setMessage("");
+    try {
+      const response = await fetch("/api/words", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mode: selectedClearTarget.mode, value: selectedClearTarget.value })
+      });
+      const data = await readApiResponse(response, "清空失败");
+      if (!response.ok) throw new Error(data.error ?? "清空失败");
+      if (Array.isArray(data.words)) setWords(data.words as WordEntry[]);
+      else await loadWords();
+      setMessage(
+        `已清空 ${selectedClearTarget.label}：删除 ${data.deletedCount ?? 0} 个词条${
+          data.updatedCount ? `，保留并移除阶段 ${data.updatedCount} 个` : ""
+        }`
+      );
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "清空失败");
+    } finally {
+      setClearing(false);
+    }
+  }
+
   return (
     <div className="grid">
       <section className="grid cols-3">
@@ -211,6 +319,52 @@ export function LibraryManager() {
           </button>
         </form>
         {message ? <p className="muted">{message}</p> : null}
+      </section>
+
+      <section className="panel danger-zone">
+        <div>
+          <h2 style={{ margin: 0 }}>清空词库</h2>
+          <p className="muted" style={{ margin: "6px 0 0" }}>
+            按阶段或来源类型批量清理。
+          </p>
+        </div>
+        <div className="form clear-library-form">
+          <label>
+            阶段/来源
+            <select value={clearTargetKey} onChange={(event) => setClearTargetKey(event.target.value)} disabled={!clearTargets.length}>
+              <optgroup label="阶段">
+                {clearTargets
+                  .filter((target) => target.mode === "stage")
+                  .map((target) => (
+                    <option key={target.key} value={target.key}>
+                      {target.label}（{target.count}）
+                    </option>
+                  ))}
+              </optgroup>
+              <optgroup label="来源">
+                {clearTargets
+                  .filter((target) => target.mode === "source")
+                  .map((target) => (
+                    <option key={target.key} value={target.key}>
+                      {target.label}（{target.count}）
+                    </option>
+                  ))}
+              </optgroup>
+              <optgroup label="上传批次">
+                {clearTargets
+                  .filter((target) => target.mode === "uploadBatch")
+                  .map((target) => (
+                    <option key={target.key} value={target.key}>
+                      {target.label}（{target.count}）
+                    </option>
+                  ))}
+              </optgroup>
+            </select>
+          </label>
+          <button className="danger" disabled={clearing || !selectedClearTarget} onClick={clearSelectedWords} type="button">
+            <Trash2 size={18} /> {clearing ? "清空中..." : "一键清空"}
+          </button>
+        </div>
       </section>
 
       {preview.length ? (

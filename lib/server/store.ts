@@ -227,6 +227,26 @@ export async function deleteWord(wordId: string) {
   return { id: wordId };
 }
 
+export async function deleteWords(wordIds: string[]) {
+  if (!wordIds.length) return { deletedCount: 0 };
+
+  const client = supabase();
+  if (client) {
+    for (const batch of chunk(wordIds, supabaseBatchSize)) {
+      const { error } = await client.from("words").delete().in("id", batch);
+      if (error) throw error;
+    }
+    return { deletedCount: wordIds.length };
+  }
+
+  const deleteIds = new Set(wordIds);
+  const store = await readLocalStore();
+  const beforeCount = store.words.length;
+  store.words = store.words.filter((word) => !deleteIds.has(word.id));
+  await writeLocalStore(store);
+  return { deletedCount: beforeCount - store.words.length };
+}
+
 export async function clearMistake(wordId: string) {
   const words = await listWords();
   const existing = words.find((word) => word.id === wordId);

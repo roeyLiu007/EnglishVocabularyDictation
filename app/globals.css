@@ -241,6 +241,19 @@ button.secondary {
   grid-template-columns: repeat(3, minmax(150px, 1fr));
 }
 
+.danger-zone {
+  align-items: end;
+  border-color: rgba(223, 63, 107, 0.32);
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 520px);
+}
+
+.clear-library-form {
+  align-items: end;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
 label {
   color: var(--muted);
   display: grid;
@@ -639,7 +652,9 @@ tbody tr:nth-child(even) td {
   .grid.cols-2,
   .grid.cols-3,
   .answer-grid,
-  .compact-form {
+  .compact-form,
+  .danger-zone,
+  .clear-library-form {
     grid-template-columns: 1fr;
   }
 
