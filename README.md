@@ -118,7 +118,7 @@ node scripts/import-legacy-word-text.mjs /tmp/zhongkao_1600_words.txt http://loc
 
 ## 远程使用方案
 
-第一版已经预留 Supabase 远程数据库结构。要真正异地长期使用，建议部署到 Netlify，并接入 Supabase。
+第一版已经预留 Supabase 远程数据库结构。要真正异地长期使用，建议部署到 EdgeOne Makers，并接入 Supabase。
 
 1. 在 Supabase 创建项目
 2. 执行建表脚本：
@@ -130,20 +130,24 @@ supabase/schema.sql
 3. 配置环境变量：
 
 ```bash
-NEXT_PUBLIC_APP_URL=https://你的域名
+NEXT_PUBLIC_APP_URL=https://你的 EdgeOne 站点域名
 NEXT_PUBLIC_SUPABASE_URL=你的 Supabase URL
 SUPABASE_SERVICE_ROLE_KEY=你的 Supabase service role key
 ```
 
-4. 在 Netlify 导入 GitHub 仓库
-5. Netlify 构建设置：
+`NEXT_PUBLIC_APP_URL` 可先不填；系统会自动使用当前请求域名生成听写链接。绑定自定义域名后再填成正式域名即可。
+
+4. 在 EdgeOne Makers 控制台选择 `Create project` -> `Import Git repository`，导入 GitHub 仓库
+5. EdgeOne 构建设置：
 
 ```bash
 Build command: npm run build
-Node version: 20
+Install command: npm install
+Output directory: .next
+Node version: 20.18.0
 ```
 
-仓库已经包含 `netlify.toml`，Netlify 会按这个配置构建 Next.js 应用。
+仓库已经包含 `edgeone.json`，EdgeOne 会按这个配置构建 Next.js 应用。
 
 配置 Supabase 后，词库、房间、答题记录、错词统计都会写入远程数据库。
 
