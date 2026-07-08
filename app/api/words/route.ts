@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { makeWordEntry, normalizeWord } from "@/lib/dictation";
-import { listWords, saveWords, updateWord } from "@/lib/server/store";
+import { listWords, saveWords } from "@/lib/server/store";
 import type { ImportPreviewWord, WordEntry } from "@/lib/types";
 import { normalizeStage, stageLabel } from "@/lib/vocabulary";
 
@@ -53,8 +53,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ words: prepared, batchId, batchName, updatedCount: 0, createdCount: prepared.length });
     }
 
-    const created = [];
-    const updated = [];
+    const created: WordEntry[] = [];
+    const updated: WordEntry[] = [];
     for (const entry of prepared) {
       const existing = existingByWord.get(normalizeWord(entry.word));
       if (existing) {
@@ -75,15 +75,15 @@ export async function POST(request: Request) {
           uploadBatchId: batchId,
           uploadBatchName: batchName
         };
-        await updateWord(next);
         updated.push(next);
         existingByWord.set(normalizeWord(next.word), next);
       } else {
-        await saveWords([entry]);
         created.push(entry);
         existingByWord.set(normalizeWord(entry.word), entry);
       }
     }
+
+    await saveWords([...updated, ...created]);
 
     return NextResponse.json({
       words: [...updated, ...created],

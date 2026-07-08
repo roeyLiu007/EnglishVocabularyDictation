@@ -17,6 +17,15 @@ declare global {
 }
 
 const localStorePath = path.join(process.cwd(), "data", "local-store.json");
+const supabaseBatchSize = 500;
+
+function chunk<T>(items: T[], size: number) {
+  const chunks: T[][] = [];
+  for (let index = 0; index < items.length; index += size) {
+    chunks.push(items.slice(index, index + size));
+  }
+  return chunks;
+}
 
 async function readLocalStore(): Promise<MemoryStore> {
   if (!globalThis.__dictationMemoryStore) {
@@ -173,14 +182,19 @@ export async function listWords() {
 export async function saveWords(words: WordEntry[]) {
   const client = supabase();
   if (client) {
-    const { error } = await client.from("words").upsert(words.map(wordRow));
-    if (error) throw error;
+    for (const batch of chunk(words, supabaseBatchSize)) {
+      const { error } = await client.from("words").upsert(batch.map(wordRow));
+      if (error) throw error;
+    }
     return words;
   }
 
   const store = await readLocalStore();
-  const existingIds = new Set(store.words.map((word) => word.id));
-  store.words.push(...words.filter((word) => !existingIds.has(word.id)));
+  const nextById = new Map(store.words.map((word) => [word.id, word]));
+  for (const word of words) {
+    nextById.set(word.id, word);
+  }
+  store.words = Array.from(nextById.values());
   await writeLocalStore(store);
   return words;
 }
