@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Copy, Play } from "lucide-react";
+import { completeRoomLinks } from "@/lib/room-links";
 import type { DictationRoom, WordEntry } from "@/lib/types";
 import { stageLabel, vocabularyStages } from "@/lib/vocabulary";
 
@@ -65,7 +66,11 @@ export function CreateRoom() {
       });
       const data = await readJsonResponse(response);
       if (!response.ok) throw new Error(typeof data.error === "string" ? data.error : "创建失败");
-      setCreated(data as CreatedRoom);
+      const createdRoom = data as CreatedRoom;
+      setCreated({
+        ...createdRoom,
+        ...completeRoomLinks(createdRoom.room, createdRoom.parentUrl, createdRoom.childUrl, window.location.origin)
+      });
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "创建失败");
     } finally {

@@ -135,7 +135,7 @@ NEXT_PUBLIC_SUPABASE_URL=你的 Supabase URL
 SUPABASE_SERVICE_ROLE_KEY=你的 Supabase service role key
 ```
 
-`NEXT_PUBLIC_APP_URL` 可先不填；系统会自动使用当前请求域名生成听写链接。绑定自定义域名后再填成正式域名即可。
+`NEXT_PUBLIC_APP_URL` 可先不填；系统会自动使用当前请求域名生成听写链接。绑定自定义域名后再填成正式域名即可。这里请填带 `https://` 的站点根地址，例如 `https://example.com`，不要填 `/child/...` 或 `/parent/...` 页面路径。
 
 4. 在 EdgeOne Makers 控制台选择 `Create project` -> `Import Git repository`，导入 GitHub 仓库
 5. EdgeOne 构建设置：

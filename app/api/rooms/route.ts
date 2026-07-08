@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { buildQuestions } from "@/lib/dictation";
+import { appBaseUrl, buildRoomLink } from "@/lib/room-links";
 import { createRoom, listWords } from "@/lib/server/store";
 import type { CreateRoomInput, DictationRoom } from "@/lib/types";
 import { normalizeStage, stageLabel } from "@/lib/vocabulary";
@@ -10,22 +11,6 @@ function shortId() {
 
 function token() {
   return crypto.randomUUID().replace(/-/g, "");
-}
-
-function appBaseUrl(request: Request) {
-  const fallback = new URL(request.url).origin;
-  const configured = process.env.NEXT_PUBLIC_APP_URL?.trim();
-  if (!configured) return fallback;
-
-  try {
-    const url = new URL(configured);
-    const host = url.hostname.toLowerCase();
-    if (!["http:", "https:"].includes(url.protocol)) return fallback;
-    if (host === "localhost" || host === "127.0.0.1" || host.includes("你的域名")) return fallback;
-    return url.origin;
-  } catch {
-    return fallback;
-  }
 }
 
 export async function POST(request: Request) {
@@ -73,11 +58,11 @@ export async function POST(request: Request) {
 
     await createRoom(room);
 
-    const baseUrl = appBaseUrl(request);
+    const baseUrl = appBaseUrl(request.url, process.env.NEXT_PUBLIC_APP_URL);
     return NextResponse.json({
       room,
-      parentUrl: `${baseUrl}/parent/${room.id}?token=${room.parentToken}`,
-      childUrl: `${baseUrl}/child/${room.id}?token=${room.childToken}`
+      parentUrl: buildRoomLink(baseUrl, "parent", room.id, room.parentToken),
+      childUrl: buildRoomLink(baseUrl, "child", room.id, room.childToken)
     });
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : "创建失败" }, { status: 500 });
