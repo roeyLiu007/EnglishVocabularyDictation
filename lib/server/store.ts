@@ -136,6 +136,15 @@ function resetWordStats(word: WordEntry): WordEntry {
   };
 }
 
+function isMissingColumnError(error: unknown, columnName: string) {
+  if (!error || typeof error !== "object") return false;
+  const details = Object.values(error as Record<string, unknown>)
+    .map((value) => String(value ?? ""))
+    .join(" ")
+    .toLowerCase();
+  return details.includes(columnName.toLowerCase()) && /column|schema|cache|找不到|不存在/.test(details);
+}
+
 function mapRoom(row: Record<string, unknown>): DictationRoom {
   return {
     id: String(row.id),
@@ -328,15 +337,24 @@ export async function listAnswers(roomId: string) {
 export async function saveAnswer(answer: SubmittedAnswer) {
   const client = supabase();
   if (client) {
-    const { error } = await client.from("dictation_answers").upsert({
+    const answerRow = {
       room_id: answer.roomId,
       question_id: answer.questionId,
       answer: answer.answer,
       verdict: answer.verdict,
       duration_seconds: answer.durationSeconds ?? null,
       submitted_at: answer.submittedAt
-    });
-    if (error) throw error;
+    };
+    const { error } = await client.from("dictation_answers").upsert(answerRow);
+    if (error) {
+      if (isMissingColumnError(error, "duration_seconds")) {
+        const { duration_seconds: _durationSeconds, ...legacyAnswerRow } = answerRow;
+        const { error: retryError } = await client.from("dictation_answers").upsert(legacyAnswerRow);
+        if (retryError) throw retryError;
+        return { ...answer, durationSeconds: undefined };
+      }
+      throw error;
+    }
   } else {
     const store = await readLocalStore();
     store.answers = store.answers.filter((item) => item.roomId !== answer.roomId || item.questionId !== answer.questionId);

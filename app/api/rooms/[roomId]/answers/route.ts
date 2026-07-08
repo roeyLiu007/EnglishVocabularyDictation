@@ -3,6 +3,15 @@ import { gradeAnswer } from "@/lib/dictation";
 import { getRoom, saveAnswer } from "@/lib/server/store";
 import type { AnswerInput, AnswerVerdict } from "@/lib/types";
 
+function errorMessage(error: unknown, fallback: string) {
+  if (error instanceof Error) return error.message;
+  if (error && typeof error === "object") {
+    const record = error as Record<string, unknown>;
+    return String(record.message || record.details || record.hint || record.code || fallback);
+  }
+  return fallback;
+}
+
 export async function POST(request: Request, { params }: { params: { roomId: string } }) {
   try {
     const room = await getRoom(params.roomId);
@@ -47,6 +56,6 @@ export async function POST(request: Request, { params }: { params: { roomId: str
     return NextResponse.json({ answer: saved });
   } catch (error) {
     console.error("[api/rooms/:roomId/answers] failed to save answer", error);
-    return NextResponse.json({ error: error instanceof Error ? error.message : "提交失败，请稍后重试" }, { status: 500 });
+    return NextResponse.json({ error: errorMessage(error, "提交失败，请稍后重试") }, { status: 500 });
   }
 }
