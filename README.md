@@ -10,6 +10,7 @@
 - 上传后可选择“仅作为本次上传词库”或“更新到基础词汇表”
 - 支持按阶段基础词汇表管理：初中、高中、四级、六级、考研、雅思
 - 创建听写房间，生成孩子答题链接和家长监控链接
+- 教师任务管理支持查看当前与历史听写、汇总结果、复制链接和关闭未完成任务
 - 创建听写时可选择全部词库、某个基础词汇表或最近一次上传
 - 三种题型混合随机：
   - 听英文，填写词性、英文、中文意思
@@ -56,6 +57,7 @@ http://localhost:3000
 - `/`：首页
 - `/library`：词库页，上传、预览、查看单词
 - `/create`：创建听写房间
+- `/tasks`：教师听写任务管理
 - `/parent/[roomId]?token=...`：家长监控页
 - `/child/[roomId]?token=...`：孩子答题页
 - `/mistakes`：错词本
@@ -134,12 +136,15 @@ NEXT_PUBLIC_APP_URL=https://你的 EdgeOne 站点域名
 NEXT_PUBLIC_SUPABASE_URL=你的 Supabase URL
 SUPABASE_SERVICE_ROLE_KEY=你的 Supabase service role key
 SUPABASE_TTS_BUCKET=tts-audio
+DICTATION_ADMIN_PASSWORD=教师任务管理密码
 BAIDU_SPEECH_API_KEY=百度语音应用的 API Key
 BAIDU_SPEECH_SECRET_KEY=百度语音应用的 Secret Key
 BAIDU_SPEECH_CUID=english-exercise-server
 ```
 
 `NEXT_PUBLIC_APP_URL` 可先不填；系统会自动使用当前请求域名生成听写链接。绑定自定义域名后再填成正式域名即可。这里请填带 `https://` 的站点根地址，例如 `https://example.com`，不要填 `/child/...` 或 `/parent/...` 页面路径。
+
+`DICTATION_ADMIN_PASSWORD` 用于保护 `/tasks` 教师管理页，请使用独立强密码，不要添加 `NEXT_PUBLIC_` 前缀。登录成功后浏览器会保存 7 天的 HttpOnly 会话；修改密码会让旧会话立即失效。
 
 4. 在 EdgeOne Makers 控制台选择 `Create project` -> `Import Git repository`，导入 GitHub 仓库
 5. EdgeOne 构建设置：

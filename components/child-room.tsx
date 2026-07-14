@@ -77,7 +77,9 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
   }
 
   useEffect(() => {
-    load();
+    void load();
+    const timer = window.setInterval(() => void load(), 5000);
+    return () => window.clearInterval(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roomId, token]);
 
@@ -330,6 +332,17 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
 
   if (!room) {
     return <section className="panel">{message || "加载房间中..."}</section>;
+  }
+
+  if (room.status === "closed" || (room.status === "completed" && !isDone)) {
+    return (
+      <section className="panel">
+        <h1>本次听写已结束</h1>
+        <p className="muted">
+          已提交 {payload.answers.length} / {room.questions.length} 题，当前链接不能继续答题。
+        </p>
+      </section>
+    );
   }
 
   if (isDone) {

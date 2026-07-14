@@ -120,13 +120,14 @@ export function ParentRoom({ roomId, token }: { roomId: string; token: string })
   const answerMap = new Map(payload.answers.map((answer) => [answer.questionId, answer]));
   const correctCount = payload.answers.filter((answer) => answer.verdict.overall === "correct").length;
   const pendingCount = payload.answers.filter((answer) => answer.verdict.overall === "pending").length;
+  const statusLabel = room.status === "completed" ? "已完成" : room.status === "closed" ? "已关闭" : "进行中";
 
   return (
     <div className="grid">
       <section className="grid cols-3">
         <div className="panel stat">
           <strong>{room.id}</strong>
-          <span>房间码</span>
+          <span>房间码 · {statusLabel}</span>
         </div>
         <div className="panel stat">
           <strong>
@@ -153,9 +154,11 @@ export function ParentRoom({ roomId, token }: { roomId: string; token: string })
             <button className="secondary" onClick={load} type="button">
               <RefreshCcw size={18} /> 刷新
             </button>
-            <button onClick={finish} type="button">
-              <SquareCheckBig size={18} /> 结束并写入错词本
-            </button>
+            {room.status === "active" ? (
+              <button onClick={finish} type="button">
+                <SquareCheckBig size={18} /> 结束并写入错词本
+              </button>
+            ) : null}
           </div>
           {message ? <p className="muted">{message}</p> : null}
         </div>

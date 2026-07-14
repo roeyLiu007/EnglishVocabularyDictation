@@ -146,11 +146,12 @@ function isMissingColumnError(error: unknown, columnName: string) {
 }
 
 function mapRoom(row: Record<string, unknown>): DictationRoom {
+  const status = row.status === "completed" || row.status === "closed" ? row.status : "active";
   return {
     id: String(row.id),
     parentToken: String(row.parent_token),
     childToken: String(row.child_token),
-    status: row.status as DictationRoom["status"],
+    status,
     totalCount: Number(row.total_count),
     mistakeRatio: Number(row.mistake_ratio),
     wordSource: row.word_source as DictationRoom["wordSource"],
@@ -158,6 +159,17 @@ function mapRoom(row: Record<string, unknown>): DictationRoom {
     questionMode: "mixed",
     questions: row.questions as DictationRoom["questions"],
     createdAt: String(row.created_at)
+  };
+}
+
+function mapAnswer(row: Record<string, unknown>): SubmittedAnswer {
+  return {
+    roomId: String(row.room_id),
+    questionId: String(row.question_id),
+    answer: row.answer as SubmittedAnswer["answer"],
+    verdict: row.verdict as SubmittedAnswer["verdict"],
+    durationSeconds: typeof row.duration_seconds === "number" ? row.duration_seconds : undefined,
+    submittedAt: String(row.submitted_at)
   };
 }
 
@@ -311,6 +323,56 @@ export async function getRoom(roomId: string) {
   return store.rooms.find((room) => room.id === roomId) ?? null;
 }
 
+export async function listRooms() {
+  const client = supabase();
+  if (client) {
+    const rows: Record<string, unknown>[] = [];
+    for (let from = 0; ; from += supabasePageSize) {
+      const to = from + supabasePageSize - 1;
+      const { data, error } = await client
+        .from("dictation_rooms")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .range(from, to);
+      if (error) throw error;
+      rows.push(...((data ?? []) as Record<string, unknown>[]));
+      if (!data || data.length < supabasePageSize) break;
+    }
+    return rows.map(mapRoom);
+  }
+
+  const store = await readLocalStore();
+  return [...store.rooms].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+}
+
+export async function listAnswersForRooms(roomIds: string[]) {
+  if (!roomIds.length) return [];
+
+  const client = supabase();
+  if (client) {
+    const rows: Record<string, unknown>[] = [];
+    for (const roomIdBatch of chunk(roomIds, supabaseBatchSize)) {
+      for (let from = 0; ; from += supabasePageSize) {
+        const to = from + supabasePageSize - 1;
+        const { data, error } = await client
+          .from("dictation_answers")
+          .select("*")
+          .in("room_id", roomIdBatch)
+          .order("submitted_at", { ascending: true })
+          .range(from, to);
+        if (error) throw error;
+        rows.push(...((data ?? []) as Record<string, unknown>[]));
+        if (!data || data.length < supabasePageSize) break;
+      }
+    }
+    return rows.map(mapAnswer);
+  }
+
+  const roomIdSet = new Set(roomIds);
+  const store = await readLocalStore();
+  return store.answers.filter((answer) => roomIdSet.has(answer.roomId));
+}
+
 export async function listAnswers(roomId: string) {
   const client = supabase();
   if (client) {
@@ -320,14 +382,7 @@ export async function listAnswers(roomId: string) {
       .eq("room_id", roomId)
       .order("submitted_at", { ascending: true });
     if (error) throw error;
-    return (data ?? []).map((row) => ({
-      roomId: String(row.room_id),
-      questionId: String(row.question_id),
-      answer: row.answer,
-      verdict: row.verdict,
-      durationSeconds: typeof row.duration_seconds === "number" ? row.duration_seconds : undefined,
-      submittedAt: String(row.submitted_at)
-    })) as SubmittedAnswer[];
+    return (data ?? []).map((row) => mapAnswer(row as Record<string, unknown>));
   }
 
   const store = await readLocalStore();
@@ -368,6 +423,7 @@ export async function saveAnswer(answer: SubmittedAnswer) {
 export async function completeRoom(roomId: string) {
   const room = await getRoom(roomId);
   if (!room) return null;
+  if (room.status === "closed") throw new Error("本次听写已关闭，不能再结束或写入错词本");
   if (room.status !== "completed") {
     const answers = await listAnswers(roomId);
     const words = await listWords();
@@ -397,4 +453,27 @@ export async function completeRoom(roomId: string) {
   store.rooms = store.rooms.map((item) => (item.id === roomId ? completed : item));
   await writeLocalStore(store);
   return completed;
+}
+
+export async function closeRoom(roomId: string) {
+  const room = await getRoom(roomId);
+  if (!room) return null;
+  if (room.status !== "active") return room;
+
+  const closed: DictationRoom = { ...room, status: "closed" };
+  const client = supabase();
+  if (client) {
+    const { error } = await client
+      .from("dictation_rooms")
+      .update({ status: "closed" })
+      .eq("id", roomId)
+      .eq("status", "active");
+    if (error) throw error;
+    return closed;
+  }
+
+  const store = await readLocalStore();
+  store.rooms = store.rooms.map((item) => (item.id === roomId && item.status === "active" ? closed : item));
+  await writeLocalStore(store);
+  return closed;
 }

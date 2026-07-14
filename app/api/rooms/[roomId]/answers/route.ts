@@ -32,6 +32,9 @@ export async function POST(request: Request, { params }: { params: { roomId: str
     if (!isParent && !isChild) {
       return NextResponse.json({ error: "链接无效或已过期" }, { status: 403 });
     }
+    if (isChild && room.status !== "active") {
+      return NextResponse.json({ error: "本次听写已结束，不能继续提交答案" }, { status: 409 });
+    }
 
     const question = room.questions.find((item) => item.id === body.questionId);
     if (!question) {

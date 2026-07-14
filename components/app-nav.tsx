@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BookOpen, ClipboardList, Home, ListChecks, Upload } from "lucide-react";
+import { ClipboardList, Home, ListChecks, MonitorCheck, Upload } from "lucide-react";
 
 export function AppNav() {
   return (
@@ -16,6 +16,9 @@ export function AppNav() {
         </Link>
         <Link href="/create">
           <ClipboardList size={17} /> 创建听写
+        </Link>
+        <Link href="/tasks">
+          <MonitorCheck size={17} /> 听写任务
         </Link>
         <Link href="/mistakes">
           <ListChecks size={17} /> 错词本

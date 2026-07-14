@@ -12,6 +12,9 @@ export async function POST(request: Request, { params }: { params: { roomId: str
     if (body.token !== room.parentToken && body.token !== room.childToken) {
       return NextResponse.json({ error: "链接无效或已过期" }, { status: 403 });
     }
+    if (room.status === "closed") {
+      return NextResponse.json({ error: "本次听写已关闭，不能继续提交" }, { status: 409 });
+    }
 
     const completed = await completeRoom(room.id);
     return NextResponse.json({ room: completed });

@@ -26,6 +26,9 @@ export async function GET(request: Request, { params }: { params: { roomId: stri
     if (token !== room.childToken && token !== room.parentToken) {
       return NextResponse.json({ error: "链接无效或已过期" }, { status: 403 });
     }
+    if (token === room.childToken && room.status !== "active") {
+      return NextResponse.json({ error: "本次听写已结束" }, { status: 410 });
+    }
 
     const question = room.questions.find((item) => item.id === params.questionId);
     if (!question || question.promptType !== "audio") {

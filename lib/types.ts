@@ -1,5 +1,5 @@
 export type PromptType = "audio" | "english" | "chinese";
-export type RoomStatus = "active" | "completed";
+export type RoomStatus = "active" | "completed" | "closed";
 export type FieldName = "word" | "partOfSpeech" | "meaning";
 export type FieldStatus = "correct" | "wrong" | "pending";
 
@@ -64,6 +64,22 @@ export type DictationRoom = {
   questionMode: "mixed";
   questions: Question[];
   createdAt: string;
+};
+
+export type RoomTaskSummary = {
+  id: string;
+  status: RoomStatus;
+  totalCount: number;
+  answeredCount: number;
+  correctCount: number;
+  wrongCount: number;
+  pendingCount: number;
+  wordSource: DictationRoom["wordSource"];
+  stage?: string;
+  createdAt: string;
+  lastSubmittedAt?: string;
+  parentUrl: string;
+  childUrl: string;
 };
 
 export type AnswerInput = {
