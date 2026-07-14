@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Check, Clock, Languages, PenLine, Volume2 } from "lucide-react";
 import { readApiJson } from "@/lib/client-api";
+import { CLOUD_SPEECH_VOICES, type CloudSpeechVoiceId } from "@/lib/cloud-speech";
 import { speechTextForWord } from "@/lib/dictation";
 import type { AnswerInput, AnswerLine, DictationRoom, SubmittedAnswer } from "@/lib/types";
 
@@ -47,11 +48,18 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
   const [answer, setAnswer] = useState<AnswerInput>({});
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
-  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
-  const [voiceName, setVoiceName] = useState("");
+  const [browserVoices, setBrowserVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [browserVoiceName, setBrowserVoiceName] = useState("");
+  const [cloudVoiceId, setCloudVoiceId] = useState<CloudSpeechVoiceId>("female");
   const [speechRate, setSpeechRate] = useState(0.78);
+  const [speechLoading, setSpeechLoading] = useState(false);
+  const [speechMessage, setSpeechMessage] = useState("");
   const [questionStartedAt, setQuestionStartedAt] = useState(() => Date.now());
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const speechTimerRef = useRef<number | null>(null);
+  const speechRequestRef = useRef(0);
 
   async function load() {
     try {
@@ -82,19 +90,33 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
         .filter((voice) => voice.lang.toLowerCase().startsWith("en"))
         .sort((a, b) => scoreVoice(b) - scoreVoice(a));
 
-      setVoices(englishVoices);
-      setVoiceName((current) => current || localStorage.getItem("dictationVoiceName") || englishVoices[0]?.name || "");
+      setBrowserVoices(englishVoices);
+      setBrowserVoiceName((current) => current || localStorage.getItem("dictationVoiceName") || englishVoices[0]?.name || "");
     };
 
-    loadVoices();
+    const timers = [0, 200, 800, 2000].map((delay) => window.setTimeout(loadVoices, delay));
     window.speechSynthesis.addEventListener("voiceschanged", loadVoices);
-    return () => window.speechSynthesis.removeEventListener("voiceschanged", loadVoices);
+    return () => {
+      timers.forEach((timer) => window.clearTimeout(timer));
+      window.speechSynthesis.removeEventListener("voiceschanged", loadVoices);
+    };
   }, []);
 
   useEffect(() => {
-    if (typeof window === "undefined" || !voiceName) return;
-    localStorage.setItem("dictationVoiceName", voiceName);
-  }, [voiceName]);
+    if (typeof window === "undefined" || !browserVoiceName) return;
+    localStorage.setItem("dictationVoiceName", browserVoiceName);
+  }, [browserVoiceName]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const savedVoice = CLOUD_SPEECH_VOICES.find((voice) => voice.id === localStorage.getItem("dictationCloudVoice"));
+    if (savedVoice) setCloudVoiceId(savedVoice.id);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    localStorage.setItem("dictationCloudVoice", cloudVoiceId);
+  }, [cloudVoiceId]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -106,6 +128,21 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
     if (typeof window === "undefined") return;
     localStorage.setItem("dictationSpeechRate", String(speechRate));
   }, [speechRate]);
+
+  useEffect(() => {
+    return () => {
+      speechRequestRef.current += 1;
+      if (speechTimerRef.current !== null) window.clearTimeout(speechTimerRef.current);
+      if (audioRef.current) {
+        audioRef.current.onerror = null;
+        audioRef.current.pause();
+      }
+      if (utteranceRef.current) utteranceRef.current.onerror = null;
+      if (typeof window !== "undefined" && "speechSynthesis" in window) window.speechSynthesis.cancel();
+      audioRef.current = null;
+      utteranceRef.current = null;
+    };
+  }, []);
 
   const room = payload?.room;
   const answeredIds = useMemo(() => new Set(payload?.answers.map((item) => item.questionId) ?? []), [payload]);
@@ -134,11 +171,35 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
     return () => window.clearInterval(timer);
   }, [current?.id, isDone]);
 
-  function speak() {
-    if (typeof window === "undefined" || !current) return;
+  useEffect(() => {
+    speechRequestRef.current += 1;
+    if (speechTimerRef.current !== null) {
+      window.clearTimeout(speechTimerRef.current);
+      speechTimerRef.current = null;
+    }
+    if (audioRef.current) {
+      audioRef.current.onerror = null;
+      audioRef.current.pause();
+    }
+    if (utteranceRef.current) utteranceRef.current.onerror = null;
+    window.speechSynthesis?.cancel();
+    audioRef.current = null;
+    utteranceRef.current = null;
+    setSpeechLoading(false);
+    setSpeechMessage("");
+  }, [current?.id]);
+
+  function speakWithBrowserFallback(requestId: number) {
+    if (requestId !== speechRequestRef.current) return;
+    if (typeof window === "undefined" || !current || !("speechSynthesis" in window)) {
+      setSpeechLoading(false);
+      setSpeechMessage("发音失败，请稍后重试。");
+      return;
+    }
+
     const text = speechTextForWord(current.speechText || current.answer.word);
     const utterance = new SpeechSynthesisUtterance(text);
-    const selectedVoice = voices.find((voice) => voice.name === voiceName) ?? voices[0];
+    const selectedVoice = browserVoices.find((voice) => voice.name === browserVoiceName) ?? browserVoices[0];
     if (selectedVoice) {
       utterance.voice = selectedVoice;
       utterance.lang = selectedVoice.lang;
@@ -147,8 +208,78 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
     }
     utterance.rate = speechRate;
     utterance.pitch = 1;
+    utterance.volume = 1;
+    utterance.onstart = () => {
+      if (requestId !== speechRequestRef.current) return;
+      setSpeechLoading(false);
+      setSpeechMessage("云端发音暂不可用，已切换到浏览器发音。");
+    };
+    utterance.onend = () => {
+      if (utteranceRef.current === utterance) utteranceRef.current = null;
+    };
+    utterance.onerror = () => {
+      if (requestId !== speechRequestRef.current) return;
+      if (utteranceRef.current === utterance) utteranceRef.current = null;
+      setSpeechLoading(false);
+      setSpeechMessage("发音失败，请检查媒体音量或使用 Chrome 打开链接。");
+    };
+
+    utteranceRef.current = utterance;
+    if (speechTimerRef.current !== null) window.clearTimeout(speechTimerRef.current);
     window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(utterance);
+    speechTimerRef.current = window.setTimeout(() => {
+      speechTimerRef.current = null;
+      if (requestId !== speechRequestRef.current) return;
+      window.speechSynthesis.resume();
+      window.speechSynthesis.speak(utterance);
+    }, 80);
+  }
+
+  function speak() {
+    if (typeof window === "undefined" || !current) return;
+
+    const requestId = speechRequestRef.current + 1;
+    speechRequestRef.current = requestId;
+    if (speechTimerRef.current !== null) {
+      window.clearTimeout(speechTimerRef.current);
+      speechTimerRef.current = null;
+    }
+    if (audioRef.current) {
+      audioRef.current.onerror = null;
+      audioRef.current.pause();
+    }
+    if (utteranceRef.current) utteranceRef.current.onerror = null;
+    window.speechSynthesis?.cancel();
+    utteranceRef.current = null;
+    setSpeechLoading(true);
+    setSpeechMessage("");
+
+    const audio = new Audio();
+    let fallbackStarted = false;
+    const startFallback = () => {
+      if (fallbackStarted || requestId !== speechRequestRef.current) return;
+      fallbackStarted = true;
+      audio.onerror = null;
+      audio.pause();
+      if (audioRef.current === audio) audioRef.current = null;
+      speakWithBrowserFallback(requestId);
+    };
+
+    audioRef.current = audio;
+    audio.preload = "auto";
+    audio.playbackRate = speechRate;
+    audio.preservesPitch = true;
+    audio.onplaying = () => {
+      if (requestId !== speechRequestRef.current) return;
+      setSpeechLoading(false);
+      setSpeechMessage("");
+    };
+    audio.onended = () => {
+      if (audioRef.current === audio) audioRef.current = null;
+    };
+    audio.onerror = startFallback;
+    audio.src = `/api/rooms/${roomId}/speech/${current.id}?token=${encodeURIComponent(token)}&voice=${cloudVoiceId}`;
+    void audio.play().catch(startFallback);
   }
 
   async function submit() {
@@ -288,23 +419,19 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
           <div className="audio-prompt">
             <div className="audio-prompt-main">
               <p className="prompt dictation-prompt-title">{currentEntryType === "phrase" ? "听英文词组" : "听英文发音"}</p>
-              <button className="play-button" onClick={speak} type="button">
-                <Volume2 size={24} /> 播放
+              <button className="play-button" disabled={speechLoading} onClick={speak} type="button">
+                <Volume2 size={24} /> {speechLoading ? "准备中..." : "播放"}
               </button>
             </div>
             <div className="audio-controls">
               <label>
                 声音
-                <select value={voiceName} onChange={(event) => setVoiceName(event.target.value)}>
-                  {voices.length ? (
-                    voices.map((voice) => (
-                      <option key={`${voice.name}-${voice.lang}`} value={voice.name}>
-                        {voice.name} ({voice.lang})
-                      </option>
-                    ))
-                  ) : (
-                    <option value="">浏览器默认英文</option>
-                  )}
+                <select value={cloudVoiceId} onChange={(event) => setCloudVoiceId(event.target.value as CloudSpeechVoiceId)}>
+                  {CLOUD_SPEECH_VOICES.map((voice) => (
+                    <option key={voice.id} value={voice.id}>
+                      {voice.label}
+                    </option>
+                  ))}
                 </select>
               </label>
               <label>
@@ -319,6 +446,7 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
                 />
               </label>
             </div>
+            {speechMessage ? <p className="speech-message" role="status">{speechMessage}</p> : null}
           </div>
         ) : (
           <div className="prompt text-prompt">{current.prompt}</div>

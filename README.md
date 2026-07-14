@@ -133,6 +133,10 @@ supabase/schema.sql
 NEXT_PUBLIC_APP_URL=https://你的 EdgeOne 站点域名
 NEXT_PUBLIC_SUPABASE_URL=你的 Supabase URL
 SUPABASE_SERVICE_ROLE_KEY=你的 Supabase service role key
+SUPABASE_TTS_BUCKET=tts-audio
+BAIDU_SPEECH_API_KEY=百度语音应用的 API Key
+BAIDU_SPEECH_SECRET_KEY=百度语音应用的 Secret Key
+BAIDU_SPEECH_CUID=english-exercise-server
 ```
 
 `NEXT_PUBLIC_APP_URL` 可先不填；系统会自动使用当前请求域名生成听写链接。绑定自定义域名后再填成正式域名即可。这里请填带 `https://` 的站点根地址，例如 `https://example.com`，不要填 `/child/...` 或 `/parent/...` 页面路径。
@@ -151,6 +155,17 @@ Node version: 20.18.0
 
 配置 Supabase 后，词库、房间、答题记录、错词统计都会写入远程数据库。
 
+## 云端英文发音
+
+听力题优先使用百度智能云短文本在线语音合成生成 MP3，并缓存到 Supabase Storage。默认提供基础英文女声和英文男声；同一个单词和音色只生成一次，语速由浏览器播放器调整。云端配置不可用时会自动回退到浏览器 TTS。
+
+1. 在百度智能云语音技术控制台创建应用并开通短文本在线合成，取得 API Key 和 Secret Key。
+2. 在 EdgeOne 中配置 `BAIDU_SPEECH_API_KEY`、`BAIDU_SPEECH_SECRET_KEY` 和可选的 `BAIDU_SPEECH_CUID`。
+3. 保持 `SUPABASE_TTS_BUCKET=tts-audio`，首次生成时服务端会自动创建公开 Bucket；MP3 使用不可逆文本哈希命名，不公开原始单词。
+4. 不要给百度密钥添加 `NEXT_PUBLIC_` 前缀，也不要提交 `.env.local`。
+
+部署后第一次播放某个单词时会等待云端生成，后续播放会直接使用 Supabase CDN 缓存。
+
 ## 常用命令
 
 ```bash
@@ -163,6 +178,6 @@ npm run build
 ## 注意事项
 
 - 扫描版 PDF 暂不支持 OCR。
-- 浏览器发音质量取决于设备内置英文语音；iPad/Mac 上建议选择高质量英文 voice。
+- 云端英文发音需要同时配置百度语音和 Supabase Storage；配置缺失时会回退到设备浏览器发音。
 - 本地文件存储适合开发和试用；正式异地使用建议改用 Supabase。
 - `.env.local`、`.next`、`node_modules` 等不会提交到 GitHub。

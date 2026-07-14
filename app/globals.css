@@ -524,6 +524,13 @@ tbody tr:nth-child(even) td {
   grid-template-columns: minmax(0, 1fr) minmax(180px, 240px);
 }
 
+.speech-message {
+  color: var(--pending);
+  font-size: 14px;
+  font-weight: 700;
+  margin: 0;
+}
+
 .answer-card {
   border-color: rgba(111, 92, 255, 0.28);
   display: grid;
