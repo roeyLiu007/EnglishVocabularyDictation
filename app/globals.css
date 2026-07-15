@@ -670,6 +670,19 @@ tbody tr:nth-child(even) td {
   margin-inline: auto;
 }
 
+.final-checkpoint {
+  margin: 8vh auto 0;
+  max-width: 680px;
+}
+
+.final-checkpoint-actions {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 24px auto 0;
+  max-width: 520px;
+}
+
 .status-badge.learning { background: #fff2cf; color: #8a5b00; }
 .status-badge.review { background: #e8f6ff; color: #176b89; }
 .status-badge.mastered { background: #def7ed; color: #087455; }
@@ -1100,6 +1113,10 @@ tbody tr:nth-child(even) td {
   .task-toolbar {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .final-checkpoint-actions {
+    grid-template-columns: 1fr;
   }
 
   .task-toolbar-actions > * {

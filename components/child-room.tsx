@@ -389,6 +389,23 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
   }
 
   if (isDone && !reviewMode) {
+    if (room.status === "active") {
+      return (
+        <section className="panel completion-summary final-checkpoint">
+          <span className="eyebrow">全部题目已作答</span>
+          <h1>交卷前检查</h1>
+          <p className="muted">答案尚未公开。你可以先逐题检查修改，确认无误后再正式交卷。</p>
+          <div className="final-checkpoint-actions">
+            <button className="secondary" onClick={() => { setReviewMode(true); selectQuestion(0); }} type="button">
+              <PenLine size={18} /> 检查并修改答案
+            </button>
+            <button onClick={() => { if (window.confirm("确认交卷？交卷后不能再修改答案。")) void finish(); }} type="button">
+              <Check size={18} /> 确认交卷
+            </button>
+          </div>
+        </section>
+      );
+    }
     const correctCount = payload.answers.filter((item) => item.verdict.overall === "correct").length;
     const totalSeconds = payload.answers.reduce((sum, item) => sum + (item.durationSeconds ?? 0), 0);
     return (
@@ -400,11 +417,8 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
             {correctCount} / {room.questions.length}
           </p>
           <p className="muted">正确率 {Math.round((correctCount / Math.max(1, room.questions.length)) * 100)}% · 总用时 {formatDuration(totalSeconds)}</p>
-          {!showAnswers ? <button onClick={async () => { await finish(); setShowAnswers(true); }} type="button">
+          {!showAnswers ? <button onClick={() => setShowAnswers(true)} type="button">
             <Check size={18} /> 查看答案解析
-          </button> : null}
-          {room.status !== "recorded" ? <button className="secondary" onClick={() => { setReviewMode(true); selectQuestion(0); }} type="button">
-            <PenLine size={18} /> 检查并修改答案
           </button> : null}
         </div>
         {showAnswers ? <div className="panel">
@@ -479,7 +493,7 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
       <div className="panel question-navigator" aria-label="选择题目">
         <div className="question-navigator-header">
           <strong>选择题目</strong>
-          {isDone ? <button className="secondary" onClick={() => setReviewMode(false)} type="button">返回成绩</button> : null}
+          {isDone ? <button className="secondary" onClick={() => setReviewMode(false)} type="button">返回交卷</button> : null}
         </div>
         <div className="question-number-grid">
           {room.questions.map((question, questionIndex) => (

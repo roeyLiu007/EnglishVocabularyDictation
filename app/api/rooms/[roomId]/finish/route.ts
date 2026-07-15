@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { completeRoom, getRoom } from "@/lib/server/store";
+import { completeRoom, getRoom, listAnswers } from "@/lib/server/store";
 
 export async function POST(request: Request, { params }: { params: { roomId: string } }) {
   try {
@@ -14,6 +14,12 @@ export async function POST(request: Request, { params }: { params: { roomId: str
     }
     if (room.status === "closed") {
       return NextResponse.json({ error: "本次听写已关闭，不能继续提交" }, { status: 409 });
+    }
+    if (body.token === room.childToken) {
+      const answers = await listAnswers(room.id);
+      if (answers.length < room.questions.length) {
+        return NextResponse.json({ error: "请完成全部题目后再交卷" }, { status: 409 });
+      }
     }
 
     const completed = await completeRoom(room.id);
