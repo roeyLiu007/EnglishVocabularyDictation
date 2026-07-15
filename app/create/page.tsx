@@ -1,7 +1,10 @@
 import { AppNav } from "@/components/app-nav";
 import { CreateRoom } from "@/components/create-room";
+import { redirect } from "next/navigation";
+import { hasTeacherPageSession } from "@/lib/server/page-auth";
 
 export default function CreatePage() {
+  if (!hasTeacherPageSession()) redirect("/library");
   return (
     <main className="shell">
       <AppNav />

@@ -400,7 +400,7 @@ table {
 }
 
 .library-table {
-  min-width: 1290px;
+  min-width: 1080px;
   table-layout: fixed;
 }
 
@@ -472,6 +472,43 @@ tbody tr:nth-child(even) td {
 .library-table th,
 .library-table td {
   padding: 8px 6px;
+}
+
+.library-table td,
+.mistake-table td {
+  height: 72px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.library-table textarea,
+.mistake-table textarea {
+  line-height: 1.5;
+  min-height: 58px;
+  white-space: normal;
+}
+
+.mistake-table {
+  min-width: 1160px;
+  table-layout: fixed;
+}
+
+.mistake-table th:nth-child(1) { width: 130px; }
+.mistake-table th:nth-child(2) { width: 82px; }
+.mistake-table th:nth-child(3) { width: 120px; }
+.mistake-table th:nth-child(4) { width: 130px; }
+.mistake-table th:nth-child(5) { width: 190px; }
+.mistake-table th:nth-child(6) { width: 74px; }
+.mistake-table th:nth-child(7) { width: 130px; }
+.mistake-table th:nth-child(8) { width: 130px; }
+.mistake-table th:nth-child(9) { width: 76px; }
+.mistake-table th:nth-child(10) { width: 130px; }
+.mistake-table th:nth-child(11) { width: 92px; }
+
+.person-pill {
+  margin: 2px 5px 2px 0;
 }
 
 .library-table input,

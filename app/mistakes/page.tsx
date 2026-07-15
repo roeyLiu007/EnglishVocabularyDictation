@@ -6,7 +6,7 @@ export default function MistakesPage() {
     <main className="shell">
       <AppNav />
       <h1>错词本</h1>
-      <p className="muted">错词会在听写完成时结算，可在这里修改单词内容、逐个移除错词记录，或一键清空全部错词。</p>
+      <p className="muted">教师记录听写结果后，错词会汇总到这里；支持按听写人、错误类型和复习状态筛选。</p>
       <MistakeBook />
     </main>
   );

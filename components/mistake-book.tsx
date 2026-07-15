@@ -28,6 +28,8 @@ export function MistakeBook() {
   const [words, setWords] = useState<WordEntry[]>([]);
   const [filter, setFilter] = useState<"all" | FieldName>("all");
   const [statusFilter, setStatusFilter] = useState<"all" | "due" | "learning" | "review" | "mastered">("all");
+  const [personFilter, setPersonFilter] = useState("all");
+  const [authenticated, setAuthenticated] = useState(false);
   const [savingWordId, setSavingWordId] = useState<string | null>(null);
   const [clearingWordId, setClearingWordId] = useState<string | null>(null);
   const [clearingAll, setClearingAll] = useState(false);
@@ -41,7 +43,13 @@ export function MistakeBook() {
 
   useEffect(() => {
     loadWords().catch(() => setWords([]));
+    fetch("/api/admin/session", { cache: "no-store" })
+      .then((response) => response.json())
+      .then((data) => setAuthenticated(Boolean(data.authenticated)))
+      .catch(() => setAuthenticated(false));
   }, []);
+
+  const people = useMemo(() => Array.from(new Set(words.flatMap((word) => Object.keys(word.stats.mistakePeople ?? {})))).sort(), [words]);
 
   function updateWord(wordId: string, patch: Partial<WordEntry>) {
     setWords((items) => items.map((word) => (word.id === wordId ? { ...word, ...patch } : word)));
@@ -124,8 +132,9 @@ export function MistakeBook() {
       .filter((word) => statusFilter === "all" || (statusFilter === "due"
         ? Boolean(word.stats.nextReviewAt && new Date(word.stats.nextReviewAt).getTime() <= Date.now())
         : word.stats.proficiency === statusFilter))
+      .filter((word) => personFilter === "all" || (word.stats.mistakePeople?.[personFilter] ?? 0) > 0)
       .sort((a, b) => b.stats.wrongCount - a.stats.wrongCount);
-  }, [filter, statusFilter, words]);
+  }, [filter, personFilter, statusFilter, words]);
 
   return (
     <div className="grid">
@@ -156,6 +165,13 @@ export function MistakeBook() {
             </select>
           </label>
           <label>
+            听写人
+            <select value={personFilter} onChange={(event) => setPersonFilter(event.target.value)}>
+              <option value="all">全部听写人</option>
+              {people.map((person) => <option key={person} value={person}>{person}</option>)}
+            </select>
+          </label>
+          <label>
             复习状态
             <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as typeof statusFilter)}>
               <option value="all">全部状态</option>
@@ -165,16 +181,16 @@ export function MistakeBook() {
               <option value="mastered">已掌握</option>
             </select>
           </label>
-          <button className="danger" disabled={clearingAll || !words.some((word) => word.stats.wrongCount > 0)} onClick={clearAllMistakes} type="button">
+          {authenticated ? <button className="danger" disabled={clearingAll || !words.some((word) => word.stats.wrongCount > 0)} onClick={clearAllMistakes} type="button">
             <Trash2 size={18} /> 一键清空错词
-          </button>
+          </button> : <span className="pill">只读模式</span>}
         </div>
         {message ? <p className="muted">{message}</p> : null}
       </section>
 
       <section className="panel">
         <div style={{ overflowX: "auto" }}>
-          <table>
+          <table className="mistake-table">
             <thead>
               <tr>
                 <th>英文</th>
@@ -184,6 +200,7 @@ export function MistakeBook() {
                 <th>中文意思</th>
                 <th>错误次数</th>
                 <th>错误位置</th>
+                <th>听写人</th>
                 <th>连续答对</th>
                 <th>熟练度 / 下次复习</th>
                 <th>操作</th>
@@ -193,25 +210,25 @@ export function MistakeBook() {
               {mistakes.map((word) => (
                 <tr key={word.id}>
                   <td>
-                    <input value={word.word} onChange={(event) => updateWord(word.id, { word: event.target.value })} />
+                    {authenticated ? <input value={word.word} onChange={(event) => updateWord(word.id, { word: event.target.value })} /> : <strong>{word.word}</strong>}
                   </td>
                   <td>
-                    <select
+                    {authenticated ? <select
                       value={word.entryType ?? "word"}
                       onChange={(event) => updateWord(word.id, { entryType: event.target.value as "word" | "phrase" })}
                     >
                       <option value="word">单词</option>
                       <option value="phrase">词组</option>
-                    </select>
+                    </select> : word.entryType === "phrase" ? "词组" : "单词"}
                   </td>
                   <td>
-                    <input value={word.phonetic ?? ""} onChange={(event) => updateWord(word.id, { phonetic: event.target.value })} />
+                    {authenticated ? <input value={word.phonetic ?? ""} onChange={(event) => updateWord(word.id, { phonetic: event.target.value })} /> : word.phonetic || "-"}
                   </td>
                   <td>
-                    <input value={word.partOfSpeech} onChange={(event) => updateWord(word.id, { partOfSpeech: event.target.value })} />
+                    {authenticated ? <input value={word.partOfSpeech} onChange={(event) => updateWord(word.id, { partOfSpeech: event.target.value })} /> : word.partOfSpeech || "-"}
                   </td>
                   <td>
-                    <textarea value={word.meaning} onChange={(event) => updateWord(word.id, { meaning: event.target.value })} />
+                    {authenticated ? <textarea value={word.meaning} onChange={(event) => updateWord(word.id, { meaning: event.target.value })} /> : word.meaning}
                   </td>
                   <td>
                     <span className="pill wrong">{word.stats.wrongCount}</span>
@@ -223,6 +240,7 @@ export function MistakeBook() {
                       </span>
                     ))}
                   </td>
+                  <td>{Object.entries(word.stats.mistakePeople ?? {}).map(([person, count]) => <span className="pill person-pill" key={person}>{person} {count}</span>)}</td>
                   <td>{word.stats.consecutiveCorrect}</td>
                   <td>
                     <span className={`status-badge ${word.stats.proficiency ?? "new"}`}>
@@ -231,7 +249,7 @@ export function MistakeBook() {
                     <div className="table-subtext">{reviewLabel(word.stats.nextReviewAt)}</div>
                   </td>
                   <td>
-                    <div className="row-actions">
+                    {authenticated ? <div className="row-actions">
                       <button
                         aria-label={`保存 ${word.word}`}
                         disabled={savingWordId === word.id || clearingWordId === word.id}
@@ -251,13 +269,13 @@ export function MistakeBook() {
                       >
                         <Trash2 size={18} />
                       </button>
-                    </div>
+                    </div> : <span className="muted">只读</span>}
                   </td>
                 </tr>
               ))}
               {!mistakes.length ? (
                 <tr>
-                  <td colSpan={10} className="muted">
+                  <td colSpan={11} className="muted">
                     暂时还没有错词。完成一次听写后，这里会自动更新。
                   </td>
                 </tr>

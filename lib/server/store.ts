@@ -111,9 +111,13 @@ function hydrateWord(word: WordEntry): WordEntry {
     fieldWrongCounts: {},
     consecutiveCorrect: 0,
     proficiency: "new" as const,
-    reviewIntervalDays: 0
+    reviewIntervalDays: 0,
+    mistakePeople: {}
   };
   const hydratedStats = { ...baseStats, ...(word.stats ?? {}) };
+  if (hydratedStats.wrongCount > 0 && !Object.keys(hydratedStats.mistakePeople ?? {}).length) {
+    hydratedStats.mistakePeople = { 未标注: hydratedStats.wrongCount };
+  }
   if (!word.stats?.proficiency) {
     hydratedStats.proficiency = hydratedStats.consecutiveCorrect >= 4
       ? "mastered"
@@ -146,7 +150,8 @@ function resetWordStats(word: WordEntry): WordEntry {
       fieldWrongCounts: {},
       consecutiveCorrect: 0,
       proficiency: "new",
-      reviewIntervalDays: 0
+      reviewIntervalDays: 0,
+      mistakePeople: {}
     }
   };
 }
@@ -162,6 +167,7 @@ function isMissingColumnError(error: unknown, columnName: string) {
 
 function mapRoom(row: Record<string, unknown>): DictationRoom {
   const status = row.status === "completed" || row.status === "recorded" || row.status === "closed" ? row.status : "active";
+  const questions = row.questions as DictationRoom["questions"];
   return {
     id: String(row.id),
     parentToken: String(row.parent_token),
@@ -171,8 +177,9 @@ function mapRoom(row: Record<string, unknown>): DictationRoom {
     mistakeRatio: Number(row.mistake_ratio),
     wordSource: row.word_source as DictationRoom["wordSource"],
     stage: String(row.stage ?? ""),
+    dictationPerson: questions?.[0]?.dictationPerson ?? "未标注",
     questionMode: "mixed",
-    questions: row.questions as DictationRoom["questions"],
+    questions,
     createdAt: String(row.created_at)
   };
 }
@@ -475,7 +482,20 @@ export async function recordRoomMistakes(roomId: string) {
     const question = room.questions.find((item) => item.id === answer.questionId);
     const word = question ? words.find((item) => item.id === question.wordId) : null;
     if (!word) continue;
-    const updated = applyVerdictToStats(word, answer.verdict);
+    let updated = applyVerdictToStats(word, answer.verdict);
+    if (answer.verdict.overall === "wrong") {
+      const person = room.dictationPerson || question?.dictationPerson || "未标注";
+      updated = {
+        ...updated,
+        stats: {
+          ...updated.stats,
+          mistakePeople: {
+            ...(updated.stats.mistakePeople ?? {}),
+            [person]: (updated.stats.mistakePeople?.[person] ?? 0) + 1
+          }
+        }
+      };
+    }
     await updateWord(updated);
     const index = words.findIndex((item) => item.id === word.id);
     if (index >= 0) words[index] = updated;

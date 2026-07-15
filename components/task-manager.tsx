@@ -241,7 +241,7 @@ export function TaskManager() {
                 <tr key={task.id}>
                   <td><span className={`status-badge ${task.status}`}>{statusLabel(task.status)}</span></td>
                   <td>{formatDate(task.createdAt)}</td>
-                  <td><strong>{task.id}</strong><div className="table-subtext">{sourceLabel(task)} · {task.totalCount} 题</div></td>
+                  <td><strong>{task.id}</strong><div className="table-subtext">{task.dictationPerson || "未标注"} · {sourceLabel(task)} · {task.totalCount} 题</div></td>
                   <td>
                     <div className="task-progress-label"><span>{task.answeredCount}/{task.totalCount}</span><span>{Math.round((task.answeredCount / Math.max(1, task.totalCount)) * 100)}%</span></div>
                     <progress max={Math.max(1, task.totalCount)} value={task.answeredCount} />

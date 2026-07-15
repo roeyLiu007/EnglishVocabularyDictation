@@ -1,8 +1,11 @@
 import Link from "next/link";
 import { BookOpen, ClipboardList, TabletSmartphone } from "lucide-react";
 import { AppNav } from "@/components/app-nav";
+import { redirect } from "next/navigation";
+import { hasTeacherPageSession } from "@/lib/server/page-auth";
 
 export default function HomePage() {
+  if (!hasTeacherPageSession()) redirect("/library");
   return (
     <main className="shell">
       <AppNav />

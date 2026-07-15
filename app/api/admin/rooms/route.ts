@@ -36,6 +36,7 @@ export async function GET(request: Request) {
         pendingCount: roomAnswers.filter((answer) => answer.verdict.overall === "pending").length,
         wordSource: room.wordSource,
         stage: room.stage,
+        dictationPerson: room.dictationPerson,
         createdAt: room.createdAt,
         lastSubmittedAt: submittedTimes.at(-1),
         parentUrl: buildRoomLink(baseUrl, "parent", room.id, room.parentToken),

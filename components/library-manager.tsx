@@ -250,6 +250,7 @@ export function LibraryManager() {
       return;
     }
     setAuthenticated(true);
+    window.dispatchEvent(new Event("teacher-session-changed"));
     setPassword("");
     setMessage("教师权限已解锁");
   }
@@ -257,6 +258,7 @@ export function LibraryManager() {
   async function logout() {
     await fetch("/api/admin/session", { method: "DELETE" });
     setAuthenticated(false);
+    window.dispatchEvent(new Event("teacher-session-changed"));
     setMessage("已退出教师权限，词库切换为只读模式");
     await loadWords();
   }

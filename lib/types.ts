@@ -14,6 +14,7 @@ export type WordStats = {
   proficiency?: "new" | "learning" | "review" | "mastered";
   nextReviewAt?: string;
   reviewIntervalDays?: number;
+  mistakePeople?: Record<string, number>;
 };
 
 export type WordEntry = {
@@ -48,6 +49,7 @@ export type Question = {
   speechText?: string;
   targetFields: FieldName[];
   manualMistakeRecording?: boolean;
+  dictationPerson?: string;
   answer: {
     entryType?: "word" | "phrase";
     word: string;
@@ -68,6 +70,7 @@ export type DictationRoom = {
   stage?: string;
   questionMode: "mixed" | "custom";
   promptTypeWeights?: PromptTypeWeights;
+  dictationPerson?: string;
   questions: Question[];
   createdAt: string;
 };
@@ -82,6 +85,7 @@ export type RoomTaskSummary = {
   pendingCount: number;
   wordSource: DictationRoom["wordSource"];
   stage?: string;
+  dictationPerson?: string;
   createdAt: string;
   lastSubmittedAt?: string;
   parentUrl: string;
@@ -122,6 +126,7 @@ export type CreateRoomInput = {
   wordSource?: "all" | "stage" | "latestUpload";
   stage?: string;
   promptTypeWeights?: PromptTypeWeights;
+  dictationPerson?: string;
 };
 
 export type ImportPreviewWord = Pick<

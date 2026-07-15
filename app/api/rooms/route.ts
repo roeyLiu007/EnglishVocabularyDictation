@@ -4,6 +4,7 @@ import { appBaseUrl, buildRoomLink } from "@/lib/room-links";
 import { createRoom, listWords } from "@/lib/server/store";
 import type { CreateRoomInput, DictationRoom } from "@/lib/types";
 import { normalizeStage, stageLabel } from "@/lib/vocabulary";
+import { isAdminRequest } from "@/lib/server/admin-auth";
 
 function shortId() {
   return Math.random().toString(36).slice(2, 8).toUpperCase();
@@ -14,8 +15,11 @@ function token() {
 }
 
 export async function POST(request: Request) {
+  if (!isAdminRequest(request)) return NextResponse.json({ error: "只有教师可以创建听写" }, { status: 401 });
   try {
     const input = (await request.json()) as CreateRoomInput;
+    const dictationPerson = input.dictationPerson?.trim();
+    if (!dictationPerson) return NextResponse.json({ error: "请填写听写人" }, { status: 400 });
     const allWords = await listWords();
     const source = input.wordSource ?? "all";
     const stage = normalizeStage(input.stage ?? "");
@@ -53,6 +57,7 @@ export async function POST(request: Request) {
       stage,
       questionMode: input.promptTypeWeights ? "custom" : "mixed",
       promptTypeWeights: input.promptTypeWeights,
+      dictationPerson,
       questions,
       createdAt: new Date().toISOString()
     };

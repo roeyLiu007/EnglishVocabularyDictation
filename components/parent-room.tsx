@@ -141,7 +141,7 @@ export function ParentRoom({ roomId, token }: { roomId: string; token: string })
       <section className="grid cols-3">
         <div className="panel stat">
           <strong>{room.id}</strong>
-          <span>房间码 · {statusLabel}</span>
+          <span>房间码 · {room.dictationPerson || "未标注"} · {statusLabel}</span>
         </div>
         <div className="panel stat">
           <strong>

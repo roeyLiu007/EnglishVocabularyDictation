@@ -18,7 +18,8 @@ export const defaultStats = (): WordStats => ({
   fieldWrongCounts: {},
   consecutiveCorrect: 0,
   proficiency: "new",
-  reviewIntervalDays: 0
+  reviewIntervalDays: 0,
+  mistakePeople: {}
 });
 
 const partOfSpeechDefinitions = [
@@ -522,7 +523,7 @@ function shuffle<T>(items: T[]) {
   return [...items].sort(() => Math.random() - 0.5);
 }
 
-function makeQuestion(word: WordEntry, index: number, promptType: PromptType): Question {
+function makeQuestion(word: WordEntry, index: number, promptType: PromptType, dictationPerson: string): Question {
   const id = `${word.id}-${promptType}-${Date.now()}-${index}`;
   const entryType: "word" | "phrase" = word.entryType === "phrase" ? "phrase" : "word";
   const lines = answerLinesFor(word);
@@ -546,6 +547,7 @@ function makeQuestion(word: WordEntry, index: number, promptType: PromptType): Q
         speechText: speechTextForWord(word.word),
         targetFields: ["word", "meaning"],
         manualMistakeRecording,
+        dictationPerson,
         answer
       };
     }
@@ -559,6 +561,7 @@ function makeQuestion(word: WordEntry, index: number, promptType: PromptType): Q
         prompt: word.word,
         targetFields: ["meaning"],
         manualMistakeRecording,
+        dictationPerson,
         answer
       };
     }
@@ -571,6 +574,7 @@ function makeQuestion(word: WordEntry, index: number, promptType: PromptType): Q
       prompt: word.meaning,
       targetFields: ["word"],
       manualMistakeRecording,
+      dictationPerson,
       answer
     };
   }
@@ -585,6 +589,7 @@ function makeQuestion(word: WordEntry, index: number, promptType: PromptType): Q
       speechText: speechTextForWord(word.word),
       targetFields: ["partOfSpeech", "word", "meaning"],
       manualMistakeRecording,
+      dictationPerson,
       answer
     };
   }
@@ -598,6 +603,7 @@ function makeQuestion(word: WordEntry, index: number, promptType: PromptType): Q
       prompt: word.word,
       targetFields: ["partOfSpeech", "meaning"],
       manualMistakeRecording,
+      dictationPerson,
       answer
     };
   }
@@ -610,6 +616,7 @@ function makeQuestion(word: WordEntry, index: number, promptType: PromptType): Q
     prompt: word.meaning,
     targetFields: ["partOfSpeech", "word"],
     manualMistakeRecording,
+    dictationPerson,
     answer
   };
 }
@@ -640,7 +647,8 @@ export function buildQuestions(words: WordEntry[], input: CreateRoomInput) {
     Array.from({ length: Math.round((weights[type] / totalWeight) * 100) }, () => type)
   );
   const sequence = promptTypes.length ? shuffle(promptTypes) : ["audio" as PromptType];
-  return selected.map((word, index) => makeQuestion(word, index, sequence[index % sequence.length]));
+  const dictationPerson = input.dictationPerson?.trim() || "未标注";
+  return selected.map((word, index) => makeQuestion(word, index, sequence[index % sequence.length], dictationPerson));
 }
 
 export function parseWordListText(text: string): ImportPreviewWord[] {

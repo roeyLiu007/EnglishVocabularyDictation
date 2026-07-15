@@ -51,3 +51,8 @@ export function isAdminRequest(request: Request) {
   if (!password) return false;
   return safeEqual(cookieValue(request, adminCookieName), sessionToken(password));
 }
+
+export function isAdminSessionToken(value = "") {
+  const password = configuredPassword();
+  return Boolean(password) && safeEqual(value, sessionToken(password));
+}
