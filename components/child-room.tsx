@@ -290,6 +290,11 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
 
   async function submit() {
     if (!current) return;
+    const editingExistingAnswer = answeredIds.has(current.id);
+    const submittedInput: AnswerInput = {
+      ...answer,
+      lines: answer.lines?.map((line) => ({ ...line }))
+    };
     const missing = current.targetFields.some((field) => {
       if (field === "word") return !answer.word?.trim();
       return answerLines.some((_, lineIndex) => !inputLines[lineIndex]?.[field]?.trim());
@@ -309,9 +314,16 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
       });
       const data = await readApiJson<AnswerPayload>(response, "提交失败");
       if (!response.ok) throw new Error(data.error ?? "提交失败");
-      setAnswer({});
+      if (editingExistingAnswer && isDone) {
+        setAnswer(submittedInput);
+      } else {
+        setAnswer({});
+      }
       setSkippedIds((items) => items.filter((id) => id !== current.id));
       await load();
+      if (editingExistingAnswer && isDone) {
+        setMessage(`第 ${index + 1} 题修改已保存，当前显示的是最近提交内容。`);
+      }
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "提交失败");
     } finally {
