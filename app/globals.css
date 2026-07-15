@@ -345,15 +345,6 @@ textarea {
   max-width: 260px;
 }
 
-.saved-words-table input:disabled,
-.saved-words-table textarea:disabled,
-.saved-words-table select:disabled {
-  background: transparent;
-  border-color: transparent;
-  color: var(--ink);
-  opacity: 1;
-  -webkit-text-fill-color: var(--ink);
-}
 
 .row-actions {
   display: flex;

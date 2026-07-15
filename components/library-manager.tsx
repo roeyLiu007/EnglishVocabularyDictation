@@ -659,46 +659,43 @@ export function LibraryManager() {
               {visibleWords.map((word) => (
                 <tr key={word.id}>
                   <td>
-                    <input disabled={!authenticated} value={word.word} onChange={(event) => updateSavedWord(word.id, { word: event.target.value })} />
+                    {authenticated ? <input value={word.word} onChange={(event) => updateSavedWord(word.id, { word: event.target.value })} /> : <strong>{word.word}</strong>}
                   </td>
                   <td>
-                    <select
-                      disabled={!authenticated}
+                    {authenticated ? <select
                       value={word.entryType ?? "word"}
                       onChange={(event) => updateSavedWord(word.id, { entryType: event.target.value as "word" | "phrase" })}
                     >
                       <option value="word">单词</option>
                       <option value="phrase">词组</option>
-                    </select>
+                    </select> : entryTypeLabel(word.entryType)}
                   </td>
                   <td>
-                    <input disabled={!authenticated} value={word.phonetic ?? ""} onChange={(event) => updateSavedWord(word.id, { phonetic: event.target.value })} />
+                    {authenticated ? <input value={word.phonetic ?? ""} onChange={(event) => updateSavedWord(word.id, { phonetic: event.target.value })} /> : word.phonetic || "-"}
                   </td>
                   <td>
-                    <input
-                      disabled={!authenticated}
+                    {authenticated ? <input
                       value={word.partOfSpeech}
                       onChange={(event) => updateSavedWord(word.id, { partOfSpeech: event.target.value })}
-                    />
+                    /> : word.partOfSpeech || "-"}
                   </td>
                   <td>
-                    <textarea disabled={!authenticated} value={word.meaning} onChange={(event) => updateSavedWord(word.id, { meaning: event.target.value })} />
+                    {authenticated ? <textarea value={word.meaning} onChange={(event) => updateSavedWord(word.id, { meaning: event.target.value })} /> : word.meaning}
                   </td>
                   <td>
-                    <input
-                      disabled={!authenticated}
+                    {authenticated ? <input
                       value={joinList(word.stages?.map(stageLabel))}
                       onChange={(event) => updateSavedWord(word.id, { stages: splitList(event.target.value) })}
-                    />
+                    /> : <div>{joinList(word.stages?.map(stageLabel)) || "未分类"}</div>}
                     <div className="muted table-subtext" title={word.uploadBatchName || undefined}>
                       {word.source === "upload" ? word.uploadBatchName || "本次上传" : word.source === "base" ? "基础词库" : "自定义"}
                     </div>
                   </td>
                   <td>
-                    <input disabled={!authenticated} value={word.unit ?? ""} onChange={(event) => updateSavedWord(word.id, { unit: event.target.value })} />
+                    {authenticated ? <input value={word.unit ?? ""} onChange={(event) => updateSavedWord(word.id, { unit: event.target.value })} /> : word.unit || "-"}
                   </td>
                   <td>
-                    <input disabled={!authenticated} value={joinList(word.tags)} onChange={(event) => updateSavedWord(word.id, { tags: splitList(event.target.value) })} />
+                    {authenticated ? <input value={joinList(word.tags)} onChange={(event) => updateSavedWord(word.id, { tags: splitList(event.target.value) })} /> : joinList(word.tags) || "-"}
                   </td>
                   <td>
                     {word.stats.wrongCount ? (
