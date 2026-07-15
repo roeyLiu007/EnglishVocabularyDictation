@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { Save, Search, Trash2, Upload } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Save, Search, Trash2, Upload, Volume2 } from "lucide-react";
+import { speechTextForWord } from "@/lib/dictation";
+import { CLOUD_SPEECH_VOICES, type CloudSpeechVoiceId } from "@/lib/cloud-speech";
 import type { ImportPreviewWord, WordEntry } from "@/lib/types";
 import { stageLabel, vocabularyStages } from "@/lib/vocabulary";
 
@@ -58,6 +60,7 @@ async function readApiResponse(response: Response, fallbackMessage: string): Pro
 }
 
 export function LibraryManager() {
+  const pageSize = 80;
   const [words, setWords] = useState<WordEntry[]>([]);
   const [preview, setPreview] = useState<ImportPreviewWord[]>([]);
   const [message, setMessage] = useState("");
@@ -69,11 +72,20 @@ export function LibraryManager() {
   const [query, setQuery] = useState("");
   const [saveMode, setSaveMode] = useState<"recent" | "stage">("recent");
   const [targetStage, setTargetStage] = useState("junior");
+  const [page, setPage] = useState(1);
+  const [speakingWordId, setSpeakingWordId] = useState<string | null>(null);
+  const [cloudVoiceId, setCloudVoiceId] = useState<CloudSpeechVoiceId>("female");
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   async function loadWords() {
-    const response = await fetch("/api/words", { cache: "no-store" });
-    const data = await readApiResponse(response, "加载词库失败");
-    setWords(Array.isArray(data.words) ? (data.words as WordEntry[]) : []);
+    try {
+      const response = await fetch("/api/words", { cache: "no-store" });
+      const data = await readApiResponse(response, "加载词库失败");
+      if (!response.ok) throw new Error(data.error ?? "加载词库失败");
+      setWords(Array.isArray(data.words) ? (data.words as WordEntry[]) : []);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "加载词库失败");
+    }
   }
 
   useEffect(() => {
@@ -146,6 +158,56 @@ export function LibraryManager() {
       ) || entryTypeLabel(word.entryType).includes(keyword)
     );
   }, [query, words]);
+  const totalPages = Math.max(1, Math.ceil(filteredWords.length / pageSize));
+  const visibleWords = useMemo(() => filteredWords.slice((page - 1) * pageSize, page * pageSize), [filteredWords, page]);
+
+  useEffect(() => setPage(1), [query]);
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages);
+  }, [page, totalPages]);
+
+  useEffect(() => () => {
+    audioRef.current?.pause();
+    window.speechSynthesis?.cancel();
+  }, []);
+
+  function speakWithBrowser(word: WordEntry) {
+    if (!("speechSynthesis" in window)) return setMessage("当前浏览器不支持备用发音。");
+    const utterance = new SpeechSynthesisUtterance(speechTextForWord(word.word));
+    utterance.lang = "en-US";
+    utterance.rate = 0.82;
+    utterance.onstart = () => setSpeakingWordId(word.id);
+    utterance.onend = () => setSpeakingWordId(null);
+    utterance.onerror = () => { setSpeakingWordId(null); setMessage("发音失败，请检查设备媒体音量。"); };
+    window.speechSynthesis.speak(utterance);
+  }
+
+  function speakWord(word: WordEntry) {
+    audioRef.current?.pause();
+    window.speechSynthesis?.cancel();
+    setSpeakingWordId(word.id);
+    setMessage("");
+    const audio = new Audio(`/api/words/${encodeURIComponent(word.id)}/speech?voice=${cloudVoiceId}`);
+    audio.playbackRate = 0.78;
+    audio.preservesPitch = true;
+    audioRef.current = audio;
+    let fallbackStarted = false;
+    const fallback = () => {
+      if (fallbackStarted) return;
+      fallbackStarted = true;
+      audio.onerror = null;
+      audio.pause();
+      if (audioRef.current === audio) audioRef.current = null;
+      setMessage("云端发音暂不可用，已切换到浏览器发音。");
+      speakWithBrowser(word);
+    };
+    audio.onended = () => {
+      if (audioRef.current === audio) audioRef.current = null;
+      setSpeakingWordId(null);
+    };
+    audio.onerror = fallback;
+    void audio.play().catch(fallback);
+  }
 
   async function uploadFile(formData: FormData) {
     setLoading(true);
@@ -482,7 +544,7 @@ export function LibraryManager() {
           <div>
             <h2 style={{ margin: 0 }}>当前词库</h2>
             <p className="muted" style={{ margin: "6px 0 0" }}>
-              共 {words.length} 个单词，当前显示 {filteredWords.length} 个。
+              共 {words.length} 个单词，筛选到 {filteredWords.length} 个；当前第 {page}/{totalPages} 页。
             </p>
           </div>
           <label className="search-field">
@@ -493,6 +555,12 @@ export function LibraryManager() {
               value={query}
               onChange={(event) => setQuery(event.target.value)}
             />
+          </label>
+          <label className="library-voice-select">
+            发音声音
+            <select value={cloudVoiceId} onChange={(event) => setCloudVoiceId(event.target.value as CloudSpeechVoiceId)}>
+              {CLOUD_SPEECH_VOICES.map((voice) => <option key={voice.id} value={voice.id}>{voice.label}</option>)}
+            </select>
           </label>
         </div>
         <div className="table-scroll">
@@ -524,7 +592,7 @@ export function LibraryManager() {
               </tr>
             </thead>
             <tbody>
-              {filteredWords.map((word) => (
+              {visibleWords.map((word) => (
                 <tr key={word.id}>
                   <td>
                     <input value={word.word} onChange={(event) => updateSavedWord(word.id, { word: event.target.value })} />
@@ -575,6 +643,15 @@ export function LibraryManager() {
                   <td>
                     <div className="row-actions">
                       <button
+                        aria-label={`播放 ${word.word}`}
+                        className="secondary"
+                        onClick={() => speakWord(word)}
+                        title="播放读音"
+                        type="button"
+                      >
+                        <Volume2 size={18} className={speakingWordId === word.id ? "speaking-icon" : ""} />
+                      </button>
+                      <button
                         aria-label={`保存 ${word.word}`}
                         disabled={savingWordId === word.id || deletingWordId === word.id}
                         onClick={() => saveSavedWord(word)}
@@ -607,6 +684,13 @@ export function LibraryManager() {
             </tbody>
           </table>
         </div>
+        {filteredWords.length > pageSize ? (
+          <div className="pagination-bar">
+            <button className="secondary" disabled={page <= 1} onClick={() => setPage((value) => value - 1)} type="button">上一页</button>
+            <span className="muted">第 {page} / {totalPages} 页</span>
+            <button className="secondary" disabled={page >= totalPages} onClick={() => setPage((value) => value + 1)} type="button">下一页</button>
+          </div>
+        ) : null}
       </section>
     </div>
   );

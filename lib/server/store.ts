@@ -161,7 +161,7 @@ function isMissingColumnError(error: unknown, columnName: string) {
 }
 
 function mapRoom(row: Record<string, unknown>): DictationRoom {
-  const status = row.status === "completed" || row.status === "closed" ? row.status : "active";
+  const status = row.status === "completed" || row.status === "recorded" || row.status === "closed" ? row.status : "active";
   return {
     id: String(row.id),
     parentToken: String(row.parent_token),
@@ -439,21 +439,7 @@ export async function completeRoom(roomId: string) {
   const room = await getRoom(roomId);
   if (!room) return null;
   if (room.status === "closed") throw new Error("本次听写已关闭，不能再结束或写入错词本");
-  if (room.status !== "completed") {
-    const answers = await listAnswers(roomId);
-    const words = await listWords();
-
-    for (const answer of answers) {
-      const question = room.questions.find((item) => item.id === answer.questionId);
-      const word = question ? words.find((item) => item.id === question.wordId) : null;
-      if (word) {
-        const updated = applyVerdictToStats(word, answer.verdict);
-        await updateWord(updated);
-        const index = words.findIndex((item) => item.id === word.id);
-        if (index >= 0) words[index] = updated;
-      }
-    }
-  }
+  if (room.status === "recorded") return room;
 
   const completed: DictationRoom = { ...room, status: "completed" };
 
@@ -468,6 +454,44 @@ export async function completeRoom(roomId: string) {
   store.rooms = store.rooms.map((item) => (item.id === roomId ? completed : item));
   await writeLocalStore(store);
   return completed;
+}
+
+export async function recordRoomMistakes(roomId: string) {
+  const room = await getRoom(roomId);
+  if (!room) return null;
+  if (room.status === "recorded") return room;
+  if (room.status !== "completed") throw new Error("请先完成听写，再记录到错题本");
+  if (!room.questions.some((question) => question.manualMistakeRecording)) {
+    throw new Error("该历史任务已经按旧规则记录过错题，不能重复记录");
+  }
+
+  const answers = await listAnswers(roomId);
+  if (answers.length < room.questions.length) throw new Error("孩子尚未完成全部题目，暂时不能记录错题");
+  if (answers.some((answer) => answer.verdict.overall === "pending")) {
+    throw new Error("还有待确认答案，请先逐题判定为正确或错误");
+  }
+  const words = await listWords();
+  for (const answer of answers) {
+    const question = room.questions.find((item) => item.id === answer.questionId);
+    const word = question ? words.find((item) => item.id === question.wordId) : null;
+    if (!word) continue;
+    const updated = applyVerdictToStats(word, answer.verdict);
+    await updateWord(updated);
+    const index = words.findIndex((item) => item.id === word.id);
+    if (index >= 0) words[index] = updated;
+  }
+
+  const recorded: DictationRoom = { ...room, status: "recorded" };
+  const client = supabase();
+  if (client) {
+    const { error } = await client.from("dictation_rooms").update({ status: "recorded" }).eq("id", roomId);
+    if (error) throw error;
+    return recorded;
+  }
+  const store = await readLocalStore();
+  store.rooms = store.rooms.map((item) => (item.id === roomId ? recorded : item));
+  await writeLocalStore(store);
+  return recorded;
 }
 
 export async function closeRoom(roomId: string) {

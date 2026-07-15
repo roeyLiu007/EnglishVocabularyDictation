@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { CheckCircle2, Copy, RefreshCcw, SquareCheckBig } from "lucide-react";
+import { BookMarked, CheckCircle2, Copy, RefreshCcw, SquareCheckBig, XCircle } from "lucide-react";
 import { readApiJson } from "@/lib/client-api";
 import type { AnswerVerdict, DictationRoom, SubmittedAnswer } from "@/lib/types";
 
@@ -67,23 +67,25 @@ export function ParentRoom({ roomId, token }: { roomId: string; token: string })
     setMessage("孩子链接已复制");
   }
 
-  async function markCorrect(answer: SubmittedAnswer) {
+  async function markVerdict(answer: SubmittedAnswer, correct: boolean) {
     if (!room) return;
     const question = room.questions.find((item) => item.id === answer.questionId);
     if (!question) return;
+    const fields = Object.fromEntries(
+      question.targetFields.map((field) => {
+        const currentField = answer.verdict.fields[field];
+        const status = correct ? "correct" : currentField?.status === "correct" ? "correct" : "wrong";
+        return [field, {
+          status,
+          expected: question.answer[field === "partOfSpeech" ? "partOfSpeech" : field],
+          received: answer.answer[field] ?? "",
+          note: correct ? "教师改判为正确" : "教师确认此项错误"
+        }];
+      })
+    ) as AnswerVerdict["fields"];
     const verdictOverride: AnswerVerdict = {
-      overall: "correct",
-      fields: Object.fromEntries(
-        question.targetFields.map((field) => [
-          field,
-          {
-            status: "correct",
-            expected: question.answer[field === "partOfSpeech" ? "partOfSpeech" : field],
-            received: answer.answer[field] ?? "",
-            note: "家长改判为正确"
-          }
-        ])
-      )
+      overall: correct ? "correct" : "wrong",
+      fields
     };
 
     const response = await fetch(`/api/rooms/${roomId}/answers`, {
@@ -96,6 +98,18 @@ export function ParentRoom({ roomId, token }: { roomId: string; token: string })
       setMessage(data.error ?? "改判失败");
       return;
     }
+    await load();
+  }
+
+  async function recordMistakes() {
+    const response = await fetch(`/api/rooms/${roomId}/record-mistakes`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token })
+    });
+    const data = await readApiJson<ActionPayload>(response, "记录错题失败");
+    if (!response.ok) { setMessage(data.error ?? "记录错题失败"); return; }
+    setMessage("本次结果已记录到错题本");
     await load();
   }
 
@@ -120,7 +134,7 @@ export function ParentRoom({ roomId, token }: { roomId: string; token: string })
   const answerMap = new Map(payload.answers.map((answer) => [answer.questionId, answer]));
   const correctCount = payload.answers.filter((answer) => answer.verdict.overall === "correct").length;
   const pendingCount = payload.answers.filter((answer) => answer.verdict.overall === "pending").length;
-  const statusLabel = room.status === "completed" ? "已完成" : room.status === "closed" ? "已关闭" : "进行中";
+  const statusLabel = room.status === "recorded" ? "已记录错题" : room.status === "completed" ? "已完成" : room.status === "closed" ? "已关闭" : "进行中";
 
   return (
     <div className="grid">
@@ -156,9 +170,15 @@ export function ParentRoom({ roomId, token }: { roomId: string; token: string })
             </button>
             {room.status === "active" ? (
               <button onClick={finish} type="button">
-                <SquareCheckBig size={18} /> 结束并写入错词本
+                <SquareCheckBig size={18} /> 提前结束听写
               </button>
             ) : null}
+            {room.status === "completed" && room.questions.some((question) => question.manualMistakeRecording) ? (
+              <button onClick={recordMistakes} type="button">
+                <BookMarked size={18} /> 记录到错题本
+              </button>
+            ) : null}
+            {room.status === "recorded" ? <span className="pill ok">已记录到错题本</span> : null}
           </div>
           {message ? <p className="muted">{message}</p> : null}
         </div>
@@ -212,8 +232,17 @@ export function ParentRoom({ roomId, token }: { roomId: string; token: string })
                       {answer ? (answer.verdict.overall === "correct" ? "正确" : answer.verdict.overall === "pending" ? "待确认" : "错误") : "-"}
                     </td>
                     <td>
-                      {answer && answer.verdict.overall !== "correct" ? (
-                        <button className="secondary" onClick={() => markCorrect(answer)} type="button">
+                      {answer && answer.verdict.overall === "pending" ? (
+                        <div className="row-actions">
+                          <button className="secondary" onClick={() => markVerdict(answer, true)} type="button">
+                            <CheckCircle2 size={18} /> 正确
+                          </button>
+                          <button className="danger" onClick={() => markVerdict(answer, false)} type="button">
+                            <XCircle size={18} /> 错误
+                          </button>
+                        </div>
+                      ) : answer && answer.verdict.overall === "wrong" ? (
+                        <button className="secondary" onClick={() => markVerdict(answer, true)} type="button">
                           <CheckCircle2 size={18} /> 改为正确
                         </button>
                       ) : null}

@@ -320,9 +320,30 @@ textarea {
   min-height: 40px;
 }
 
+.library-voice-select {
+  min-width: 140px;
+}
+
 .row-actions {
   display: flex;
   gap: 8px;
+}
+
+.pagination-bar {
+  align-items: center;
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  padding-top: 16px;
+}
+
+.speaking-icon {
+  animation: speaking-pulse 700ms ease-in-out infinite alternate;
+}
+
+@keyframes speaking-pulse {
+  from { opacity: 0.45; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1.12); }
 }
 
 .row-actions button {
@@ -391,7 +412,7 @@ table {
 }
 
 .library-table .col-actions {
-  width: 106px;
+  width: 150px;
 }
 
 th,
@@ -834,6 +855,11 @@ tbody tr:nth-child(even) td {
 .status-badge.closed {
   background: rgba(223, 63, 107, 0.08);
   color: var(--danger);
+}
+
+.status-badge.recorded {
+  background: rgba(111, 92, 255, 0.09);
+  color: var(--brand-strong);
 }
 
 .task-progress-label {

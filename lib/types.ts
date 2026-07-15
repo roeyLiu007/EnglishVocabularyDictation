@@ -1,6 +1,6 @@
 export type PromptType = "audio" | "english" | "chinese";
 export type PromptTypeWeights = Record<PromptType, number>;
-export type RoomStatus = "active" | "completed" | "closed";
+export type RoomStatus = "active" | "completed" | "recorded" | "closed";
 export type FieldName = "word" | "partOfSpeech" | "meaning";
 export type FieldStatus = "correct" | "wrong" | "pending";
 
@@ -47,6 +47,7 @@ export type Question = {
   prompt: string;
   speechText?: string;
   targetFields: FieldName[];
+  manualMistakeRecording?: boolean;
   answer: {
     entryType?: "word" | "phrase";
     word: string;

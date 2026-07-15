@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { gradeAnswer } from "@/lib/dictation";
-import { getRoom, saveAnswer } from "@/lib/server/store";
+import { completeRoom, getRoom, listAnswers, saveAnswer } from "@/lib/server/store";
 import type { AnswerInput, AnswerVerdict } from "@/lib/types";
 
 function errorMessage(error: unknown, fallback: string) {
@@ -55,6 +55,11 @@ export async function POST(request: Request, { params }: { params: { roomId: str
       durationSeconds,
       submittedAt: new Date().toISOString()
     });
+
+    if (isChild) {
+      const answers = await listAnswers(room.id);
+      if (answers.length >= room.questions.length) await completeRoom(room.id);
+    }
 
     return NextResponse.json({ answer: saved });
   } catch (error) {

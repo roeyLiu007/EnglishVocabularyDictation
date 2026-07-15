@@ -533,6 +533,7 @@ function makeQuestion(word: WordEntry, index: number, promptType: PromptType): Q
     meaning: word.meaning,
     lines
   };
+  const manualMistakeRecording = true;
 
   if (entryType === "phrase") {
     if (promptType === "audio") {
@@ -544,6 +545,7 @@ function makeQuestion(word: WordEntry, index: number, promptType: PromptType): Q
         prompt: "听英文词组，填写英文词组和中文意思",
         speechText: speechTextForWord(word.word),
         targetFields: ["word", "meaning"],
+        manualMistakeRecording,
         answer
       };
     }
@@ -556,6 +558,7 @@ function makeQuestion(word: WordEntry, index: number, promptType: PromptType): Q
         promptType,
         prompt: word.word,
         targetFields: ["meaning"],
+        manualMistakeRecording,
         answer
       };
     }
@@ -567,6 +570,7 @@ function makeQuestion(word: WordEntry, index: number, promptType: PromptType): Q
       promptType,
       prompt: word.meaning,
       targetFields: ["word"],
+      manualMistakeRecording,
       answer
     };
   }
@@ -580,6 +584,7 @@ function makeQuestion(word: WordEntry, index: number, promptType: PromptType): Q
       prompt: "听英文发音，填写词性、英文和中文意思",
       speechText: speechTextForWord(word.word),
       targetFields: ["partOfSpeech", "word", "meaning"],
+      manualMistakeRecording,
       answer
     };
   }
@@ -592,6 +597,7 @@ function makeQuestion(word: WordEntry, index: number, promptType: PromptType): Q
       promptType,
       prompt: word.word,
       targetFields: ["partOfSpeech", "meaning"],
+      manualMistakeRecording,
       answer
     };
   }
@@ -603,6 +609,7 @@ function makeQuestion(word: WordEntry, index: number, promptType: PromptType): Q
     promptType,
     prompt: word.meaning,
     targetFields: ["partOfSpeech", "word"],
+    manualMistakeRecording,
     answer
   };
 }

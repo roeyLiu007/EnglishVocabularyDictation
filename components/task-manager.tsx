@@ -32,6 +32,7 @@ function sourceLabel(task: RoomTaskSummary) {
 }
 
 function statusLabel(status: RoomTaskSummary["status"]) {
+  if (status === "recorded") return "已记错题";
   if (status === "completed") return "已完成";
   if (status === "closed") return "已关闭";
   return "进行中";
@@ -99,7 +100,7 @@ export function TaskManager() {
     [tab, tasks]
   );
   const activeCount = tasks.filter((task) => task.status === "active").length;
-  const completedCount = tasks.filter((task) => task.status === "completed").length;
+  const completedCount = tasks.filter((task) => task.status === "completed" || task.status === "recorded").length;
   const closedCount = tasks.filter((task) => task.status === "closed").length;
   const answeredCount = tasks.reduce((sum, task) => sum + task.answeredCount, 0);
 

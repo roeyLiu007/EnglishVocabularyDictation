@@ -364,7 +364,7 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
     return <section className="panel">{message || "加载房间中..."}</section>;
   }
 
-  if (room.status === "closed" || (room.status === "completed" && !isDone)) {
+  if (room.status === "closed" || ((room.status === "completed" || room.status === "recorded") && !isDone)) {
     return (
       <section className="panel">
         <h1>本次听写已结束</h1>
