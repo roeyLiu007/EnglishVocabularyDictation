@@ -706,7 +706,7 @@ export function LibraryManager() {
                   </td>
                   <td>
                     <div className="row-actions">
-                      {authenticated ? <button
+                      <button
                         aria-label={`播放 ${word.word}`}
                         className="secondary"
                         onClick={() => speakWord(word)}
@@ -714,7 +714,7 @@ export function LibraryManager() {
                         type="button"
                       >
                         <Volume2 size={18} className={speakingWordId === word.id ? "speaking-icon" : ""} />
-                      </button> : null}
+                      </button>
                       {authenticated ? <button
                         aria-label={`保存 ${word.word}`}
                         disabled={savingWordId === word.id || deletingWordId === word.id}
@@ -724,7 +724,7 @@ export function LibraryManager() {
                       >
                         <Save size={18} />
                       </button> : null}
-                      <button
+                      {authenticated ? <button
                         aria-label={`删除 ${word.word}`}
                         className="danger"
                         disabled={savingWordId === word.id || deletingWordId === word.id}
@@ -733,7 +733,7 @@ export function LibraryManager() {
                         type="button"
                       >
                         <Trash2 size={18} />
-                      </button>
+                      </button> : null}
                     </div>
                   </td>
                 </tr>
