@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { CLOUD_SPEECH_VOICES } from "@/lib/cloud-speech";
 import { speechTextForWord } from "@/lib/dictation";
-import { cachedSpeechUrl } from "@/lib/server/cloud-tts";
+import { cachedSpeechResult } from "@/lib/server/cloud-tts";
 import { listWords } from "@/lib/server/store";
 
 export const dynamic = "force-dynamic";
@@ -28,9 +28,8 @@ export async function GET(request: Request, { params }: { params: { wordId: stri
     const text = speechTextForWord(word.word);
     if (!text || text.length > 500) return NextResponse.json({ error: "发音文本无效" }, { status: 400 });
 
-    const url = await cachedSpeechUrl(text, voice.id);
-    return NextResponse.redirect(url, {
-      status: 307,
+    const result = await cachedSpeechResult(text, voice.id);
+    return NextResponse.json(result, {
       headers: { "Cache-Control": "private, no-store" }
     });
   } catch (error) {

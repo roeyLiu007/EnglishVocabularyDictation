@@ -169,13 +169,15 @@ async function synthesizeBaiduMp3(text: string, voiceId: CloudSpeechVoiceId) {
   return audio;
 }
 
-export async function cachedSpeechUrl(text: string, voiceId: CloudSpeechVoiceId) {
+export async function cachedSpeechResult(text: string, voiceId: CloudSpeechVoiceId) {
   const voice = cloudSpeechVoice(voiceId);
   const client = supabaseAdmin();
   const path = cachePath(text, voice.providerVoiceId);
   await ensureBucket(client);
 
-  if (await objectExists(client, path)) return publicUrl(client, path);
+  if (await objectExists(client, path)) {
+    return { url: publicUrl(client, path), source: "cache" as const };
+  }
 
   const mp3 = await synthesizeBaiduMp3(text, voice.id);
   const { error } = await client.storage.from(bucketName()).upload(path, mp3, {
@@ -185,5 +187,9 @@ export async function cachedSpeechUrl(text: string, voiceId: CloudSpeechVoiceId)
   });
 
   if (error && !/already exists|duplicate|resource already exists/i.test(error.message)) throw error;
-  return publicUrl(client, path);
+  return { url: publicUrl(client, path), source: "generated" as const };
+}
+
+export async function cachedSpeechUrl(text: string, voiceId: CloudSpeechVoiceId) {
+  return (await cachedSpeechResult(text, voiceId)).url;
 }

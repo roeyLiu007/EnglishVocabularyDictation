@@ -77,6 +77,7 @@ export function LibraryManager() {
   const [targetStage, setTargetStage] = useState("junior");
   const [page, setPage] = useState(1);
   const [speakingWordId, setSpeakingWordId] = useState<string | null>(null);
+  const [speechSource, setSpeechSource] = useState<{ wordId: string; source: "cache" | "generated" | "browser" } | null>(null);
   const [cloudVoiceId, setCloudVoiceId] = useState<CloudSpeechVoiceId>("male");
   const [speechRate, setSpeechRate] = useState(1);
   const [adminConfigured, setAdminConfigured] = useState(true);
@@ -193,14 +194,27 @@ export function LibraryManager() {
     utterance.onend = () => setSpeakingWordId(null);
     utterance.onerror = () => { setSpeakingWordId(null); setMessage("发音失败，请检查设备媒体音量。"); };
     window.speechSynthesis.speak(utterance);
+    setSpeechSource({ wordId: word.id, source: "browser" });
   }
 
-  function speakWord(word: WordEntry) {
+  async function speakWord(word: WordEntry) {
     audioRef.current?.pause();
     window.speechSynthesis?.cancel();
     setSpeakingWordId(word.id);
     setMessage("");
-    const audio = new Audio(`/api/words/${encodeURIComponent(word.id)}/speech?voice=${cloudVoiceId}`);
+    let speech: { url: string; source: "cache" | "generated" };
+    try {
+      const response = await fetch(`/api/words/${encodeURIComponent(word.id)}/speech?voice=${cloudVoiceId}`, { cache: "no-store" });
+      const data = await response.json() as { url?: string; source?: "cache" | "generated"; error?: string };
+      if (!response.ok || !data.url || !data.source) throw new Error(data.error ?? "云端发音不可用");
+      speech = { url: data.url, source: data.source };
+      setSpeechSource({ wordId: word.id, source: data.source });
+    } catch {
+      setMessage("云端发音暂不可用，已切换到浏览器发音。");
+      speakWithBrowser(word);
+      return;
+    }
+    const audio = new Audio(speech.url);
     audio.playbackRate = speechRate;
     audio.preservesPitch = true;
     audioRef.current = audio;
@@ -709,12 +723,17 @@ export function LibraryManager() {
                       <button
                         aria-label={`播放 ${word.word}`}
                         className="secondary"
-                        onClick={() => speakWord(word)}
+                        onClick={() => void speakWord(word)}
                         title="播放读音"
                         type="button"
                       >
                         <Volume2 size={18} className={speakingWordId === word.id ? "speaking-icon" : ""} />
                       </button>
+                      {speechSource?.wordId === word.id ? (
+                        <span className={`speech-source ${speechSource.source}`}>
+                          {speechSource.source === "generated" ? "百度云生成" : speechSource.source === "cache" ? "Supabase 缓存" : "浏览器备用"}
+                        </span>
+                      ) : null}
                       {authenticated ? <button
                         aria-label={`保存 ${word.word}`}
                         disabled={savingWordId === word.id || deletingWordId === word.id}
