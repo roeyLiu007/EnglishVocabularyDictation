@@ -655,6 +655,7 @@ tbody tr:nth-child(even) td {
   display: grid;
   gap: 10px;
   grid-template-columns: minmax(150px, auto) minmax(260px, 1fr);
+  margin-top: 18px;
 }
 
 .dictation-actions > :only-child {
@@ -1091,6 +1092,10 @@ tbody tr:nth-child(even) td {
   .dictation-actions .submit-answer-button {
     min-height: 54px;
     order: -1;
+  }
+
+  .dictation-actions {
+    margin-top: 24px;
   }
 
   .play-button {
