@@ -5,7 +5,7 @@ import { Check, Clock, Languages, PenLine, SkipForward, Volume2 } from "lucide-r
 import { readApiJson } from "@/lib/client-api";
 import { CLOUD_SPEECH_VOICES, type CloudSpeechVoiceId } from "@/lib/cloud-speech";
 import { speechTextForWord } from "@/lib/dictation";
-import type { AnswerInput, AnswerLine, DictationRoom, SubmittedAnswer } from "@/lib/types";
+import type { AnswerInput, AnswerLine, DictationRoom, Question, SubmittedAnswer } from "@/lib/types";
 
 type RoomPayload = {
   room: DictationRoom;
@@ -42,6 +42,20 @@ function scoreVoice(voice: SpeechSynthesisVoice) {
   return score;
 }
 
+function editableAnswer(question: Question, submitted?: SubmittedAnswer): AnswerInput {
+  if (!submitted) return {};
+  const saved = submitted.answer;
+  if (saved.lines?.length) {
+    return { ...saved, lines: saved.lines.map((line) => ({ ...line })) };
+  }
+  const expectedLines = question.answer.lines?.length ?? 1;
+  const lines = Array.from({ length: expectedLines }, (_, lineIndex) => ({
+    partOfSpeech: lineIndex === 0 ? saved.partOfSpeech ?? "" : "",
+    meaning: lineIndex === 0 ? saved.meaning ?? "" : ""
+  }));
+  return { ...saved, lines };
+}
+
 export function ChildRoom({ roomId, token }: { roomId: string; token: string }) {
   const [payload, setPayload] = useState<RoomPayload | null>(null);
   const [index, setIndex] = useState(0);
@@ -63,6 +77,7 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   const speechTimerRef = useRef<number | null>(null);
   const speechRequestRef = useRef(0);
+  const initialSelectionRoomRef = useRef("");
 
   async function load() {
     try {
@@ -160,11 +175,15 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
   const inputLines = answer.lines?.length ? answer.lines : answerLines.map(() => ({ partOfSpeech: "", meaning: "" }));
 
   useEffect(() => {
-    if (!room) return;
+    if (!room || !payload || initialSelectionRoomRef.current === room.id) return;
+    initialSelectionRoomRef.current = room.id;
     let nextIndex = room.questions.findIndex((question) => !answeredIds.has(question.id) && !skippedIds.includes(question.id));
     if (nextIndex < 0) nextIndex = room.questions.findIndex((question) => !answeredIds.has(question.id));
-    if (nextIndex >= 0) setIndex(nextIndex);
-  }, [room, answeredIds, skippedIds]);
+    const selectedIndex = nextIndex >= 0 ? nextIndex : 0;
+    const question = room.questions[selectedIndex];
+    setIndex(selectedIndex);
+    setAnswer(editableAnswer(question, payload.answers.find((item) => item.questionId === question.id)));
+  }, [room, payload, answeredIds, skippedIds]);
 
   useEffect(() => {
     if (!current?.id || (isDone && !reviewMode)) return;
@@ -314,14 +333,18 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
       });
       const data = await readApiJson<AnswerPayload>(response, "提交失败");
       if (!response.ok) throw new Error(data.error ?? "提交失败");
-      if (editingExistingAnswer && isDone) {
+      if (editingExistingAnswer) {
         setAnswer(submittedInput);
       } else {
+        const answeredAfterSubmit = new Set([...answeredIds, current.id]);
+        let nextIndex = room?.questions.findIndex((question) => !answeredAfterSubmit.has(question.id) && !skippedIds.includes(question.id)) ?? -1;
+        if (nextIndex < 0) nextIndex = room?.questions.findIndex((question) => !answeredAfterSubmit.has(question.id)) ?? -1;
+        if (nextIndex >= 0) setIndex(nextIndex);
         setAnswer({});
       }
       setSkippedIds((items) => items.filter((id) => id !== current.id));
       await load();
-      if (editingExistingAnswer && isDone) {
+      if (editingExistingAnswer) {
         setMessage(`第 ${index + 1} 题修改已保存，当前显示的是最近提交内容。`);
       }
     } catch (error) {
@@ -347,10 +370,7 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
     const question = room.questions[questionIndex];
     const submitted = payload.answers.find((item) => item.questionId === question.id);
     setIndex(questionIndex);
-    setAnswer(submitted ? {
-      ...submitted.answer,
-      lines: submitted.answer.lines?.map((line) => ({ ...line }))
-    } : {});
+    setAnswer(editableAnswer(question, submitted));
     setMessage(submitted ? `正在修改第 ${questionIndex + 1} 题，提交后会覆盖原答案。` : "");
   }
 
