@@ -592,10 +592,73 @@ tbody tr:nth-child(even) td {
   width: 100%;
 }
 
+.question-navigator {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+}
+
+.question-navigator-header {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.question-number-grid {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(auto-fill, minmax(42px, 1fr));
+}
+
+.question-number-grid button {
+  background: white;
+  border-color: var(--line);
+  box-shadow: none;
+  color: var(--muted);
+  min-height: 42px;
+  padding: 7px;
+}
+
+.question-number-grid button.answered {
+  background: rgba(20, 150, 111, 0.09);
+  border-color: rgba(20, 150, 111, 0.4);
+  color: var(--ok);
+}
+
+.question-number-grid button.current {
+  background: linear-gradient(135deg, var(--brand), #8e6fff);
+  border-color: var(--brand);
+  color: white;
+}
+
+.teacher-login-card {
+  margin: 48px auto 0;
+  max-width: 520px;
+}
+
+.teacher-dashboard {
+  margin-top: 28px;
+  padding: clamp(24px, 5vw, 52px);
+}
+
+.teacher-dashboard h1 {
+  font-size: clamp(34px, 6vw, 58px);
+  margin: 0 0 12px;
+}
+
+.teacher-entry-grid {
+  margin-top: 24px;
+  max-width: 720px;
+}
+
 .dictation-actions {
   display: grid;
   gap: 10px;
   grid-template-columns: minmax(150px, auto) minmax(260px, 1fr);
+}
+
+.dictation-actions > :only-child {
+  grid-column: 1 / -1;
 }
 
 .completion-summary {

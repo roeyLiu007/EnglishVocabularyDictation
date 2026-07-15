@@ -32,7 +32,7 @@ export async function POST(request: Request, { params }: { params: { roomId: str
     if (!isParent && !isChild) {
       return NextResponse.json({ error: "链接无效或已过期" }, { status: 403 });
     }
-    if (isChild && room.status !== "active") {
+    if (isChild && room.status !== "active" && room.status !== "completed") {
       return NextResponse.json({ error: "本次听写已结束，不能继续提交答案" }, { status: 409 });
     }
 

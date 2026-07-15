@@ -58,6 +58,7 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [skippedIds, setSkippedIds] = useState<string[]>([]);
   const [showAnswers, setShowAnswers] = useState(false);
+  const [reviewMode, setReviewMode] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   const speechTimerRef = useRef<number | null>(null);
@@ -166,7 +167,7 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
   }, [room, answeredIds, skippedIds]);
 
   useEffect(() => {
-    if (!current?.id || isDone) return;
+    if (!current?.id || (isDone && !reviewMode)) return;
     const startedAt = Date.now();
     setQuestionStartedAt(startedAt);
     setElapsedSeconds(0);
@@ -174,7 +175,7 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
       setElapsedSeconds(Math.floor((Date.now() - startedAt) / 1000));
     }, 1000);
     return () => window.clearInterval(timer);
-  }, [current?.id, isDone]);
+  }, [current?.id, isDone, reviewMode]);
 
   useEffect(() => {
     speechRequestRef.current += 1;
@@ -329,6 +330,18 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
     if (next >= 0) setIndex(next);
   }
 
+  function selectQuestion(questionIndex: number) {
+    if (!room) return;
+    const question = room.questions[questionIndex];
+    const submitted = payload.answers.find((item) => item.questionId === question.id);
+    setIndex(questionIndex);
+    setAnswer(submitted ? {
+      ...submitted.answer,
+      lines: submitted.answer.lines?.map((line) => ({ ...line }))
+    } : {});
+    setMessage(submitted ? `正在修改第 ${questionIndex + 1} 题，提交后会覆盖原答案。` : "");
+  }
+
   function handleAnswerKeyDown(event: React.KeyboardEvent<HTMLElement>) {
     if (event.key === "Enter" && !event.shiftKey && event.target instanceof HTMLInputElement) {
       event.preventDefault();
@@ -375,7 +388,7 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
     );
   }
 
-  if (isDone) {
+  if (isDone && !reviewMode) {
     const correctCount = payload.answers.filter((item) => item.verdict.overall === "correct").length;
     const totalSeconds = payload.answers.reduce((sum, item) => sum + (item.durationSeconds ?? 0), 0);
     return (
@@ -389,6 +402,9 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
           <p className="muted">正确率 {Math.round((correctCount / Math.max(1, room.questions.length)) * 100)}% · 总用时 {formatDuration(totalSeconds)}</p>
           {!showAnswers ? <button onClick={async () => { await finish(); setShowAnswers(true); }} type="button">
             <Check size={18} /> 查看答案解析
+          </button> : null}
+          {room.status !== "recorded" ? <button className="secondary" onClick={() => { setReviewMode(true); selectQuestion(0); }} type="button">
+            <PenLine size={18} /> 检查并修改答案
           </button> : null}
         </div>
         {showAnswers ? <div className="panel">
@@ -460,6 +476,23 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
         </span>
       </div>
       <progress className="dictation-progress" max={room.questions.length} value={payload.answers.length} />
+      <div className="panel question-navigator" aria-label="选择题目">
+        <div className="question-navigator-header">
+          <strong>选择题目</strong>
+          {isDone ? <button className="secondary" onClick={() => setReviewMode(false)} type="button">返回成绩</button> : null}
+        </div>
+        <div className="question-number-grid">
+          {room.questions.map((question, questionIndex) => (
+            <button
+              aria-label={`第 ${questionIndex + 1} 题${answeredIds.has(question.id) ? "，已作答" : "，未作答"}`}
+              className={`${questionIndex === index ? "current" : ""} ${answeredIds.has(question.id) ? "answered" : ""}`}
+              key={question.id}
+              onClick={() => selectQuestion(questionIndex)}
+              type="button"
+            >{questionIndex + 1}</button>
+          ))}
+        </div>
+      </div>
 
       <div className="panel dictation-prompt-card">
         {current.promptType === "audio" ? (
@@ -572,11 +605,11 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
         ) : null}
 
           <div className="dictation-actions">
-            <button className="secondary" disabled={loading} onClick={skipQuestion} type="button">
+            {!isDone ? <button className="secondary" disabled={loading} onClick={skipQuestion} type="button">
               <SkipForward size={19} /> 暂时不会
-            </button>
+            </button> : null}
             <button className="submit-answer-button" disabled={loading} onClick={submit} type="button">
-              <Check size={20} /> {loading ? "提交中..." : "提交并进入下一题"}
+              <Check size={20} /> {loading ? "提交中..." : answeredIds.has(current.id) ? "保存本题修改" : "提交并进入下一题"}
             </button>
           </div>
           {message ? <p className="muted answer-message">{message}</p> : null}

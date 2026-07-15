@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { LockKeyhole, LogOut, Save, Search, Trash2, Upload, Volume2 } from "lucide-react";
 import { speechTextForWord } from "@/lib/dictation";
 import { CLOUD_SPEECH_VOICES, type CloudSpeechVoiceId } from "@/lib/cloud-speech";
@@ -38,7 +39,7 @@ type ApiPayload = {
   matchedCount?: number;
 };
 
-type SessionPayload = { configured?: boolean; authenticated?: boolean; error?: string };
+type SessionPayload = { authenticated?: boolean };
 
 type ClearTarget = {
   key: string;
@@ -80,9 +81,7 @@ export function LibraryManager() {
   const [speechSource, setSpeechSource] = useState<{ wordId: string; source: "cache" | "generated" | "browser" } | null>(null);
   const [cloudVoiceId, setCloudVoiceId] = useState<CloudSpeechVoiceId>("male");
   const [speechRate, setSpeechRate] = useState(1);
-  const [adminConfigured, setAdminConfigured] = useState(true);
   const [authenticated, setAuthenticated] = useState(false);
-  const [password, setPassword] = useState("");
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   async function loadWords() {
@@ -101,7 +100,6 @@ export function LibraryManager() {
     fetch("/api/admin/session", { cache: "no-store" })
       .then((response) => response.json())
       .then((data: SessionPayload) => {
-        setAdminConfigured(Boolean(data.configured));
         setAuthenticated(Boolean(data.authenticated));
       })
       .catch(() => setAuthenticated(false));
@@ -234,25 +232,6 @@ export function LibraryManager() {
     };
     audio.onerror = fallback;
     void audio.play().catch(fallback);
-  }
-
-  async function login(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setMessage("");
-    const response = await fetch("/api/admin/session", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password })
-    });
-    const data = await response.json() as SessionPayload;
-    if (!response.ok) {
-      setMessage(data.error ?? "教师登录失败");
-      return;
-    }
-    setAuthenticated(true);
-    window.dispatchEvent(new Event("teacher-session-changed"));
-    setPassword("");
-    setMessage("教师权限已解锁");
   }
 
   async function logout() {
@@ -419,13 +398,12 @@ export function LibraryManager() {
             <span className="pill ok"><LockKeyhole size={15} /> 教师编辑模式</span>
             <button className="secondary" onClick={logout} type="button"><LogOut size={17} /> 退出编辑</button>
           </>
-        ) : adminConfigured ? (
-          <form className="library-login-form" onSubmit={login}>
-            <span className="muted">当前为只读模式，教师登录后可新增、修改或删除。</span>
-            <input aria-label="教师管理密码" autoComplete="current-password" onChange={(event) => setPassword(event.target.value)} placeholder="教师管理密码" type="password" value={password} />
-            <button type="submit"><LockKeyhole size={17} /> 解锁编辑</button>
-          </form>
-        ) : <span className="wrong">尚未配置教师密码，词库修改和删除已禁用。</span>}
+        ) : (
+          <>
+            <span className="pill"><LockKeyhole size={15} /> 学生权限 · 词库只读</span>
+            <Link className="button secondary" href="/teacher">进入教师权限</Link>
+          </>
+        )}
       </section>
 
       {authenticated ? <section className="panel">
