@@ -77,8 +77,8 @@ export function LibraryManager() {
   const [targetStage, setTargetStage] = useState("junior");
   const [page, setPage] = useState(1);
   const [speakingWordId, setSpeakingWordId] = useState<string | null>(null);
-  const [cloudVoiceId, setCloudVoiceId] = useState<CloudSpeechVoiceId>("female");
-  const [speechRate, setSpeechRate] = useState(0.78);
+  const [cloudVoiceId, setCloudVoiceId] = useState<CloudSpeechVoiceId>("male");
+  const [speechRate, setSpeechRate] = useState(1);
   const [adminConfigured, setAdminConfigured] = useState(true);
   const [authenticated, setAuthenticated] = useState(false);
   const [password, setPassword] = useState("");
@@ -624,7 +624,7 @@ export function LibraryManager() {
           </label>
           <label className="library-speed-control">
             播放速度：{speechRate.toFixed(2)}
-            <input min={0.55} max={1} step={0.05} type="range" value={speechRate} onChange={(event) => setSpeechRate(Number(event.target.value))} />
+            <input min={0.5} max={1.5} step={0.05} type="range" value={speechRate} onChange={(event) => setSpeechRate(Number(event.target.value))} />
           </label>
         </div>
         <div className="table-scroll">
