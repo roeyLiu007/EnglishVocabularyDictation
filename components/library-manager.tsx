@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Save, Search, Trash2, Upload, Volume2 } from "lucide-react";
+import { LockKeyhole, LogOut, Save, Search, Trash2, Upload, Volume2 } from "lucide-react";
 import { speechTextForWord } from "@/lib/dictation";
 import { CLOUD_SPEECH_VOICES, type CloudSpeechVoiceId } from "@/lib/cloud-speech";
 import type { ImportPreviewWord, WordEntry } from "@/lib/types";
@@ -38,6 +38,8 @@ type ApiPayload = {
   matchedCount?: number;
 };
 
+type SessionPayload = { configured?: boolean; authenticated?: boolean; error?: string };
+
 type ClearTarget = {
   key: string;
   label: string;
@@ -70,11 +72,16 @@ export function LibraryManager() {
   const [clearing, setClearing] = useState(false);
   const [clearTargetKey, setClearTargetKey] = useState("");
   const [query, setQuery] = useState("");
+  const [stageFilter, setStageFilter] = useState("all");
   const [saveMode, setSaveMode] = useState<"recent" | "stage">("recent");
   const [targetStage, setTargetStage] = useState("junior");
   const [page, setPage] = useState(1);
   const [speakingWordId, setSpeakingWordId] = useState<string | null>(null);
   const [cloudVoiceId, setCloudVoiceId] = useState<CloudSpeechVoiceId>("female");
+  const [speechRate, setSpeechRate] = useState(0.78);
+  const [adminConfigured, setAdminConfigured] = useState(true);
+  const [authenticated, setAuthenticated] = useState(false);
+  const [password, setPassword] = useState("");
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   async function loadWords() {
@@ -90,6 +97,13 @@ export function LibraryManager() {
 
   useEffect(() => {
     loadWords();
+    fetch("/api/admin/session", { cache: "no-store" })
+      .then((response) => response.json())
+      .then((data: SessionPayload) => {
+        setAdminConfigured(Boolean(data.configured));
+        setAuthenticated(Boolean(data.authenticated));
+      })
+      .catch(() => setAuthenticated(false));
   }, []);
 
   const mistakeCount = useMemo(() => words.filter((word) => word.stats.wrongCount > 0).length, [words]);
@@ -150,18 +164,17 @@ export function LibraryManager() {
 
   const filteredWords = useMemo(() => {
     const keyword = query.trim().toLowerCase();
-    if (!keyword) return words;
-
-    return words.filter((word) =>
-      [word.word, word.phonetic ?? "", word.partOfSpeech, word.meaning, word.unit ?? "", joinList(word.tags), joinList(word.stages)].some(
+    return words
+      .filter((word) => stageFilter === "all" || (word.stages ?? []).includes(stageFilter))
+      .filter((word) => !keyword || [word.word, word.phonetic ?? "", word.partOfSpeech, word.meaning, word.unit ?? "", joinList(word.tags), joinList(word.stages)].some(
         (value) => value.toLowerCase().includes(keyword)
       ) || entryTypeLabel(word.entryType).includes(keyword)
     );
-  }, [query, words]);
+  }, [query, stageFilter, words]);
   const totalPages = Math.max(1, Math.ceil(filteredWords.length / pageSize));
   const visibleWords = useMemo(() => filteredWords.slice((page - 1) * pageSize, page * pageSize), [filteredWords, page]);
 
-  useEffect(() => setPage(1), [query]);
+  useEffect(() => setPage(1), [query, stageFilter]);
   useEffect(() => {
     if (page > totalPages) setPage(totalPages);
   }, [page, totalPages]);
@@ -175,7 +188,7 @@ export function LibraryManager() {
     if (!("speechSynthesis" in window)) return setMessage("当前浏览器不支持备用发音。");
     const utterance = new SpeechSynthesisUtterance(speechTextForWord(word.word));
     utterance.lang = "en-US";
-    utterance.rate = 0.82;
+    utterance.rate = speechRate;
     utterance.onstart = () => setSpeakingWordId(word.id);
     utterance.onend = () => setSpeakingWordId(null);
     utterance.onerror = () => { setSpeakingWordId(null); setMessage("发音失败，请检查设备媒体音量。"); };
@@ -188,7 +201,7 @@ export function LibraryManager() {
     setSpeakingWordId(word.id);
     setMessage("");
     const audio = new Audio(`/api/words/${encodeURIComponent(word.id)}/speech?voice=${cloudVoiceId}`);
-    audio.playbackRate = 0.78;
+    audio.playbackRate = speechRate;
     audio.preservesPitch = true;
     audioRef.current = audio;
     let fallbackStarted = false;
@@ -207,6 +220,31 @@ export function LibraryManager() {
     };
     audio.onerror = fallback;
     void audio.play().catch(fallback);
+  }
+
+  async function login(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setMessage("");
+    const response = await fetch("/api/admin/session", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password })
+    });
+    const data = await response.json() as SessionPayload;
+    if (!response.ok) {
+      setMessage(data.error ?? "教师登录失败");
+      return;
+    }
+    setAuthenticated(true);
+    setPassword("");
+    setMessage("教师权限已解锁");
+  }
+
+  async function logout() {
+    await fetch("/api/admin/session", { method: "DELETE" });
+    setAuthenticated(false);
+    setMessage("已退出教师权限，词库切换为只读模式");
+    await loadWords();
   }
 
   async function uploadFile(formData: FormData) {
@@ -359,7 +397,22 @@ export function LibraryManager() {
         </div>
       </section>
 
-      <section className="panel">
+      <section className="panel library-permission-bar">
+        {authenticated ? (
+          <>
+            <span className="pill ok"><LockKeyhole size={15} /> 教师编辑模式</span>
+            <button className="secondary" onClick={logout} type="button"><LogOut size={17} /> 退出编辑</button>
+          </>
+        ) : adminConfigured ? (
+          <form className="library-login-form" onSubmit={login}>
+            <span className="muted">当前为只读模式，教师登录后可新增、修改或删除。</span>
+            <input aria-label="教师管理密码" autoComplete="current-password" onChange={(event) => setPassword(event.target.value)} placeholder="教师管理密码" type="password" value={password} />
+            <button type="submit"><LockKeyhole size={17} /> 解锁编辑</button>
+          </form>
+        ) : <span className="wrong">尚未配置教师密码，词库修改和删除已禁用。</span>}
+      </section>
+
+      {authenticated ? <section className="panel">
         <form
           className="form"
           onSubmit={async (event) => {
@@ -381,9 +434,9 @@ export function LibraryManager() {
           </button>
         </form>
         {message ? <p className="muted">{message}</p> : null}
-      </section>
+      </section> : null}
 
-      <section className="panel danger-zone">
+      {authenticated ? <section className="panel danger-zone">
         <div>
           <h2 style={{ margin: 0 }}>清空词库</h2>
           <p className="muted" style={{ margin: "6px 0 0" }}>
@@ -427,9 +480,9 @@ export function LibraryManager() {
             <Trash2 size={18} /> {clearing ? "清空中..." : "一键清空"}
           </button>
         </div>
-      </section>
+      </section> : null}
 
-      {preview.length ? (
+      {authenticated && preview.length ? (
         <section className="panel">
           <div className="topbar" style={{ marginBottom: 8 }}>
             <div>
@@ -557,10 +610,21 @@ export function LibraryManager() {
             />
           </label>
           <label className="library-voice-select">
+            阶段筛选
+            <select value={stageFilter} onChange={(event) => setStageFilter(event.target.value)}>
+              <option value="all">全部阶段</option>
+              {vocabularyStages.map((stage) => <option key={stage.key} value={stage.key}>{stage.label}</option>)}
+            </select>
+          </label>
+          <label className="library-voice-select">
             发音声音
             <select value={cloudVoiceId} onChange={(event) => setCloudVoiceId(event.target.value as CloudSpeechVoiceId)}>
               {CLOUD_SPEECH_VOICES.map((voice) => <option key={voice.id} value={voice.id}>{voice.label}</option>)}
             </select>
+          </label>
+          <label className="library-speed-control">
+            播放速度：{speechRate.toFixed(2)}
+            <input min={0.55} max={1} step={0.05} type="range" value={speechRate} onChange={(event) => setSpeechRate(Number(event.target.value))} />
           </label>
         </div>
         <div className="table-scroll">
@@ -595,10 +659,11 @@ export function LibraryManager() {
               {visibleWords.map((word) => (
                 <tr key={word.id}>
                   <td>
-                    <input value={word.word} onChange={(event) => updateSavedWord(word.id, { word: event.target.value })} />
+                    <input disabled={!authenticated} value={word.word} onChange={(event) => updateSavedWord(word.id, { word: event.target.value })} />
                   </td>
                   <td>
                     <select
+                      disabled={!authenticated}
                       value={word.entryType ?? "word"}
                       onChange={(event) => updateSavedWord(word.id, { entryType: event.target.value as "word" | "phrase" })}
                     >
@@ -607,19 +672,21 @@ export function LibraryManager() {
                     </select>
                   </td>
                   <td>
-                    <input value={word.phonetic ?? ""} onChange={(event) => updateSavedWord(word.id, { phonetic: event.target.value })} />
+                    <input disabled={!authenticated} value={word.phonetic ?? ""} onChange={(event) => updateSavedWord(word.id, { phonetic: event.target.value })} />
                   </td>
                   <td>
                     <input
+                      disabled={!authenticated}
                       value={word.partOfSpeech}
                       onChange={(event) => updateSavedWord(word.id, { partOfSpeech: event.target.value })}
                     />
                   </td>
                   <td>
-                    <textarea value={word.meaning} onChange={(event) => updateSavedWord(word.id, { meaning: event.target.value })} />
+                    <textarea disabled={!authenticated} value={word.meaning} onChange={(event) => updateSavedWord(word.id, { meaning: event.target.value })} />
                   </td>
                   <td>
                     <input
+                      disabled={!authenticated}
                       value={joinList(word.stages?.map(stageLabel))}
                       onChange={(event) => updateSavedWord(word.id, { stages: splitList(event.target.value) })}
                     />
@@ -628,10 +695,10 @@ export function LibraryManager() {
                     </div>
                   </td>
                   <td>
-                    <input value={word.unit ?? ""} onChange={(event) => updateSavedWord(word.id, { unit: event.target.value })} />
+                    <input disabled={!authenticated} value={word.unit ?? ""} onChange={(event) => updateSavedWord(word.id, { unit: event.target.value })} />
                   </td>
                   <td>
-                    <input value={joinList(word.tags)} onChange={(event) => updateSavedWord(word.id, { tags: splitList(event.target.value) })} />
+                    <input disabled={!authenticated} value={joinList(word.tags)} onChange={(event) => updateSavedWord(word.id, { tags: splitList(event.target.value) })} />
                   </td>
                   <td>
                     {word.stats.wrongCount ? (
@@ -642,7 +709,7 @@ export function LibraryManager() {
                   </td>
                   <td>
                     <div className="row-actions">
-                      <button
+                      {authenticated ? <button
                         aria-label={`播放 ${word.word}`}
                         className="secondary"
                         onClick={() => speakWord(word)}
@@ -650,8 +717,8 @@ export function LibraryManager() {
                         type="button"
                       >
                         <Volume2 size={18} className={speakingWordId === word.id ? "speaking-icon" : ""} />
-                      </button>
-                      <button
+                      </button> : null}
+                      {authenticated ? <button
                         aria-label={`保存 ${word.word}`}
                         disabled={savingWordId === word.id || deletingWordId === word.id}
                         onClick={() => saveSavedWord(word)}
@@ -659,7 +726,7 @@ export function LibraryManager() {
                         type="button"
                       >
                         <Save size={18} />
-                      </button>
+                      </button> : null}
                       <button
                         aria-label={`删除 ${word.word}`}
                         className="danger"

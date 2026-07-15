@@ -3,6 +3,7 @@ import { makeWordEntry, normalizeWord } from "@/lib/dictation";
 import { deleteWords, listWords, saveWords } from "@/lib/server/store";
 import type { ImportPreviewWord, WordEntry } from "@/lib/types";
 import { normalizeStage, stageLabel } from "@/lib/vocabulary";
+import { isAdminRequest } from "@/lib/server/admin-auth";
 
 type ClearWordsRequest = {
   mode?: "stage" | "source" | "uploadBatch";
@@ -15,6 +16,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  if (!isAdminRequest(request)) return NextResponse.json({ error: "只有教师可以新增或更新词库" }, { status: 401 });
   try {
     const body = (await request.json()) as {
       words?: ImportPreviewWord[];
@@ -104,6 +106,7 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
+  if (!isAdminRequest(request)) return NextResponse.json({ error: "只有教师可以清空词库" }, { status: 401 });
   try {
     const body = (await request.json()) as ClearWordsRequest;
     const words = await listWords();
