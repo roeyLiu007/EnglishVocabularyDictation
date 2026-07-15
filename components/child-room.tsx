@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Check, Clock, Languages, PenLine, Volume2 } from "lucide-react";
+import { Check, Clock, Languages, PenLine, SkipForward, Volume2 } from "lucide-react";
 import { readApiJson } from "@/lib/client-api";
 import { CLOUD_SPEECH_VOICES, type CloudSpeechVoiceId } from "@/lib/cloud-speech";
 import { speechTextForWord } from "@/lib/dictation";
@@ -56,6 +56,8 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
   const [speechMessage, setSpeechMessage] = useState("");
   const [questionStartedAt, setQuestionStartedAt] = useState(() => Date.now());
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [skippedIds, setSkippedIds] = useState<string[]>([]);
+  const [showAnswers, setShowAnswers] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   const speechTimerRef = useRef<number | null>(null);
@@ -158,9 +160,10 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
 
   useEffect(() => {
     if (!room) return;
-    const nextIndex = room.questions.findIndex((question) => !answeredIds.has(question.id));
+    let nextIndex = room.questions.findIndex((question) => !answeredIds.has(question.id) && !skippedIds.includes(question.id));
+    if (nextIndex < 0) nextIndex = room.questions.findIndex((question) => !answeredIds.has(question.id));
     if (nextIndex >= 0) setIndex(nextIndex);
-  }, [room, answeredIds]);
+  }, [room, answeredIds, skippedIds]);
 
   useEffect(() => {
     if (!current?.id || isDone) return;
@@ -286,6 +289,14 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
 
   async function submit() {
     if (!current) return;
+    const missing = current.targetFields.some((field) => {
+      if (field === "word") return !answer.word?.trim();
+      return answerLines.some((_, lineIndex) => !inputLines[lineIndex]?.[field]?.trim());
+    });
+    if (missing) {
+      setMessage("请填写完整后再提交；不会的题可以先跳过。");
+      return;
+    }
     const durationSeconds = Math.max(elapsedSeconds, Math.ceil((Date.now() - questionStartedAt) / 1000));
     setLoading(true);
     setMessage("");
@@ -298,11 +309,30 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
       const data = await readApiJson<AnswerPayload>(response, "提交失败");
       if (!response.ok) throw new Error(data.error ?? "提交失败");
       setAnswer({});
+      setSkippedIds((items) => items.filter((id) => id !== current.id));
       await load();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "提交失败");
     } finally {
       setLoading(false);
+    }
+  }
+
+  function skipQuestion() {
+    if (!current || !room) return;
+    setAnswer({});
+    setMessage("已暂时跳过，完成其他题后会再回来。");
+    setSkippedIds((items) => (items.includes(current.id) ? items : [...items, current.id]));
+    const next = room.questions.findIndex((question, questionIndex) =>
+      questionIndex !== index && !answeredIds.has(question.id) && !skippedIds.includes(question.id)
+    );
+    if (next >= 0) setIndex(next);
+  }
+
+  function handleAnswerKeyDown(event: React.KeyboardEvent<HTMLElement>) {
+    if (event.key === "Enter" && !event.shiftKey && event.target instanceof HTMLInputElement) {
+      event.preventDefault();
+      void submit();
     }
   }
 
@@ -347,18 +377,21 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
 
   if (isDone) {
     const correctCount = payload.answers.filter((item) => item.verdict.overall === "correct").length;
+    const totalSeconds = payload.answers.reduce((sum, item) => sum + (item.durationSeconds ?? 0), 0);
     return (
-      <section className="grid">
-        <div className="panel">
+      <section className="grid completion-view">
+        <div className="panel completion-summary">
+          <span className="eyebrow">本次听写完成</span>
           <h1>听写完成</h1>
           <p className="prompt" style={{ fontSize: 44 }}>
             {correctCount} / {room.questions.length}
           </p>
-          <button onClick={finish} type="button">
-            <Check size={18} /> 查看答案
-          </button>
+          <p className="muted">正确率 {Math.round((correctCount / Math.max(1, room.questions.length)) * 100)}% · 总用时 {formatDuration(totalSeconds)}</p>
+          {!showAnswers ? <button onClick={async () => { await finish(); setShowAnswers(true); }} type="button">
+            <Check size={18} /> 查看答案解析
+          </button> : null}
         </div>
-        <div className="panel">
+        {showAnswers ? <div className="panel">
           <h2 style={{ marginTop: 0 }}>本次答案</h2>
           <div style={{ overflowX: "auto" }}>
             <table>
@@ -398,7 +431,7 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
               </tbody>
             </table>
           </div>
-        </div>
+        </div> : null}
       </section>
     );
   }
@@ -406,7 +439,7 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
   if (!current) return <section className="panel">题目加载中...</section>;
 
   return (
-    <section className="question dictation-layout">
+    <section className="question dictation-layout immersive-dictation" onKeyDown={handleAnswerKeyDown}>
       <div className="dictation-meta">
         <span className="pill">
           {index + 1} / {room.questions.length}
@@ -426,6 +459,7 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
           <Clock size={15} /> 本题 {formatDuration(elapsedSeconds)}
         </span>
       </div>
+      <progress className="dictation-progress" max={room.questions.length} value={payload.answers.length} />
 
       <div className="panel dictation-prompt-card">
         {current.promptType === "audio" ? (
@@ -537,9 +571,14 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
           </div>
         ) : null}
 
-          <button className="submit-answer-button" disabled={loading} onClick={submit} type="button">
-            <Check size={20} /> {loading ? "提交中..." : "提交并进入下一题"}
-          </button>
+          <div className="dictation-actions">
+            <button className="secondary" disabled={loading} onClick={skipQuestion} type="button">
+              <SkipForward size={19} /> 暂时不会
+            </button>
+            <button className="submit-answer-button" disabled={loading} onClick={submit} type="button">
+              <Check size={20} /> {loading ? "提交中..." : "提交并进入下一题"}
+            </button>
+          </div>
           {message ? <p className="muted answer-message">{message}</p> : null}
         </div>
       </div>

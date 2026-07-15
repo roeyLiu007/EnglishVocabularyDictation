@@ -243,6 +243,21 @@ button.secondary {
   gap: 14px;
 }
 
+.question-mix-fieldset {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 14px;
+}
+
+.question-mix-fieldset legend {
+  color: var(--brand-strong);
+  font-weight: 800;
+  padding: 0 6px;
+}
+
 .compact-form {
   align-items: end;
   grid-template-columns: repeat(3, minmax(150px, 1fr));
@@ -473,6 +488,36 @@ tbody tr:nth-child(even) td {
   margin: 0 auto;
   max-width: 920px;
 }
+
+.immersive-dictation {
+  padding-bottom: 28px;
+}
+
+.dictation-progress {
+  accent-color: var(--brand);
+  height: 10px;
+  width: 100%;
+}
+
+.dictation-actions {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: minmax(150px, auto) minmax(260px, 1fr);
+}
+
+.completion-summary {
+  padding-block: 34px;
+  text-align: center;
+}
+
+.completion-summary .eyebrow {
+  margin-inline: auto;
+}
+
+.status-badge.learning { background: #fff2cf; color: #8a5b00; }
+.status-badge.review { background: #e8f6ff; color: #176b89; }
+.status-badge.mastered { background: #def7ed; color: #087455; }
+.status-badge.new { background: #f1edff; color: var(--brand-strong); }
 
 .dictation-meta {
   display: flex;
@@ -864,8 +909,14 @@ tbody tr:nth-child(even) td {
   .audio-prompt-main,
   .audio-controls,
   .answer-line-card,
-  .line-fields {
+  .line-fields,
+  .dictation-actions {
     grid-template-columns: 1fr;
+  }
+
+  .dictation-actions .submit-answer-button {
+    min-height: 54px;
+    order: -1;
   }
 
   .play-button {

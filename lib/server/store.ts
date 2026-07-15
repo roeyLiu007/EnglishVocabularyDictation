@@ -105,6 +105,24 @@ function wordRow(word: WordEntry) {
 
 function hydrateWord(word: WordEntry): WordEntry {
   const stages = effectiveStages(word);
+  const baseStats = {
+    wrongCount: 0,
+    correctCount: 0,
+    fieldWrongCounts: {},
+    consecutiveCorrect: 0,
+    proficiency: "new" as const,
+    reviewIntervalDays: 0
+  };
+  const hydratedStats = { ...baseStats, ...(word.stats ?? {}) };
+  if (!word.stats?.proficiency) {
+    hydratedStats.proficiency = hydratedStats.consecutiveCorrect >= 4
+      ? "mastered"
+      : hydratedStats.consecutiveCorrect >= 2
+        ? "review"
+        : hydratedStats.wrongCount > 0
+          ? "learning"
+          : "new";
+  }
   return {
     ...word,
     entryType: word.entryType === "phrase" ? "phrase" : "word",
@@ -115,12 +133,7 @@ function hydrateWord(word: WordEntry): WordEntry {
     source: effectiveSource({ ...word, stages }),
     uploadBatchId: word.uploadBatchId ?? "",
     uploadBatchName: word.uploadBatchName ?? "",
-    stats: word.stats ?? {
-      wrongCount: 0,
-      correctCount: 0,
-      fieldWrongCounts: {},
-      consecutiveCorrect: 0
-    }
+    stats: hydratedStats
   };
 }
 
@@ -131,7 +144,9 @@ function resetWordStats(word: WordEntry): WordEntry {
       wrongCount: 0,
       correctCount: 0,
       fieldWrongCounts: {},
-      consecutiveCorrect: 0
+      consecutiveCorrect: 0,
+      proficiency: "new",
+      reviewIntervalDays: 0
     }
   };
 }

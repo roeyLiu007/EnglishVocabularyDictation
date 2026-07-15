@@ -28,6 +28,7 @@ async function readJsonResponse(response: Response) {
 export function CreateRoom() {
   const [totalCount, setTotalCount] = useState(20);
   const [mistakeRatio, setMistakeRatio] = useState(30);
+  const [promptWeights, setPromptWeights] = useState({ audio: 50, english: 25, chinese: 25 });
   const [wordSource, setWordSource] = useState<"all" | "stage" | "latestUpload">("stage");
   const [stage, setStage] = useState("junior");
   const [words, setWords] = useState<WordEntry[]>([]);
@@ -62,7 +63,7 @@ export function CreateRoom() {
       const response = await fetch("/api/rooms", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ totalCount, mistakeRatio, wordSource, stage })
+        body: JSON.stringify({ totalCount, mistakeRatio, wordSource, stage, promptTypeWeights: promptWeights })
       });
       const data = await readJsonResponse(response);
       if (!response.ok) throw new Error(typeof data.error === "string" ? data.error : "创建失败");
@@ -126,7 +127,22 @@ export function CreateRoom() {
               onChange={(event) => setMistakeRatio(Number(event.target.value))}
             />
           </label>
-          <p className="muted">题型会在“听英文 / 看英文 / 看中文”之间混合随机。孩子全部完成后才会看到答案。</p>
+          <fieldset className="question-mix-fieldset">
+            <legend>题型比例</legend>
+            {([
+              ["audio", "听音写词"],
+              ["english", "看英文写中文"],
+              ["chinese", "看中文写英文"]
+            ] as const).map(([key, label]) => (
+              <label key={key}>
+                <span>{label}：{promptWeights[key]}%</span>
+                <input min={0} max={100} step={5} type="range" value={promptWeights[key]}
+                  onChange={(event) => setPromptWeights((value) => ({ ...value, [key]: Number(event.target.value) }))} />
+              </label>
+            ))}
+            <p className="muted">系统会按相对比例出题，三项不必相加等于 100。</p>
+          </fieldset>
+          <p className="muted">孩子全部完成后先查看成绩，再自行打开答案解析。</p>
           <button disabled={loading} onClick={create} type="button">
             <Play size={18} /> {loading ? "创建中..." : "创建听写房间"}
           </button>

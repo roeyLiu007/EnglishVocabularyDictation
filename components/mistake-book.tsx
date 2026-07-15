@@ -10,9 +10,24 @@ const fieldLabels: Record<FieldName, string> = {
   meaning: "中文"
 };
 
+const proficiencyLabels = {
+  new: "新错词",
+  learning: "学习中",
+  review: "待巩固",
+  mastered: "已掌握"
+} as const;
+
+function reviewLabel(value?: string) {
+  if (!value) return "完成一次复习后安排";
+  const date = new Date(value);
+  if (date.getTime() <= Date.now()) return "现在应复习";
+  return new Intl.DateTimeFormat("zh-CN", { month: "numeric", day: "numeric" }).format(date);
+}
+
 export function MistakeBook() {
   const [words, setWords] = useState<WordEntry[]>([]);
   const [filter, setFilter] = useState<"all" | FieldName>("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "due" | "learning" | "review" | "mastered">("all");
   const [savingWordId, setSavingWordId] = useState<string | null>(null);
   const [clearingWordId, setClearingWordId] = useState<string | null>(null);
   const [clearingAll, setClearingAll] = useState(false);
@@ -106,8 +121,11 @@ export function MistakeBook() {
     return words
       .filter((word) => word.stats.wrongCount > 0)
       .filter((word) => filter === "all" || (word.stats.fieldWrongCounts[filter] ?? 0) > 0)
+      .filter((word) => statusFilter === "all" || (statusFilter === "due"
+        ? Boolean(word.stats.nextReviewAt && new Date(word.stats.nextReviewAt).getTime() <= Date.now())
+        : word.stats.proficiency === statusFilter))
       .sort((a, b) => b.stats.wrongCount - a.stats.wrongCount);
-  }, [filter, words]);
+  }, [filter, statusFilter, words]);
 
   return (
     <div className="grid">
@@ -117,8 +135,8 @@ export function MistakeBook() {
           <span>当前筛选错词</span>
         </div>
         <div className="panel stat">
-          <strong>{words.filter((word) => word.stats.consecutiveCorrect >= 3).length}</strong>
-          <span>连续答对 3 次</span>
+          <strong>{words.filter((word) => word.stats.proficiency === "mastered").length}</strong>
+          <span>已掌握</span>
         </div>
         <div className="panel stat">
           <strong>{words.reduce((sum, word) => sum + word.stats.wrongCount, 0)}</strong>
@@ -135,6 +153,16 @@ export function MistakeBook() {
               <option value="word">英文拼写</option>
               <option value="partOfSpeech">词性</option>
               <option value="meaning">中文意思</option>
+            </select>
+          </label>
+          <label>
+            复习状态
+            <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as typeof statusFilter)}>
+              <option value="all">全部状态</option>
+              <option value="due">现在应复习</option>
+              <option value="learning">学习中</option>
+              <option value="review">待巩固</option>
+              <option value="mastered">已掌握</option>
             </select>
           </label>
           <button className="danger" disabled={clearingAll || !words.some((word) => word.stats.wrongCount > 0)} onClick={clearAllMistakes} type="button">
@@ -157,6 +185,7 @@ export function MistakeBook() {
                 <th>错误次数</th>
                 <th>错误位置</th>
                 <th>连续答对</th>
+                <th>熟练度 / 下次复习</th>
                 <th>操作</th>
               </tr>
             </thead>
@@ -196,6 +225,12 @@ export function MistakeBook() {
                   </td>
                   <td>{word.stats.consecutiveCorrect}</td>
                   <td>
+                    <span className={`status-badge ${word.stats.proficiency ?? "new"}`}>
+                      {proficiencyLabels[word.stats.proficiency ?? "new"]}
+                    </span>
+                    <div className="table-subtext">{reviewLabel(word.stats.nextReviewAt)}</div>
+                  </td>
+                  <td>
                     <div className="row-actions">
                       <button
                         aria-label={`保存 ${word.word}`}
@@ -222,7 +257,7 @@ export function MistakeBook() {
               ))}
               {!mistakes.length ? (
                 <tr>
-                  <td colSpan={9} className="muted">
+                  <td colSpan={10} className="muted">
                     暂时还没有错词。完成一次听写后，这里会自动更新。
                   </td>
                 </tr>

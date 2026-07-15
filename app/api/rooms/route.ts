@@ -51,7 +51,8 @@ export async function POST(request: Request) {
       mistakeRatio: input.mistakeRatio,
       wordSource: source,
       stage,
-      questionMode: "mixed",
+      questionMode: input.promptTypeWeights ? "custom" : "mixed",
+      promptTypeWeights: input.promptTypeWeights,
       questions,
       createdAt: new Date().toISOString()
     };

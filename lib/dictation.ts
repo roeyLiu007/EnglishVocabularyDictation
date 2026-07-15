@@ -6,6 +6,7 @@ import type {
   FieldStatus,
   ImportPreviewWord,
   PromptType,
+  PromptTypeWeights,
   Question,
   WordEntry,
   WordStats
@@ -15,7 +16,9 @@ export const defaultStats = (): WordStats => ({
   wrongCount: 0,
   correctCount: 0,
   fieldWrongCounts: {},
-  consecutiveCorrect: 0
+  consecutiveCorrect: 0,
+  proficiency: "new",
+  reviewIntervalDays: 0
 });
 
 const partOfSpeechDefinitions = [
@@ -466,10 +469,18 @@ export function applyVerdictToStats(word: WordEntry, verdict: AnswerVerdict): Wo
   if (wrongFields.length === 0) {
     stats.correctCount += 1;
     stats.consecutiveCorrect += 1;
+    const intervals = [1, 3, 7, 14, 30];
+    const interval = intervals[Math.min(stats.consecutiveCorrect - 1, intervals.length - 1)];
+    stats.reviewIntervalDays = interval;
+    stats.nextReviewAt = new Date(Date.now() + interval * 86400000).toISOString();
+    stats.proficiency = stats.consecutiveCorrect >= 4 ? "mastered" : stats.consecutiveCorrect >= 2 ? "review" : "learning";
   } else {
     stats.wrongCount += 1;
     stats.consecutiveCorrect = 0;
     stats.lastWrongAt = now;
+    stats.proficiency = "learning";
+    stats.reviewIntervalDays = 1;
+    stats.nextReviewAt = new Date(Date.now() + 86400000).toISOString();
     wrongFields.forEach((field) => {
       stats.fieldWrongCounts[field] = (stats.fieldWrongCounts[field] ?? 0) + 1;
     });
@@ -483,7 +494,10 @@ function mistakeWeight(word: WordEntry) {
   if (stats.wrongCount <= 0) return 0;
   const fieldPenalty = Object.values(stats.fieldWrongCounts).reduce((sum, count) => sum + (count ?? 0), 0);
   const recovery = Math.min(stats.consecutiveCorrect, 3) * 2;
-  return Math.max(1, stats.wrongCount * 4 + fieldPenalty - recovery);
+  const isDue = !stats.nextReviewAt || new Date(stats.nextReviewAt).getTime() <= Date.now();
+  const dueBoost = isDue ? 5 : 0;
+  const masteryPenalty = stats.proficiency === "mastered" ? 5 : 0;
+  return Math.max(1, stats.wrongCount * 4 + fieldPenalty + dueBoost - recovery - masteryPenalty);
 }
 
 function takeWeighted(words: WordEntry[], count: number) {
@@ -508,9 +522,7 @@ function shuffle<T>(items: T[]) {
   return [...items].sort(() => Math.random() - 0.5);
 }
 
-function makeQuestion(word: WordEntry, index: number): Question {
-  const promptTypes: PromptType[] = ["audio", "english", "chinese"];
-  const promptType = promptTypes[index % promptTypes.length];
+function makeQuestion(word: WordEntry, index: number, promptType: PromptType): Question {
   const id = `${word.id}-${promptType}-${Date.now()}-${index}`;
   const entryType: "word" | "phrase" = word.entryType === "phrase" ? "phrase" : "word";
   const lines = answerLinesFor(word);
@@ -610,7 +622,18 @@ export function buildQuestions(words: WordEntry[], input: CreateRoomInput) {
   const ordinary = shuffle(words.filter((word) => !mistakeIds.has(word.id))).slice(0, totalCount - mistakes.length);
   const selected = shuffle([...mistakes, ...ordinary]).slice(0, totalCount);
 
-  return selected.map(makeQuestion);
+  const configured = input.promptTypeWeights ?? { audio: 34, english: 33, chinese: 33 };
+  const weights: PromptTypeWeights = {
+    audio: Math.max(0, configured.audio || 0),
+    english: Math.max(0, configured.english || 0),
+    chinese: Math.max(0, configured.chinese || 0)
+  };
+  const totalWeight = weights.audio + weights.english + weights.chinese || 1;
+  const promptTypes = (Object.keys(weights) as PromptType[]).flatMap((type) =>
+    Array.from({ length: Math.round((weights[type] / totalWeight) * 100) }, () => type)
+  );
+  const sequence = promptTypes.length ? shuffle(promptTypes) : ["audio" as PromptType];
+  return selected.map((word, index) => makeQuestion(word, index, sequence[index % sequence.length]));
 }
 
 export function parseWordListText(text: string): ImportPreviewWord[] {

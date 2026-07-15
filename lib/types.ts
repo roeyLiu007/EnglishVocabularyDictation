@@ -1,4 +1,5 @@
 export type PromptType = "audio" | "english" | "chinese";
+export type PromptTypeWeights = Record<PromptType, number>;
 export type RoomStatus = "active" | "completed" | "closed";
 export type FieldName = "word" | "partOfSpeech" | "meaning";
 export type FieldStatus = "correct" | "wrong" | "pending";
@@ -10,6 +11,9 @@ export type WordStats = {
   lastWrongAt?: string;
   lastTestedAt?: string;
   consecutiveCorrect: number;
+  proficiency?: "new" | "learning" | "review" | "mastered";
+  nextReviewAt?: string;
+  reviewIntervalDays?: number;
 };
 
 export type WordEntry = {
@@ -61,7 +65,8 @@ export type DictationRoom = {
   mistakeRatio: number;
   wordSource?: "all" | "stage" | "latestUpload";
   stage?: string;
-  questionMode: "mixed";
+  questionMode: "mixed" | "custom";
+  promptTypeWeights?: PromptTypeWeights;
   questions: Question[];
   createdAt: string;
 };
@@ -115,6 +120,7 @@ export type CreateRoomInput = {
   mistakeRatio: number;
   wordSource?: "all" | "stage" | "latestUpload";
   stage?: string;
+  promptTypeWeights?: PromptTypeWeights;
 };
 
 export type ImportPreviewWord = Pick<
