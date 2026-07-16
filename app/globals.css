@@ -491,24 +491,47 @@ tbody tr:nth-child(even) td {
 }
 
 .mistake-table {
-  min-width: 1160px;
+  min-width: 1180px;
   table-layout: fixed;
 }
 
 .mistake-table th:nth-child(1) { width: 130px; }
 .mistake-table th:nth-child(2) { width: 82px; }
-.mistake-table th:nth-child(3) { width: 120px; }
-.mistake-table th:nth-child(4) { width: 130px; }
-.mistake-table th:nth-child(5) { width: 190px; }
-.mistake-table th:nth-child(6) { width: 74px; }
+.mistake-table th:nth-child(3) { width: 130px; }
+.mistake-table th:nth-child(4) { width: 190px; }
+.mistake-table th:nth-child(5) { width: 74px; }
+.mistake-table th:nth-child(6) { width: 130px; }
 .mistake-table th:nth-child(7) { width: 130px; }
-.mistake-table th:nth-child(8) { width: 130px; }
-.mistake-table th:nth-child(9) { width: 76px; }
-.mistake-table th:nth-child(10) { width: 130px; }
-.mistake-table th:nth-child(11) { width: 92px; }
+.mistake-table th:nth-child(8) { width: 76px; }
+.mistake-table th:nth-child(9) { width: 130px; }
+.mistake-table th:nth-child(10) { width: 210px; }
 
 .person-pill {
   margin: 2px 5px 2px 0;
+}
+
+.mistake-speed-control {
+  min-width: 190px;
+}
+
+.mistake-table th:last-child,
+.mistake-table td:last-child {
+  background: rgba(255, 255, 255, 0.97);
+  box-shadow: -8px 0 14px rgba(103, 89, 190, 0.1);
+  position: sticky;
+  right: 0;
+  z-index: 3;
+}
+
+.mistake-table th:last-child {
+  background: rgba(242, 238, 255, 0.98);
+  z-index: 4;
+}
+
+.mistake-row-actions {
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-start;
 }
 
 .library-table input,

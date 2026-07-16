@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { Save, Trash2 } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Save, Trash2, Volume2 } from "lucide-react";
+import { CLOUD_SPEECH_VOICES, type CloudSpeechVoiceId } from "@/lib/cloud-speech";
+import { speechTextForWord } from "@/lib/dictation";
 import type { FieldName, WordEntry } from "@/lib/types";
 
 const fieldLabels: Record<FieldName, string> = {
@@ -34,6 +36,11 @@ export function MistakeBook() {
   const [clearingWordId, setClearingWordId] = useState<string | null>(null);
   const [clearingAll, setClearingAll] = useState(false);
   const [message, setMessage] = useState("");
+  const [cloudVoiceId, setCloudVoiceId] = useState<CloudSpeechVoiceId>("male");
+  const [speechRate, setSpeechRate] = useState(1);
+  const [speakingWordId, setSpeakingWordId] = useState<string | null>(null);
+  const [speechSource, setSpeechSource] = useState<{ wordId: string; source: "cache" | "generated" | "browser" } | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   async function loadWords() {
     const response = await fetch("/api/words", { cache: "no-store" });
@@ -49,10 +56,67 @@ export function MistakeBook() {
       .catch(() => setAuthenticated(false));
   }, []);
 
+  useEffect(() => () => {
+    audioRef.current?.pause();
+    window.speechSynthesis?.cancel();
+  }, []);
+
   const people = useMemo(() => Array.from(new Set(words.flatMap((word) => Object.keys(word.stats.mistakePeople ?? {})))).sort(), [words]);
 
   function updateWord(wordId: string, patch: Partial<WordEntry>) {
     setWords((items) => items.map((word) => (word.id === wordId ? { ...word, ...patch } : word)));
+  }
+
+  function speakWithBrowser(word: WordEntry) {
+    if (!("speechSynthesis" in window)) return setMessage("当前浏览器不支持备用发音。");
+    const utterance = new SpeechSynthesisUtterance(speechTextForWord(word.word));
+    utterance.lang = "en-US";
+    utterance.rate = speechRate;
+    utterance.onstart = () => setSpeakingWordId(word.id);
+    utterance.onend = () => setSpeakingWordId(null);
+    utterance.onerror = () => { setSpeakingWordId(null); setMessage("发音失败，请检查设备媒体音量。"); };
+    window.speechSynthesis.speak(utterance);
+    setSpeechSource({ wordId: word.id, source: "browser" });
+  }
+
+  async function speakWord(word: WordEntry) {
+    audioRef.current?.pause();
+    window.speechSynthesis?.cancel();
+    setSpeakingWordId(word.id);
+    setMessage("");
+    let speech: { url: string; source: "cache" | "generated" };
+    try {
+      const response = await fetch(`/api/words/${encodeURIComponent(word.id)}/speech?voice=${cloudVoiceId}`, { cache: "no-store" });
+      const data = await response.json() as { url?: string; source?: "cache" | "generated"; error?: string };
+      if (!response.ok || !data.url || !data.source) throw new Error(data.error ?? "云端发音不可用");
+      speech = { url: data.url, source: data.source };
+      setSpeechSource({ wordId: word.id, source: data.source });
+    } catch {
+      setMessage("云端发音暂不可用，已切换到浏览器发音。");
+      speakWithBrowser(word);
+      return;
+    }
+
+    const audio = new Audio(speech.url);
+    audio.playbackRate = speechRate;
+    audio.preservesPitch = true;
+    audioRef.current = audio;
+    let fallbackStarted = false;
+    const fallback = () => {
+      if (fallbackStarted) return;
+      fallbackStarted = true;
+      audio.onerror = null;
+      audio.pause();
+      if (audioRef.current === audio) audioRef.current = null;
+      setMessage("云端发音暂不可用，已切换到浏览器发音。");
+      speakWithBrowser(word);
+    };
+    audio.onended = () => {
+      if (audioRef.current === audio) audioRef.current = null;
+      setSpeakingWordId(null);
+    };
+    audio.onerror = fallback;
+    void audio.play().catch(fallback);
   }
 
   async function saveWord(word: WordEntry) {
@@ -181,6 +245,16 @@ export function MistakeBook() {
               <option value="mastered">已掌握</option>
             </select>
           </label>
+          <label>
+            发音声音
+            <select value={cloudVoiceId} onChange={(event) => setCloudVoiceId(event.target.value as CloudSpeechVoiceId)}>
+              {CLOUD_SPEECH_VOICES.map((voice) => <option key={voice.id} value={voice.id}>{voice.label}</option>)}
+            </select>
+          </label>
+          <label className="mistake-speed-control">
+            播放速度：{speechRate.toFixed(2)}
+            <input min={0.5} max={1.5} step={0.05} type="range" value={speechRate} onChange={(event) => setSpeechRate(Number(event.target.value))} />
+          </label>
           {authenticated ? <button className="danger" disabled={clearingAll || !words.some((word) => word.stats.wrongCount > 0)} onClick={clearAllMistakes} type="button">
             <Trash2 size={18} /> 一键清空错词
           </button> : <span className="pill">只读模式</span>}
@@ -189,13 +263,12 @@ export function MistakeBook() {
       </section>
 
       <section className="panel">
-        <div style={{ overflowX: "auto" }}>
+        <div className="table-scroll">
           <table className="mistake-table">
             <thead>
               <tr>
                 <th>英文</th>
                 <th>类型</th>
-                <th>音标</th>
                 <th>词性</th>
                 <th>中文意思</th>
                 <th>错误次数</th>
@@ -222,9 +295,6 @@ export function MistakeBook() {
                     </select> : word.entryType === "phrase" ? "词组" : "单词"}
                   </td>
                   <td>
-                    {authenticated ? <input value={word.phonetic ?? ""} onChange={(event) => updateWord(word.id, { phonetic: event.target.value })} /> : word.phonetic || "-"}
-                  </td>
-                  <td>
                     {authenticated ? <input value={word.partOfSpeech} onChange={(event) => updateWord(word.id, { partOfSpeech: event.target.value })} /> : word.partOfSpeech || "-"}
                   </td>
                   <td>
@@ -249,7 +319,11 @@ export function MistakeBook() {
                     <div className="table-subtext">{reviewLabel(word.stats.nextReviewAt)}</div>
                   </td>
                   <td>
-                    {authenticated ? <div className="row-actions">
+                    <div className="row-actions mistake-row-actions">
+                      <button aria-label={`播放 ${word.word}`} className="secondary" onClick={() => void speakWord(word)} title="播放读音" type="button">
+                        <Volume2 size={18} className={speakingWordId === word.id ? "speaking-icon" : ""} />
+                      </button>
+                      {authenticated ? <>
                       <button
                         aria-label={`保存 ${word.word}`}
                         disabled={savingWordId === word.id || clearingWordId === word.id}
@@ -269,13 +343,17 @@ export function MistakeBook() {
                       >
                         <Trash2 size={18} />
                       </button>
-                    </div> : <span className="muted">只读</span>}
+                      </> : null}
+                      {speechSource?.wordId === word.id ? <span className={`speech-source ${speechSource.source}`}>
+                        {speechSource.source === "generated" ? "百度云生成" : speechSource.source === "cache" ? "Supabase 缓存" : "浏览器备用"}
+                      </span> : null}
+                    </div>
                   </td>
                 </tr>
               ))}
               {!mistakes.length ? (
                 <tr>
-                  <td colSpan={11} className="muted">
+                  <td colSpan={10} className="muted">
                     暂时还没有错词。完成一次听写后，这里会自动更新。
                   </td>
                 </tr>
