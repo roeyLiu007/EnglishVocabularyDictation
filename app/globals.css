@@ -1036,14 +1036,14 @@ tbody tr:nth-child(even) td {
 }
 
 .task-table {
-  min-width: 1220px;
+  min-width: 1160px;
   table-layout: fixed;
 }
 
 .task-table th:nth-child(1) { width: 88px; }
 .task-table th:nth-child(2) { width: 158px; }
-.task-table th:nth-child(3) { width: 150px; }
-.task-table th:nth-child(4) { width: 230px; }
+.task-table th:nth-child(3) { width: 160px; }
+.task-table th:nth-child(4) { width: 150px; }
 .task-table th:nth-child(5) { width: 140px; }
 .task-table th:nth-child(6) { width: 144px; }
 .task-table th:nth-child(7) { width: 150px; }
@@ -1109,6 +1109,7 @@ tbody tr:nth-child(even) td {
   color: var(--muted);
   font-size: 13px;
   line-height: 1.45;
+  word-break: break-word;
 }
 
 .task-table td:nth-child(6) span {

@@ -40,7 +40,7 @@ function statusLabel(status: RoomTaskSummary["status"]) {
 
 function deadlineLabel(task: RoomTaskSummary) {
   if (task.expiresAt) return formatDate(task.expiresAt);
-  if (task.timeLimitMinutes) return `未开始，学生打开后 ${task.timeLimitMinutes} 分钟截止`;
+  if (task.timeLimitMinutes) return `未开始，提交第 1 题后 ${task.timeLimitMinutes} 分钟截止`;
   return "";
 }
 

@@ -45,7 +45,7 @@ function formatDate(value?: string) {
 function deadlineLabel(room: DictationRoom) {
   const expiresAt = formatDate(room.expiresAt);
   if (expiresAt) return expiresAt;
-  if (room.timeLimitMinutes) return `未开始，学生打开后 ${room.timeLimitMinutes} 分钟截止`;
+  if (room.timeLimitMinutes) return `未开始，提交第 1 题后 ${room.timeLimitMinutes} 分钟截止`;
   return "未设置";
 }
 

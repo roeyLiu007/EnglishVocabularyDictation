@@ -177,7 +177,7 @@ export function CreateRoom() {
               </div>
             </div>
             <p className="pill deadline-pill">
-              <Clock size={16} /> 学生打开后 {created.room.timeLimitMinutes ?? timeLimitMinutes} 分钟截止
+              <Clock size={16} /> 提交第 1 题后 {created.room.timeLimitMinutes ?? timeLimitMinutes} 分钟截止
             </p>
             <label>
               孩子答题链接
