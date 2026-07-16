@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { completeRoom, getRoom, listAnswers } from "@/lib/server/store";
+import { closeRoom, completeRoom, getRoom, listAnswers } from "@/lib/server/store";
 
 export async function POST(request: Request, { params }: { params: { roomId: string } }) {
   try {
@@ -20,6 +20,11 @@ export async function POST(request: Request, { params }: { params: { roomId: str
       if (answers.length < room.questions.length) {
         return NextResponse.json({ error: "请完成全部题目后再交卷" }, { status: 409 });
       }
+    }
+
+    if (body.token === room.parentToken && room.status === "active") {
+      const closed = await closeRoom(room.id);
+      return NextResponse.json({ room: closed });
     }
 
     const completed = await completeRoom(room.id);

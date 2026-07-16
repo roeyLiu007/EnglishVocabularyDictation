@@ -2,7 +2,7 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 import { applyVerdictToStats } from "@/lib/dictation";
-import type { DictationRoom, SubmittedAnswer, WordEntry } from "@/lib/types";
+import type { AnswerVerdict, DictationRoom, Question, SubmittedAnswer, WordEntry } from "@/lib/types";
 import { effectiveSource, effectiveStages } from "@/lib/vocabulary";
 
 type MemoryStore = {
@@ -467,23 +467,36 @@ export async function recordRoomMistakes(roomId: string) {
   const room = await getRoom(roomId);
   if (!room) return null;
   if (room.status === "recorded") return room;
-  if (room.status !== "completed") throw new Error("请先完成听写，再记录到错题本");
+  if (room.status !== "completed" && room.status !== "closed") throw new Error("请先结束听写，再记录到错题本");
   if (!room.questions.some((question) => question.manualMistakeRecording)) {
     throw new Error("该历史任务已经按旧规则记录过错题，不能重复记录");
   }
 
   const answers = await listAnswers(roomId);
-  if (answers.length < room.questions.length) throw new Error("孩子尚未完成全部题目，暂时不能记录错题");
   if (answers.some((answer) => answer.verdict.overall === "pending")) {
     throw new Error("还有待确认答案，请先逐题判定为正确或错误");
   }
   const words = await listWords();
-  for (const answer of answers) {
-    const question = room.questions.find((item) => item.id === answer.questionId);
-    const word = question ? words.find((item) => item.id === question.wordId) : null;
+  const answerMap = new Map(answers.map((answer) => [answer.questionId, answer]));
+  const teacherEndedEarly = room.status === "closed";
+  const missingVerdict = (question: Question): AnswerVerdict => ({
+    overall: "wrong",
+    fields: Object.fromEntries(question.targetFields.map((field) => [field, {
+      status: "wrong",
+      expected: question.answer[field === "partOfSpeech" ? "partOfSpeech" : field],
+      received: "",
+      note: "学生交卷时未提交本题"
+    }]))
+  });
+
+  for (const question of room.questions) {
+    const submitted = answerMap.get(question.id);
+    if (!submitted && teacherEndedEarly) continue;
+    const verdict = submitted?.verdict ?? missingVerdict(question);
+    const word = words.find((item) => item.id === question.wordId);
     if (!word) continue;
-    let updated = applyVerdictToStats(word, answer.verdict);
-    if (answer.verdict.overall === "wrong") {
+    let updated = applyVerdictToStats(word, verdict);
+    if (verdict.overall === "wrong") {
       const person = room.dictationPerson || question?.dictationPerson || "未标注";
       updated = {
         ...updated,

@@ -134,7 +134,7 @@ export function ParentRoom({ roomId, token }: { roomId: string; token: string })
   const answerMap = new Map(payload.answers.map((answer) => [answer.questionId, answer]));
   const correctCount = payload.answers.filter((answer) => answer.verdict.overall === "correct").length;
   const pendingCount = payload.answers.filter((answer) => answer.verdict.overall === "pending").length;
-  const statusLabel = room.status === "recorded" ? "已记录错题" : room.status === "completed" ? "已完成" : room.status === "closed" ? "已关闭" : "进行中";
+  const statusLabel = room.status === "recorded" ? "已记录错题" : room.status === "completed" ? "学生已交卷" : room.status === "closed" ? "已提前结束" : "进行中";
 
   return (
     <div className="grid">
@@ -173,13 +173,15 @@ export function ParentRoom({ roomId, token }: { roomId: string; token: string })
                 <SquareCheckBig size={18} /> 提前结束听写
               </button>
             ) : null}
-            {room.status === "completed" && room.questions.some((question) => question.manualMistakeRecording) ? (
+            {(room.status === "completed" || room.status === "closed") && room.questions.some((question) => question.manualMistakeRecording) ? (
               <button onClick={recordMistakes} type="button">
                 <BookMarked size={18} /> 记录到错题本
               </button>
             ) : null}
             {room.status === "recorded" ? <span className="pill ok">已记录到错题本</span> : null}
           </div>
+          {room.status === "closed" ? <p className="muted">提前结束结算：只记录已提交答案中的错误，未提交题目不计错。</p> : null}
+          {room.status === "completed" ? <p className="muted">学生交卷结算：错误题和未提交题都会记录到错题本。</p> : null}
           {message ? <p className="muted">{message}</p> : null}
         </div>
       </section>
