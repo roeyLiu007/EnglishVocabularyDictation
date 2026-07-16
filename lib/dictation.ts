@@ -316,6 +316,25 @@ export function splitPartOfSpeechEntries(value = "") {
     .filter(Boolean);
 }
 
+export function formatPartOfSpeechForCell(value = "", entriesPerLine = 2) {
+  const entries = splitPartOfSpeechEntries(value);
+  if (!entries.length) return value.trim();
+  const safeEntriesPerLine = Math.max(1, Math.round(entriesPerLine));
+  const lines: string[] = [];
+  for (let index = 0; index < entries.length; index += safeEntriesPerLine) {
+    lines.push(entries.slice(index, index + safeEntriesPerLine).join(" / "));
+  }
+  return lines.join("\n");
+}
+
+export function normalizePartOfSpeechCellInput(value = "") {
+  return value
+    .split(/\n+/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .join(" / ");
+}
+
 function splitMeaningEntries(value = "", lineCount: number) {
   const normalized = value
     .split(/[；;]/)

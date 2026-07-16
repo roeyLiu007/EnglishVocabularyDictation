@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Save, Trash2, Volume2 } from "lucide-react";
 import { CLOUD_SPEECH_VOICES, type CloudSpeechVoiceId } from "@/lib/cloud-speech";
-import { speechTextForWord } from "@/lib/dictation";
+import { formatPartOfSpeechForCell, normalizePartOfSpeechCellInput, speechTextForWord } from "@/lib/dictation";
 import type { FieldName, WordEntry } from "@/lib/types";
 
 const fieldLabels: Record<FieldName, string> = {
@@ -298,8 +298,8 @@ export function MistakeBook() {
                       <textarea
                         aria-label={`${word.word}词性`}
                         placeholder="词性"
-                        value={word.partOfSpeech}
-                        onChange={(event) => updateWord(word.id, { partOfSpeech: event.target.value })}
+                        value={formatPartOfSpeechForCell(word.partOfSpeech)}
+                        onChange={(event) => updateWord(word.id, { partOfSpeech: normalizePartOfSpeechCellInput(event.target.value) })}
                       />
                       <textarea
                         aria-label={`${word.word}中文意思`}
@@ -308,7 +308,7 @@ export function MistakeBook() {
                         onChange={(event) => updateWord(word.id, { meaning: event.target.value })}
                       />
                     </> : <>
-                      <div className="definition-pos">{word.partOfSpeech || "-"}</div>
+                      <div className="definition-pos">{formatPartOfSpeechForCell(word.partOfSpeech) || "-"}</div>
                       <div>{word.meaning}</div>
                     </>}
                   </td>

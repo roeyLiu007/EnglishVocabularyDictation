@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { LockKeyhole, LogOut, Save, Search, Trash2, Upload, Volume2 } from "lucide-react";
-import { speechTextForWord } from "@/lib/dictation";
+import { formatPartOfSpeechForCell, normalizePartOfSpeechCellInput, speechTextForWord } from "@/lib/dictation";
 import { CLOUD_SPEECH_VOICES, type CloudSpeechVoiceId } from "@/lib/cloud-speech";
 import type { ImportPreviewWord, WordEntry } from "@/lib/types";
 import { stageLabel, vocabularyStages } from "@/lib/vocabulary";
@@ -556,8 +556,8 @@ export function LibraryManager() {
                       <textarea
                         aria-label={`${word.word || "候选词"}词性`}
                         placeholder="词性"
-                        value={word.partOfSpeech}
-                        onChange={(event) => updatePreview(index, { partOfSpeech: event.target.value })}
+                        value={formatPartOfSpeechForCell(word.partOfSpeech)}
+                        onChange={(event) => updatePreview(index, { partOfSpeech: normalizePartOfSpeechCellInput(event.target.value) })}
                       />
                       <input
                         aria-label={`${word.word || "候选词"}中文意思`}
@@ -673,8 +673,8 @@ export function LibraryManager() {
                       <textarea
                         aria-label={`${word.word}词性`}
                         placeholder="词性"
-                        value={word.partOfSpeech}
-                        onChange={(event) => updateSavedWord(word.id, { partOfSpeech: event.target.value })}
+                        value={formatPartOfSpeechForCell(word.partOfSpeech)}
+                        onChange={(event) => updateSavedWord(word.id, { partOfSpeech: normalizePartOfSpeechCellInput(event.target.value) })}
                       />
                       <textarea
                         aria-label={`${word.word}中文意思`}
@@ -683,7 +683,7 @@ export function LibraryManager() {
                         onChange={(event) => updateSavedWord(word.id, { meaning: event.target.value })}
                       />
                     </> : <>
-                      <div className="definition-pos">{word.partOfSpeech || "-"}</div>
+                      <div className="definition-pos">{formatPartOfSpeechForCell(word.partOfSpeech) || "-"}</div>
                       <div>{word.meaning}</div>
                     </>}
                   </td>

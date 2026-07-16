@@ -526,6 +526,7 @@ tbody tr:nth-child(even) td {
   font-size: 13px;
   font-weight: 750;
   margin-bottom: 4px;
+  white-space: pre-line;
 }
 
 .mistake-table {
