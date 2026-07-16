@@ -281,8 +281,8 @@ export function MistakeBook() {
             <tbody>
               {mistakes.map((word) => (
                 <tr key={word.id}>
-                  <td>
-                    {authenticated ? <input value={word.word} onChange={(event) => updateWord(word.id, { word: event.target.value })} /> : <strong>{word.word}</strong>}
+                  <td className="word-cell">
+                    {authenticated ? <textarea value={word.word} onChange={(event) => updateWord(word.id, { word: event.target.value })} /> : <strong>{word.word}</strong>}
                   </td>
                   <td>
                     {authenticated ? <select

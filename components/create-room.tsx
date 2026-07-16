@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Copy, Play } from "lucide-react";
+import { Clock, Copy, Play } from "lucide-react";
 import { completeRoomLinks } from "@/lib/room-links";
 import type { DictationRoom, WordEntry } from "@/lib/types";
 import { stageLabel, vocabularyStages } from "@/lib/vocabulary";
@@ -25,8 +25,21 @@ async function readJsonResponse(response: Response) {
   }
 }
 
+function formatDateTime(value?: string) {
+  if (!value) return "未设置";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "未设置";
+  return new Intl.DateTimeFormat("zh-CN", {
+    month: "numeric",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  }).format(date);
+}
+
 export function CreateRoom() {
   const [totalCount, setTotalCount] = useState(20);
+  const [timeLimitMinutes, setTimeLimitMinutes] = useState(30);
   const [mistakeRatio, setMistakeRatio] = useState(30);
   const [promptWeights, setPromptWeights] = useState({ audio: 50, english: 25, chinese: 25 });
   const [dictationPerson, setDictationPerson] = useState("");
@@ -64,7 +77,7 @@ export function CreateRoom() {
       const response = await fetch("/api/rooms", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ totalCount, mistakeRatio, wordSource, stage, promptTypeWeights: promptWeights, dictationPerson })
+        body: JSON.stringify({ totalCount, mistakeRatio, wordSource, stage, promptTypeWeights: promptWeights, dictationPerson, timeLimitMinutes })
       });
       const data = await readJsonResponse(response);
       if (!response.ok) throw new Error(typeof data.error === "string" ? data.error : "创建失败");
@@ -122,6 +135,16 @@ export function CreateRoom() {
             <input min={1} max={100} type="number" value={totalCount} onChange={(event) => setTotalCount(Number(event.target.value))} />
           </label>
           <label>
+            完成时间（分钟）
+            <input
+              min={1}
+              max={240}
+              type="number"
+              value={timeLimitMinutes}
+              onChange={(event) => setTimeLimitMinutes(Number(event.target.value))}
+            />
+          </label>
+          <label>
             易错词混入比例：{mistakeRatio}%
             <input
               min={0}
@@ -165,6 +188,9 @@ export function CreateRoom() {
                 {created.room.id}
               </div>
             </div>
+            <p className="pill deadline-pill">
+              <Clock size={16} /> 截止 {formatDateTime(created.room.expiresAt)}
+            </p>
             <label>
               孩子答题链接
               <input readOnly value={created.childUrl} />

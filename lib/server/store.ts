@@ -168,6 +168,7 @@ function isMissingColumnError(error: unknown, columnName: string) {
 function mapRoom(row: Record<string, unknown>): DictationRoom {
   const status = row.status === "completed" || row.status === "recorded" || row.status === "closed" ? row.status : "active";
   const questions = row.questions as DictationRoom["questions"];
+  const questionExpiresAt = questions?.find((question) => typeof question.roomExpiresAt === "string")?.roomExpiresAt;
   return {
     id: String(row.id),
     parentToken: String(row.parent_token),
@@ -180,7 +181,8 @@ function mapRoom(row: Record<string, unknown>): DictationRoom {
     dictationPerson: questions?.[0]?.dictationPerson ?? "未标注",
     questionMode: "mixed",
     questions,
-    createdAt: String(row.created_at)
+    createdAt: String(row.created_at),
+    expiresAt: String(row.expires_at ?? questionExpiresAt ?? "")
   };
 }
 
@@ -207,8 +209,39 @@ function roomRow(room: DictationRoom) {
     stage: room.stage ?? "",
     question_mode: room.questionMode,
     questions: room.questions,
-    created_at: room.createdAt
+    created_at: room.createdAt,
+    expires_at: room.expiresAt || null
   };
+}
+
+function isExpiredActiveRoom(room: DictationRoom, now = Date.now()) {
+  if (room.status !== "active" || !room.expiresAt) return false;
+  const expiresAt = Date.parse(room.expiresAt);
+  return Number.isFinite(expiresAt) && expiresAt <= now;
+}
+
+async function setRoomStatus(room: DictationRoom, status: DictationRoom["status"]) {
+  const next: DictationRoom = { ...room, status };
+  const client = supabase();
+  if (client) {
+    const { error } = await client
+      .from("dictation_rooms")
+      .update({ status })
+      .eq("id", room.id)
+      .eq("status", room.status);
+    if (error) throw error;
+    return next;
+  }
+
+  const store = await readLocalStore();
+  store.rooms = store.rooms.map((item) => (item.id === room.id && item.status === room.status ? next : item));
+  await writeLocalStore(store);
+  return next;
+}
+
+async function completeExpiredRoom(room: DictationRoom) {
+  if (!isExpiredActiveRoom(room)) return room;
+  return setRoomStatus(room, "completed");
 }
 
 export async function listWords() {
@@ -322,8 +355,17 @@ export async function clearAllMistakes() {
 export async function createRoom(room: DictationRoom) {
   const client = supabase();
   if (client) {
-    const { error } = await client.from("dictation_rooms").insert(roomRow(room));
-    if (error) throw error;
+    const row = roomRow(room);
+    const { error } = await client.from("dictation_rooms").insert(row);
+    if (error) {
+      if (isMissingColumnError(error, "expires_at")) {
+        const { expires_at: _expiresAt, ...legacyRow } = row;
+        const { error: retryError } = await client.from("dictation_rooms").insert(legacyRow);
+        if (retryError) throw retryError;
+        return room;
+      }
+      throw error;
+    }
     return room;
   }
 
@@ -338,11 +380,12 @@ export async function getRoom(roomId: string) {
   if (client) {
     const { data, error } = await client.from("dictation_rooms").select("*").eq("id", roomId).single();
     if (error) return null;
-    return mapRoom(data);
+    return completeExpiredRoom(mapRoom(data));
   }
 
   const store = await readLocalStore();
-  return store.rooms.find((room) => room.id === roomId) ?? null;
+  const room = store.rooms.find((item) => item.id === roomId) ?? null;
+  return room ? completeExpiredRoom(room) : null;
 }
 
 export async function listRooms() {
@@ -360,11 +403,15 @@ export async function listRooms() {
       rows.push(...((data ?? []) as Record<string, unknown>[]));
       if (!data || data.length < supabasePageSize) break;
     }
-    return rows.map(mapRoom);
+    return Promise.all(rows.map((row) => completeExpiredRoom(mapRoom(row))));
   }
 
   const store = await readLocalStore();
-  return [...store.rooms].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  const rooms: DictationRoom[] = [];
+  for (const room of store.rooms) {
+    rooms.push(await completeExpiredRoom(room));
+  }
+  return rooms.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
 
 export async function listAnswersForRooms(roomIds: string[]) {
@@ -447,20 +494,8 @@ export async function completeRoom(roomId: string) {
   if (!room) return null;
   if (room.status === "closed") throw new Error("本次听写已关闭，不能再结束或写入错词本");
   if (room.status === "recorded") return room;
-
-  const completed: DictationRoom = { ...room, status: "completed" };
-
-  const client = supabase();
-  if (client) {
-    const { error } = await client.from("dictation_rooms").update({ status: "completed" }).eq("id", roomId);
-    if (error) throw error;
-    return completed;
-  }
-
-  const store = await readLocalStore();
-  store.rooms = store.rooms.map((item) => (item.id === roomId ? completed : item));
-  await writeLocalStore(store);
-  return completed;
+  if (room.status === "completed") return room;
+  return setRoomStatus(room, "completed");
 }
 
 export async function recordRoomMistakes(roomId: string) {
@@ -531,21 +566,5 @@ export async function closeRoom(roomId: string) {
   const room = await getRoom(roomId);
   if (!room) return null;
   if (room.status !== "active") return room;
-
-  const closed: DictationRoom = { ...room, status: "closed" };
-  const client = supabase();
-  if (client) {
-    const { error } = await client
-      .from("dictation_rooms")
-      .update({ status: "closed" })
-      .eq("id", roomId)
-      .eq("status", "active");
-    if (error) throw error;
-    return closed;
-  }
-
-  const store = await readLocalStore();
-  store.rooms = store.rooms.map((item) => (item.id === roomId && item.status === "active" ? closed : item));
-  await writeLocalStore(store);
-  return closed;
+  return setRoomStatus(room, "closed");
 }

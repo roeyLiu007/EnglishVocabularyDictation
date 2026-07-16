@@ -38,6 +38,7 @@ export async function GET(request: Request) {
         stage: room.stage,
         dictationPerson: room.dictationPerson,
         createdAt: room.createdAt,
+        expiresAt: room.expiresAt,
         lastSubmittedAt: submittedTimes.at(-1),
         parentUrl: buildRoomLink(baseUrl, "parent", room.id, room.parentToken),
         childUrl: buildRoomLink(baseUrl, "child", room.id, room.childToken)

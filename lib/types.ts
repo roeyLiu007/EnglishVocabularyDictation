@@ -44,6 +44,7 @@ export type Question = {
   id: string;
   wordId: string;
   entryType?: "word" | "phrase";
+  roomExpiresAt?: string;
   promptType: PromptType;
   prompt: string;
   speechText?: string;
@@ -73,6 +74,7 @@ export type DictationRoom = {
   dictationPerson?: string;
   questions: Question[];
   createdAt: string;
+  expiresAt?: string;
 };
 
 export type RoomTaskSummary = {
@@ -87,6 +89,7 @@ export type RoomTaskSummary = {
   stage?: string;
   dictationPerson?: string;
   createdAt: string;
+  expiresAt?: string;
   lastSubmittedAt?: string;
   parentUrl: string;
   childUrl: string;
@@ -127,6 +130,7 @@ export type CreateRoomInput = {
   stage?: string;
   promptTypeWeights?: PromptTypeWeights;
   dictationPerson?: string;
+  timeLimitMinutes?: number;
 };
 
 export type ImportPreviewWord = Pick<

@@ -25,6 +25,13 @@ function formatDuration(seconds?: number) {
   return `${String(minutes).padStart(2, "0")}:${String(restSeconds).padStart(2, "0")}`;
 }
 
+function secondsUntil(value?: string) {
+  if (!value) return null;
+  const deadline = Date.parse(value);
+  if (!Number.isFinite(deadline)) return null;
+  return Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
+}
+
 function scoreVoice(voice: SpeechSynthesisVoice) {
   const name = voice.name.toLowerCase();
   const lang = voice.lang.toLowerCase();
@@ -73,11 +80,13 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
   const [skippedIds, setSkippedIds] = useState<string[]>([]);
   const [showAnswers, setShowAnswers] = useState(false);
   const [reviewMode, setReviewMode] = useState(false);
+  const [remainingSeconds, setRemainingSeconds] = useState<number | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   const speechTimerRef = useRef<number | null>(null);
   const speechRequestRef = useRef(0);
   const initialSelectionRoomRef = useRef("");
+  const autoFinishRef = useRef(false);
 
   async function load() {
     try {
@@ -169,6 +178,8 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
   const current = room?.questions[index];
   const currentEntryType = current?.answer.entryType === "phrase" || current?.entryType === "phrase" ? "phrase" : "word";
   const isDone = Boolean(room && payload && payload.answers.length >= room.questions.length);
+  const timeExpired = Boolean(room?.status === "active" && room.expiresAt && remainingSeconds === 0);
+  const canAnswer = Boolean(room?.status === "active" && !timeExpired);
   const answerLines = current?.answer.lines?.length
     ? current.answer.lines
     : [{ partOfSpeech: current?.answer.partOfSpeech ?? "", meaning: current?.answer.meaning ?? "" }];
@@ -195,6 +206,32 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
     }, 1000);
     return () => window.clearInterval(timer);
   }, [current?.id, isDone, reviewMode]);
+
+  useEffect(() => {
+    if (room?.status !== "active") setReviewMode(false);
+  }, [room?.status]);
+
+  useEffect(() => {
+    if (!room?.expiresAt) {
+      setRemainingSeconds(null);
+      return;
+    }
+
+    const updateRemaining = () => {
+      const nextSeconds = secondsUntil(room.expiresAt);
+      setRemainingSeconds(nextSeconds);
+      if (nextSeconds === 0 && room.status === "active" && !autoFinishRef.current) {
+        autoFinishRef.current = true;
+        setMessage("完成时间已到，系统正在自动交卷。");
+        void finish();
+      }
+    };
+
+    updateRemaining();
+    const timer = window.setInterval(updateRemaining, 1000);
+    return () => window.clearInterval(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [room?.expiresAt, room?.status]);
 
   useEffect(() => {
     speechRequestRef.current += 1;
@@ -309,6 +346,10 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
 
   async function submit() {
     if (!current) return;
+    if (!canAnswer) {
+      setMessage("完成时间已到，系统正在自动交卷，不能再修改答案。");
+      return;
+    }
     const editingExistingAnswer = answeredIds.has(current.id);
     const submittedInput: AnswerInput = {
       ...answer,
@@ -355,7 +396,7 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
   }
 
   function skipQuestion() {
-    if (!current || !room) return;
+    if (!current || !room || !canAnswer) return;
     setAnswer({});
     setMessage("已暂时跳过，完成其他题后会再回来。");
     setSkippedIds((items) => (items.includes(current.id) ? items : [...items, current.id]));
@@ -375,7 +416,7 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
   }
 
   function handleAnswerKeyDown(event: React.KeyboardEvent<HTMLElement>) {
-    if (event.key === "Enter" && !event.shiftKey && event.target instanceof HTMLInputElement) {
+    if (canAnswer && event.key === "Enter" && !event.shiftKey && event.target instanceof HTMLInputElement) {
       event.preventDefault();
       void submit();
     }
@@ -409,18 +450,28 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
     return <section className="panel">{message || "加载房间中..."}</section>;
   }
 
-  if (room.status === "closed" || ((room.status === "completed" || room.status === "recorded") && !isDone)) {
+  if (timeExpired) {
+    return (
+      <section className="panel">
+        <h1>完成时间已到</h1>
+        <p className="muted">系统正在自动交卷，当前链接不能继续修改答案。</p>
+      </section>
+    );
+  }
+
+  if (room.status === "closed") {
     return (
       <section className="panel">
         <h1>本次听写已结束</h1>
         <p className="muted">
           已提交 {payload.answers.length} / {room.questions.length} 题，当前链接不能继续答题。
+          {room.expiresAt ? " 若因超时交卷，未提交题会按未作答处理。" : ""}
         </p>
       </section>
     );
   }
 
-  if (isDone && !reviewMode) {
+  if ((isDone || room.status === "completed" || room.status === "recorded") && !reviewMode) {
     if (room.status === "active") {
       return (
         <section className="panel completion-summary final-checkpoint">
@@ -520,6 +571,11 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
         <span className="pill timer-pill">
           <Clock size={15} /> 本题 {formatDuration(elapsedSeconds)}
         </span>
+        {remainingSeconds !== null ? (
+          <span className={`pill timer-pill ${remainingSeconds <= 60 ? "deadline-warning" : ""}`}>
+            <Clock size={15} /> 剩余 {formatDuration(remainingSeconds)}
+          </span>
+        ) : null}
       </div>
       <progress className="dictation-progress" max={room.questions.length} value={payload.answers.length} />
       <div className="panel question-navigator" aria-label="选择题目">
@@ -545,7 +601,7 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
           <div className="audio-prompt">
             <div className="audio-prompt-main">
               <p className="prompt dictation-prompt-title">{currentEntryType === "phrase" ? "听英文词组" : "听英文发音"}</p>
-              <button className="play-button" disabled={speechLoading} onClick={speak} type="button">
+              <button className="play-button" disabled={speechLoading || !canAnswer} onClick={speak} type="button">
                 <Volume2 size={24} /> {speechLoading ? "准备中..." : "播放"}
               </button>
             </div>
@@ -607,6 +663,7 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
               className="answer-input-primary"
               placeholder={currentEntryType === "phrase" ? "填写英文词组" : "填写英文单词"}
               value={answer.word ?? ""}
+              disabled={!canAnswer}
               onChange={(event) => setAnswer((value) => ({ ...value, word: event.target.value }))}
             />
           </label>
@@ -627,6 +684,7 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
                         autoComplete="off"
                         placeholder="如 n 或 名词"
                         value={inputLines[lineIndex]?.partOfSpeech ?? ""}
+                        disabled={!canAnswer}
                         onChange={(event) => updateLine(lineIndex, { partOfSpeech: event.target.value })}
                       />
                     </label>
@@ -640,6 +698,7 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
                         autoComplete="off"
                         placeholder="填写中文意思"
                         value={inputLines[lineIndex]?.meaning ?? ""}
+                        disabled={!canAnswer}
                         onChange={(event) => updateLine(lineIndex, { meaning: event.target.value })}
                       />
                     </label>
@@ -651,10 +710,10 @@ export function ChildRoom({ roomId, token }: { roomId: string; token: string }) 
         ) : null}
 
           <div className="dictation-actions">
-            {!isDone ? <button className="secondary" disabled={loading} onClick={skipQuestion} type="button">
+            {!isDone ? <button className="secondary" disabled={loading || !canAnswer} onClick={skipQuestion} type="button">
               <SkipForward size={19} /> 暂时不会
             </button> : null}
-            <button className="submit-answer-button" disabled={loading} onClick={submit} type="button">
+            <button className="submit-answer-button" disabled={loading || !canAnswer} onClick={submit} type="button">
               <Check size={20} /> {loading ? "提交中..." : answeredIds.has(current.id) ? "保存本题修改" : "提交并进入下一题"}
             </button>
           </div>

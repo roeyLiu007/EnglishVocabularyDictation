@@ -537,8 +537,8 @@ export function LibraryManager() {
               <tbody>
                 {preview.map((word, index) => (
                   <tr key={`${word.word}-${index}`}>
-                    <td>
-                      <input value={word.word} onChange={(event) => updatePreview(index, { word: event.target.value })} />
+                    <td className="word-cell">
+                      <textarea value={word.word} onChange={(event) => updatePreview(index, { word: event.target.value })} />
                     </td>
                     <td>
                       <select
@@ -653,8 +653,8 @@ export function LibraryManager() {
             <tbody>
               {visibleWords.map((word) => (
                 <tr key={word.id}>
-                  <td>
-                    {authenticated ? <input value={word.word} onChange={(event) => updateSavedWord(word.id, { word: event.target.value })} /> : <strong>{word.word}</strong>}
+                  <td className="word-cell">
+                    {authenticated ? <textarea value={word.word} onChange={(event) => updateSavedWord(word.id, { word: event.target.value })} /> : <strong>{word.word}</strong>}
                   </td>
                   <td>
                     {authenticated ? <select

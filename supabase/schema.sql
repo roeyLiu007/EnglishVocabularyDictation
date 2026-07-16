@@ -27,7 +27,8 @@ create table if not exists dictation_rooms (
   stage text not null default '',
   question_mode text not null default 'mixed',
   questions jsonb not null default '[]'::jsonb,
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  expires_at timestamptz
 );
 
 create table if not exists dictation_answers (
@@ -41,8 +42,10 @@ create table if not exists dictation_answers (
 );
 
 alter table dictation_answers add column if not exists duration_seconds integer;
+alter table dictation_rooms add column if not exists expires_at timestamptz;
 
 create index if not exists words_created_at_idx on words (created_at desc);
 create index if not exists words_source_idx on words (source);
 create index if not exists words_upload_batch_id_idx on words (upload_batch_id);
+create index if not exists dictation_rooms_expires_at_idx on dictation_rooms (expires_at);
 create index if not exists dictation_answers_room_id_idx on dictation_answers (room_id);

@@ -15,6 +15,9 @@ export async function POST(request: Request, { params }: { params: { roomId: str
     if (room.status === "closed") {
       return NextResponse.json({ error: "本次听写已关闭，不能继续提交" }, { status: 409 });
     }
+    if (room.status === "completed" || room.status === "recorded") {
+      return NextResponse.json({ room });
+    }
     if (body.token === room.childToken) {
       const answers = await listAnswers(room.id);
       if (answers.length < room.questions.length) {

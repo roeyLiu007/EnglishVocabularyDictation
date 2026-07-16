@@ -472,8 +472,8 @@ tbody tr:nth-child(even) td {
 
 .library-table td,
 .mistake-table td {
-  height: 72px;
   line-height: 1.55;
+  min-height: 72px;
   overflow-wrap: anywhere;
   white-space: normal;
   word-break: break-word;
@@ -490,9 +490,26 @@ tbody tr:nth-child(even) td {
   min-width: 0;
 }
 
+.word-cell strong {
+  display: block;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.word-cell textarea {
+  min-height: 64px;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  word-break: break-word;
+}
+
 .definition-cell input,
 .definition-cell textarea {
   margin-bottom: 8px;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  word-break: break-word;
 }
 
 .definition-cell input:last-child,
@@ -738,6 +755,18 @@ tbody tr:nth-child(even) td {
   align-items: center;
   gap: 5px;
   margin-left: 0;
+}
+
+.deadline-warning {
+  border-color: rgba(223, 63, 107, 0.55);
+  color: var(--danger);
+}
+
+.deadline-pill {
+  align-items: center;
+  gap: 6px;
+  justify-content: flex-start;
+  width: fit-content;
 }
 
 .prompt {

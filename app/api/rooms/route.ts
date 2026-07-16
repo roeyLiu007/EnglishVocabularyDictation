@@ -45,7 +45,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ error }, { status: 400 });
     }
 
-    const questions = buildQuestions(words, input);
+    const timeLimitMinutes =
+      typeof input.timeLimitMinutes === "number" && Number.isFinite(input.timeLimitMinutes)
+        ? Math.max(1, Math.min(240, Math.round(input.timeLimitMinutes)))
+        : 30;
+    const createdAt = new Date();
+    const expiresAt = new Date(createdAt.getTime() + timeLimitMinutes * 60 * 1000).toISOString();
+    const questions = buildQuestions(words, input).map((question) => ({
+      ...question,
+      roomExpiresAt: expiresAt
+    }));
     const room: DictationRoom = {
       id: shortId(),
       parentToken: token(),
@@ -59,7 +68,8 @@ export async function POST(request: Request) {
       promptTypeWeights: input.promptTypeWeights,
       dictationPerson,
       questions,
-      createdAt: new Date().toISOString()
+      createdAt: createdAt.toISOString(),
+      expiresAt
     };
 
     await createRoom(room);
