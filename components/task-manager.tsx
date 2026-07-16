@@ -39,7 +39,7 @@ function statusLabel(status: RoomTaskSummary["status"]) {
 }
 
 function deadlineLabel(task: RoomTaskSummary) {
-  if (task.expiresAt) return `截止 ${formatDate(task.expiresAt)}`;
+  if (task.expiresAt) return formatDate(task.expiresAt);
   if (task.timeLimitMinutes) return `未开始，学生打开后 ${task.timeLimitMinutes} 分钟截止`;
   return "";
 }
@@ -236,6 +236,7 @@ export function TaskManager() {
                 <th>状态</th>
                 <th>创建时间</th>
                 <th>任务</th>
+                <th>截止时间</th>
                 <th>进度</th>
                 <th>结果</th>
                 <th>最近提交</th>
@@ -250,7 +251,9 @@ export function TaskManager() {
                   <td>
                     <strong>{task.id}</strong>
                     <div className="table-subtext">{task.dictationPerson || "未标注"} · {sourceLabel(task)} · {task.totalCount} 题</div>
-                    {deadlineLabel(task) ? <div className="table-subtext">{deadlineLabel(task)}</div> : null}
+                  </td>
+                  <td>
+                    <div className="deadline-text">{deadlineLabel(task) || "-"}</div>
                   </td>
                   <td>
                     <div className="task-progress-label"><span>{task.answeredCount}/{task.totalCount}</span><span>{Math.round((task.answeredCount / Math.max(1, task.totalCount)) * 100)}%</span></div>
@@ -280,7 +283,7 @@ export function TaskManager() {
                 </tr>
               ))}
               {!visibleTasks.length ? (
-                <tr><td className="task-empty" colSpan={7}>{tab === "current" ? "暂无进行中的听写任务" : "暂无历史听写任务"}</td></tr>
+                <tr><td className="task-empty" colSpan={8}>{tab === "current" ? "暂无进行中的听写任务" : "暂无历史听写任务"}</td></tr>
               ) : null}
             </tbody>
           </table>

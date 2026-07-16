@@ -1036,17 +1036,18 @@ tbody tr:nth-child(even) td {
 }
 
 .task-table {
-  min-width: 1080px;
+  min-width: 1220px;
   table-layout: fixed;
 }
 
 .task-table th:nth-child(1) { width: 88px; }
 .task-table th:nth-child(2) { width: 158px; }
-.task-table th:nth-child(3) { width: 132px; }
-.task-table th:nth-child(4) { width: 150px; }
-.task-table th:nth-child(5) { width: 154px; }
-.task-table th:nth-child(6) { width: 158px; }
-.task-table th:nth-child(7) { width: 240px; }
+.task-table th:nth-child(3) { width: 150px; }
+.task-table th:nth-child(4) { width: 230px; }
+.task-table th:nth-child(5) { width: 140px; }
+.task-table th:nth-child(6) { width: 144px; }
+.task-table th:nth-child(7) { width: 150px; }
+.task-table th:nth-child(8) { width: 180px; }
 
 .task-table th,
 .task-table td {
@@ -1098,11 +1099,33 @@ tbody tr:nth-child(even) td {
   width: 100%;
 }
 
-.task-table td:nth-child(5) span {
+.task-table .table-subtext,
+.deadline-text {
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.deadline-text {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.task-table td:nth-child(6) span {
   display: inline-block;
   font-size: 13px;
   margin-right: 8px;
   white-space: nowrap;
+}
+
+.parent-summary-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.deadline-stat {
+  font-size: clamp(18px, 2vw, 28px);
+  line-height: 1.2;
+  overflow-wrap: anywhere;
 }
 
 .task-actions .button,

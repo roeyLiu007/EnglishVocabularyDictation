@@ -32,6 +32,23 @@ function formatDuration(seconds?: number) {
   return `${String(minutes).padStart(2, "0")}:${String(restSeconds).padStart(2, "0")}`;
 }
 
+function formatDate(value?: string) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return new Intl.DateTimeFormat("zh-CN", {
+    dateStyle: "medium",
+    timeStyle: "short"
+  }).format(date);
+}
+
+function deadlineLabel(room: DictationRoom) {
+  const expiresAt = formatDate(room.expiresAt);
+  if (expiresAt) return expiresAt;
+  if (room.timeLimitMinutes) return `未开始，学生打开后 ${room.timeLimitMinutes} 分钟截止`;
+  return "未设置";
+}
+
 export function ParentRoom({ roomId, token }: { roomId: string; token: string }) {
   const [payload, setPayload] = useState<RoomPayload | null>(null);
   const [message, setMessage] = useState("");
@@ -138,7 +155,7 @@ export function ParentRoom({ roomId, token }: { roomId: string; token: string })
 
   return (
     <div className="grid">
-      <section className="grid cols-3">
+      <section className="grid cols-3 parent-summary-grid">
         <div className="panel stat">
           <strong>{room.id}</strong>
           <span>房间码 · {room.dictationPerson || "未标注"} · {statusLabel}</span>
@@ -152,6 +169,10 @@ export function ParentRoom({ roomId, token }: { roomId: string; token: string })
         <div className="panel stat">
           <strong>{correctCount}</strong>
           <span>当前正确数，待确认 {pendingCount}</span>
+        </div>
+        <div className="panel stat">
+          <strong className="deadline-stat">{deadlineLabel(room)}</strong>
+          <span>当前任务截止时间</span>
         </div>
       </section>
 
