@@ -405,11 +405,11 @@ table {
 }
 
 .preview-table {
-  min-width: 1232px;
+  min-width: 1120px;
 }
 
 .library-table .col-word {
-  width: 180px;
+  width: 140px;
 }
 
 .library-table .col-type {
@@ -421,7 +421,7 @@ table {
 }
 
 .library-table .col-definition {
-  width: 320px;
+  width: 240px;
 }
 
 .library-table .col-stage,
@@ -534,9 +534,9 @@ tbody tr:nth-child(even) td {
   table-layout: fixed;
 }
 
-.mistake-table th:nth-child(1) { width: 130px; }
+.mistake-table th:nth-child(1) { width: 110px; }
 .mistake-table th:nth-child(2) { width: 82px; }
-.mistake-table th:nth-child(3) { width: 250px; }
+.mistake-table th:nth-child(3) { width: 220px; }
 .mistake-table th:nth-child(4) { width: 74px; }
 .mistake-table th:nth-child(5) { width: 130px; }
 .mistake-table th:nth-child(6) { width: 130px; }
