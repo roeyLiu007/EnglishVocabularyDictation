@@ -44,6 +44,8 @@ export type Question = {
   id: string;
   wordId: string;
   entryType?: "word" | "phrase";
+  roomTimeLimitMinutes?: number;
+  roomStartedAt?: string;
   roomExpiresAt?: string;
   promptType: PromptType;
   prompt: string;
@@ -74,6 +76,8 @@ export type DictationRoom = {
   dictationPerson?: string;
   questions: Question[];
   createdAt: string;
+  timeLimitMinutes?: number;
+  startedAt?: string;
   expiresAt?: string;
 };
 
@@ -89,6 +93,8 @@ export type RoomTaskSummary = {
   stage?: string;
   dictationPerson?: string;
   createdAt: string;
+  timeLimitMinutes?: number;
+  startedAt?: string;
   expiresAt?: string;
   lastSubmittedAt?: string;
   parentUrl: string;

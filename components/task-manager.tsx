@@ -38,6 +38,12 @@ function statusLabel(status: RoomTaskSummary["status"]) {
   return "进行中";
 }
 
+function deadlineLabel(task: RoomTaskSummary) {
+  if (task.expiresAt) return `截止 ${formatDate(task.expiresAt)}`;
+  if (task.timeLimitMinutes) return `未开始，学生打开后 ${task.timeLimitMinutes} 分钟截止`;
+  return "";
+}
+
 export function TaskManager() {
   const [configured, setConfigured] = useState(true);
   const [authenticated, setAuthenticated] = useState(false);
@@ -244,7 +250,7 @@ export function TaskManager() {
                   <td>
                     <strong>{task.id}</strong>
                     <div className="table-subtext">{task.dictationPerson || "未标注"} · {sourceLabel(task)} · {task.totalCount} 题</div>
-                    {task.expiresAt ? <div className="table-subtext">截止 {formatDate(task.expiresAt)}</div> : null}
+                    {deadlineLabel(task) ? <div className="table-subtext">{deadlineLabel(task)}</div> : null}
                   </td>
                   <td>
                     <div className="task-progress-label"><span>{task.answeredCount}/{task.totalCount}</span><span>{Math.round((task.answeredCount / Math.max(1, task.totalCount)) * 100)}%</span></div>

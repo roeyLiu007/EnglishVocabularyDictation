@@ -50,10 +50,9 @@ export async function POST(request: Request) {
         ? Math.max(1, Math.min(240, Math.round(input.timeLimitMinutes)))
         : 30;
     const createdAt = new Date();
-    const expiresAt = new Date(createdAt.getTime() + timeLimitMinutes * 60 * 1000).toISOString();
     const questions = buildQuestions(words, input).map((question) => ({
       ...question,
-      roomExpiresAt: expiresAt
+      roomTimeLimitMinutes: timeLimitMinutes
     }));
     const room: DictationRoom = {
       id: shortId(),
@@ -69,7 +68,7 @@ export async function POST(request: Request) {
       dictationPerson,
       questions,
       createdAt: createdAt.toISOString(),
-      expiresAt
+      timeLimitMinutes
     };
 
     await createRoom(room);

@@ -165,10 +165,24 @@ function isMissingColumnError(error: unknown, columnName: string) {
   return details.includes(columnName.toLowerCase()) && /column|schema|cache|找不到|不存在/.test(details);
 }
 
+function isMissingAnyColumnError(error: unknown, columnNames: string[]) {
+  return columnNames.some((columnName) => isMissingColumnError(error, columnName));
+}
+
 function mapRoom(row: Record<string, unknown>): DictationRoom {
   const status = row.status === "completed" || row.status === "recorded" || row.status === "closed" ? row.status : "active";
   const questions = row.questions as DictationRoom["questions"];
   const questionExpiresAt = questions?.find((question) => typeof question.roomExpiresAt === "string")?.roomExpiresAt;
+  const questionStartedAt = questions?.find((question) => typeof question.roomStartedAt === "string")?.roomStartedAt;
+  const questionTimeLimit = questions?.find((question) => typeof question.roomTimeLimitMinutes === "number")?.roomTimeLimitMinutes;
+  const timeLimitMinutes =
+    typeof row.time_limit_minutes === "number"
+      ? row.time_limit_minutes
+      : typeof questionTimeLimit === "number"
+        ? questionTimeLimit
+        : undefined;
+  const startedAt = String(row.started_at ?? questionStartedAt ?? "");
+  const expiresAt = String(row.expires_at ?? questionExpiresAt ?? "");
   return {
     id: String(row.id),
     parentToken: String(row.parent_token),
@@ -182,7 +196,9 @@ function mapRoom(row: Record<string, unknown>): DictationRoom {
     questionMode: "mixed",
     questions,
     createdAt: String(row.created_at),
-    expiresAt: String(row.expires_at ?? questionExpiresAt ?? "")
+    timeLimitMinutes,
+    startedAt,
+    expiresAt: expiresAt || (startedAt && timeLimitMinutes ? new Date(Date.parse(startedAt) + timeLimitMinutes * 60 * 1000).toISOString() : "")
   };
 }
 
@@ -210,8 +226,19 @@ function roomRow(room: DictationRoom) {
     question_mode: room.questionMode,
     questions: room.questions,
     created_at: room.createdAt,
+    time_limit_minutes: room.timeLimitMinutes ?? null,
+    started_at: room.startedAt || null,
     expires_at: room.expiresAt || null
   };
+}
+
+function questionsWithTiming(room: DictationRoom, timing: Pick<DictationRoom, "timeLimitMinutes" | "startedAt" | "expiresAt">) {
+  return room.questions.map((question) => ({
+    ...question,
+    roomTimeLimitMinutes: timing.timeLimitMinutes,
+    roomStartedAt: timing.startedAt,
+    roomExpiresAt: timing.expiresAt
+  }));
 }
 
 function isExpiredActiveRoom(room: DictationRoom, now = Date.now()) {
@@ -242,6 +269,51 @@ async function setRoomStatus(room: DictationRoom, status: DictationRoom["status"
 async function completeExpiredRoom(room: DictationRoom) {
   if (!isExpiredActiveRoom(room)) return room;
   return setRoomStatus(room, "completed");
+}
+
+export async function startRoomTiming(roomId: string) {
+  const room = await getRoom(roomId);
+  if (!room) return null;
+  if (room.status !== "active" || room.startedAt || !room.timeLimitMinutes) return room;
+
+  const startedAt = new Date().toISOString();
+  const expiresAt = new Date(Date.parse(startedAt) + room.timeLimitMinutes * 60 * 1000).toISOString();
+  const questions = questionsWithTiming(room, { timeLimitMinutes: room.timeLimitMinutes, startedAt, expiresAt });
+  const started: DictationRoom = { ...room, startedAt, expiresAt, questions };
+  const client = supabase();
+  if (client) {
+    const timingRow = {
+      time_limit_minutes: room.timeLimitMinutes,
+      started_at: startedAt,
+      expires_at: expiresAt,
+      questions
+    };
+    const { error } = await client
+      .from("dictation_rooms")
+      .update(timingRow)
+      .eq("id", room.id)
+      .eq("status", "active")
+      .is("started_at", null);
+    if (error) {
+      if (isMissingAnyColumnError(error, ["time_limit_minutes", "started_at", "expires_at"])) {
+        const { time_limit_minutes: _timeLimitMinutes, started_at: _startedAt, expires_at: _expiresAt, ...legacyTimingRow } = timingRow;
+        const { error: retryError } = await client
+          .from("dictation_rooms")
+          .update(legacyTimingRow)
+          .eq("id", room.id)
+          .eq("status", "active");
+        if (retryError) throw retryError;
+        return started;
+      }
+      throw error;
+    }
+    return started;
+  }
+
+  const store = await readLocalStore();
+  store.rooms = store.rooms.map((item) => (item.id === room.id && item.status === "active" && !item.startedAt ? started : item));
+  await writeLocalStore(store);
+  return started;
 }
 
 export async function listWords() {
@@ -358,8 +430,8 @@ export async function createRoom(room: DictationRoom) {
     const row = roomRow(room);
     const { error } = await client.from("dictation_rooms").insert(row);
     if (error) {
-      if (isMissingColumnError(error, "expires_at")) {
-        const { expires_at: _expiresAt, ...legacyRow } = row;
+      if (isMissingAnyColumnError(error, ["time_limit_minutes", "started_at", "expires_at"])) {
+        const { time_limit_minutes: _timeLimitMinutes, started_at: _startedAt, expires_at: _expiresAt, ...legacyRow } = row;
         const { error: retryError } = await client.from("dictation_rooms").insert(legacyRow);
         if (retryError) throw retryError;
         return room;

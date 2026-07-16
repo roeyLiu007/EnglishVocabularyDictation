@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { gradeAnswer } from "@/lib/dictation";
-import { getRoom, saveAnswer } from "@/lib/server/store";
+import { getRoom, saveAnswer, startRoomTiming } from "@/lib/server/store";
 import type { AnswerInput, AnswerVerdict } from "@/lib/types";
 
 function errorMessage(error: unknown, fallback: string) {
@@ -32,11 +32,15 @@ export async function POST(request: Request, { params }: { params: { roomId: str
     if (!isParent && !isChild) {
       return NextResponse.json({ error: "链接无效或已过期" }, { status: 403 });
     }
-    if (isChild && room.status !== "active") {
+    const activeRoom = isChild ? await startRoomTiming(room.id) : room;
+    if (!activeRoom) {
+      return NextResponse.json({ error: "房间不存在" }, { status: 404 });
+    }
+    if (isChild && activeRoom.status !== "active") {
       return NextResponse.json({ error: "本次听写已结束，不能继续提交答案" }, { status: 409 });
     }
 
-    const question = room.questions.find((item) => item.id === body.questionId);
+    const question = activeRoom.questions.find((item) => item.id === body.questionId);
     if (!question) {
       return NextResponse.json({ error: "题目不存在" }, { status: 404 });
     }
@@ -48,7 +52,7 @@ export async function POST(request: Request, { params }: { params: { roomId: str
         ? Math.max(0, Math.min(3600, Math.round(body.durationSeconds)))
         : undefined;
     const saved = await saveAnswer({
-      roomId: room.id,
+      roomId: activeRoom.id,
       questionId: question.id,
       answer,
       verdict,
