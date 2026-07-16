@@ -269,8 +269,7 @@ export function MistakeBook() {
               <tr>
                 <th>英文</th>
                 <th>类型</th>
-                <th>词性</th>
-                <th>中文意思</th>
+                <th>释义</th>
                 <th>错误次数</th>
                 <th>错误位置</th>
                 <th>听写人</th>
@@ -294,11 +293,24 @@ export function MistakeBook() {
                       <option value="phrase">词组</option>
                     </select> : word.entryType === "phrase" ? "词组" : "单词"}
                   </td>
-                  <td>
-                    {authenticated ? <input value={word.partOfSpeech} onChange={(event) => updateWord(word.id, { partOfSpeech: event.target.value })} /> : word.partOfSpeech || "-"}
-                  </td>
-                  <td>
-                    {authenticated ? <textarea value={word.meaning} onChange={(event) => updateWord(word.id, { meaning: event.target.value })} /> : word.meaning}
+                  <td className="definition-cell">
+                    {authenticated ? <>
+                      <input
+                        aria-label={`${word.word}词性`}
+                        placeholder="词性"
+                        value={word.partOfSpeech}
+                        onChange={(event) => updateWord(word.id, { partOfSpeech: event.target.value })}
+                      />
+                      <textarea
+                        aria-label={`${word.word}中文意思`}
+                        placeholder="中文意思"
+                        value={word.meaning}
+                        onChange={(event) => updateWord(word.id, { meaning: event.target.value })}
+                      />
+                    </> : <>
+                      <div className="definition-pos">{word.partOfSpeech || "-"}</div>
+                      <div>{word.meaning}</div>
+                    </>}
                   </td>
                   <td>
                     <span className="pill wrong">{word.stats.wrongCount}</span>
@@ -353,7 +365,7 @@ export function MistakeBook() {
               ))}
               {!mistakes.length ? (
                 <tr>
-                  <td colSpan={10} className="muted">
+                  <td colSpan={9} className="muted">
                     暂时还没有错词。完成一次听写后，这里会自动更新。
                   </td>
                 </tr>

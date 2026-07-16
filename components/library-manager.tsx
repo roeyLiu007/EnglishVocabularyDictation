@@ -516,8 +516,7 @@ export function LibraryManager() {
                 <col className="col-word" />
                 <col className="col-type" />
                 <col className="col-phonetic" />
-                <col className="col-pos" />
-                <col className="col-meaning" />
+                <col className="col-definition" />
                 <col className="col-stage" />
                 <col className="col-unit" />
                 <col className="col-tags" />
@@ -528,8 +527,7 @@ export function LibraryManager() {
                   <th>英文</th>
                   <th>类型</th>
                   <th>音标</th>
-                  <th>词性</th>
-                  <th>中文意思</th>
+                  <th>释义</th>
                   <th>阶段</th>
                   <th>单元</th>
                   <th>标签</th>
@@ -554,14 +552,19 @@ export function LibraryManager() {
                     <td>
                       <input value={word.phonetic ?? ""} onChange={(event) => updatePreview(index, { phonetic: event.target.value })} />
                     </td>
-                    <td>
+                    <td className="definition-cell">
                       <input
+                        aria-label={`${word.word || "候选词"}词性`}
+                        placeholder="词性"
                         value={word.partOfSpeech}
                         onChange={(event) => updatePreview(index, { partOfSpeech: event.target.value })}
                       />
-                    </td>
-                    <td>
-                      <input value={word.meaning} onChange={(event) => updatePreview(index, { meaning: event.target.value })} />
+                      <input
+                        aria-label={`${word.word || "候选词"}中文意思`}
+                        placeholder="中文意思"
+                        value={word.meaning}
+                        onChange={(event) => updatePreview(index, { meaning: event.target.value })}
+                      />
                     </td>
                     <td>
                       <input
@@ -627,8 +630,7 @@ export function LibraryManager() {
               <col className="col-word" />
               <col className="col-type" />
               <col className="col-phonetic" />
-              <col className="col-pos" />
-              <col className="col-meaning" />
+              <col className="col-definition" />
               <col className="col-source" />
               <col className="col-unit" />
               <col className="col-tags" />
@@ -640,8 +642,7 @@ export function LibraryManager() {
                 <th>英文</th>
                 <th>类型</th>
                 <th>音标</th>
-                <th>词性</th>
-                <th>中文意思</th>
+                <th>释义</th>
                 <th>阶段/来源</th>
                 <th>单元</th>
                 <th>标签</th>
@@ -667,14 +668,24 @@ export function LibraryManager() {
                   <td>
                     {authenticated ? <input value={word.phonetic ?? ""} onChange={(event) => updateSavedWord(word.id, { phonetic: event.target.value })} /> : word.phonetic || "-"}
                   </td>
-                  <td>
-                    {authenticated ? <input
-                      value={word.partOfSpeech}
-                      onChange={(event) => updateSavedWord(word.id, { partOfSpeech: event.target.value })}
-                    /> : word.partOfSpeech || "-"}
-                  </td>
-                  <td>
-                    {authenticated ? <textarea value={word.meaning} onChange={(event) => updateSavedWord(word.id, { meaning: event.target.value })} /> : word.meaning}
+                  <td className="definition-cell">
+                    {authenticated ? <>
+                      <input
+                        aria-label={`${word.word}词性`}
+                        placeholder="词性"
+                        value={word.partOfSpeech}
+                        onChange={(event) => updateSavedWord(word.id, { partOfSpeech: event.target.value })}
+                      />
+                      <textarea
+                        aria-label={`${word.word}中文意思`}
+                        placeholder="中文意思"
+                        value={word.meaning}
+                        onChange={(event) => updateSavedWord(word.id, { meaning: event.target.value })}
+                      />
+                    </> : <>
+                      <div className="definition-pos">{word.partOfSpeech || "-"}</div>
+                      <div>{word.meaning}</div>
+                    </>}
                   </td>
                   <td>
                     {authenticated ? <input
