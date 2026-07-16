@@ -553,7 +553,7 @@ export function LibraryManager() {
                       <input value={word.phonetic ?? ""} onChange={(event) => updatePreview(index, { phonetic: event.target.value })} />
                     </td>
                     <td className="definition-cell">
-                      <input
+                      <textarea
                         aria-label={`${word.word || "候选词"}词性`}
                         placeholder="词性"
                         value={word.partOfSpeech}
@@ -670,7 +670,7 @@ export function LibraryManager() {
                   </td>
                   <td className="definition-cell">
                     {authenticated ? <>
-                      <input
+                      <textarea
                         aria-label={`${word.word}词性`}
                         placeholder="词性"
                         value={word.partOfSpeech}

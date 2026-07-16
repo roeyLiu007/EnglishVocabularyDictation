@@ -295,7 +295,7 @@ export function MistakeBook() {
                   </td>
                   <td className="definition-cell">
                     {authenticated ? <>
-                      <input
+                      <textarea
                         aria-label={`${word.word}词性`}
                         placeholder="词性"
                         value={word.partOfSpeech}

@@ -512,6 +512,10 @@ tbody tr:nth-child(even) td {
   word-break: break-word;
 }
 
+.definition-cell textarea[placeholder="词性"] {
+  min-height: 54px;
+}
+
 .definition-cell input:last-child,
 .definition-cell textarea:last-child {
   margin-bottom: 0;
